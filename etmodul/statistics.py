@@ -14,6 +14,12 @@ def RMSE(obs,sim):
     rmse = sqrt(np.nansum(np.power((sim-obs),2)/n))
     return rmse
 
+def MBE(obs,sim):
+    from math import sqrt
+    n = np.count_nonzero(~np.isnan(obs))
+    mbe = (np.nansum((sim-obs)/n))
+    return mbe
+
 def nanp (obs, sim):
     from math import sqrt
     

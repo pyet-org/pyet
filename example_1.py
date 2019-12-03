@@ -44,15 +44,19 @@ import pandas as pd
 import numpy as np
 import pickle
 import matplotlib.pyplot as plt
+from etmodul.statistics import RMSE, nanp, R2, MBE
 
 pickle_in = open("data/datad","rb")
 datad = pickle.load(pickle_in)
 
 pickle_in1 = open("data/etday","rb")
 etday = pickle.load(pickle_in1)
+etday[etday>10]=1.102
+etday[etday==np.nan]=1
 
 from etmodul.pet import penman, penman_monteith, priestley_taylor, \
 kimberly_penman, hamon, makink, hargreaves, blaney_criddle, jensen_haise
+from sklearn.linear_model import LinearRegression
 #inputs
 tmax = datad["tmax"]
 tmin = datad["tmin"]
@@ -78,48 +82,45 @@ jh = jensen_haise(tmax, tmin, meteoindex, latitude,solar, Ct=0.0068, tx=-10)
 
 fig,ax = plt.subplots()
 plt.plot(etday.index, etday)
-#plt.plot(pen.index, pen)
-#plt.plot(pen.index, num1)
-#plt.plot(pen.index, num2)
-#plt.plot(pm.index, pm)
-#plt.plot(pt.index, pt)
-#plt.plot(kp.index, kp)
-#plt.plot(ham.index, ham)
-#plt.plot(mak.index, mak)
-#plt.plot(har.index, har)
-#plt.plot(bc.index, bc)  # do inverse estimation
+plt.plot(pen.index, pen)
+plt.plot(pm.index, pm)
+plt.plot(pt.index, pt)
+plt.plot(kp.index, kp)
+plt.plot(ham.index, ham)
+plt.plot(mak.index, mak)
+plt.plot(har.index, har)
+plt.plot(bc.index, bc)  # do inverse estimation
 plt.plot(jh.index, jh)   # do inverse estimation
 plt.legend()
 
-# determine for bc
-from lmfit import minimize, Parameters
-params = Parameters()
-params.add("k1", value = 0.6, min = 0.45, max = 1.2)
-params.add("k2", -5., value = -5., min = -10., max = 10)
-
-#
-def get_residual(params,data,tmax, tmin, meteoindex, latitude):
-    k1 = params["k1"].value
-    k2 = params["k2"].value
-    
-    bc = jensen_haise(tmin, tmax, meteoindex, latitude, Ct=k1, tx=k2)
-    bc=bc.to_numpy()
-    return data - bc
-
-out = minimize(get_residual, params, args = (etday.to_numpy(), tmax,tmin, meteoindex, latitude))
-
-# determine for jh
-params = Parameters()
-params.add("k1", value = 0.002, min = 0.001, max = 0.01)
-params.add("k2", value = -5., min = -10., max = 20)
-
-#
-def get_residual(params,data,tmax, tmin, meteoindex, latitude, solar):
-    k1 = params["k1"].value
-    k2 = params["k2"].value
-    
-    jh = jensen_haise(tmax, tmin, meteoindex, latitude,solar, Ct=k1, tx=k2)
-    model = jh.to_numpy()
-    return data - model
-
-out = minimize(get_residual, params, args = (etday.to_numpy(), tmax,tmin, meteoindex, latitude, solar))
+shorts = (pen, pm, pt, kp, ham, mak, har, bc, jh)
+names = ("Penman", "Penman-Monteith", "Priestley-Taylor", "Kimberley-Penman",
+          "Hamon", "Makink", "Hargreaves", "Blaney-Criddle", "Jensen-Haise")
+xaxis = (0,0,0,1,1,1,2,2,2)
+yaxis = (0,1,2,0,1,2,0,1,2)
+fig, ax = plt.subplots(nrows=3, ncols=3, figsize=(9,9))
+for short, x, y, name in zip(shorts,xaxis,yaxis, names):
+    ax[x,y].scatter(etday, short, marker=".", c="k")
+    ax[x,y].plot(np.arange(0,100), np.arange(0,100), c="r")
+    ax[x,y].set_xlim(0, etday.max().values)
+    ax[x,y].set_ylim(0, etday.max().values)
+    ax[x,y].grid(True, linestyle="-.", alpha=1)
+    if y == 0:
+        ax[x,y].set_ylabel("PET_obs [mm/day]")
+    if x== 2:
+        ax[x,y].set_xlabel("PET_sim [mm/day]")
+    ax[x,y].text(0.2, 6.3, name + "\n" + \
+      "y = " + str(round(model.coef_[0,0],3)) + "*k + " + \
+      str(round(model.intercept_[0],3)) + "\n" + \
+      "R2 = "+str(round(R2(etday.to_numpy(), short.to_numpy()),3)) + "\n" + \
+      "RMSE = "+str(round(RMSE(etday.to_numpy(), short.to_numpy()),3)) + "\n" +\
+      "MBE = "+str(round(MBE(etday.to_numpy(), short.to_numpy()),3)), size = 10)
+    model = LinearRegression(fit_intercept=True)
+    x1=etday.to_numpy()
+    y1=short.to_numpy()
+    model.fit(x1, y1)
+    xfit = etday.to_numpy()
+    yfit = model.predict(xfit)
+    ax[x,y].plot(xfit, yfit)
+    x2 = np.arange(0,100)
+plt.tight_layout()

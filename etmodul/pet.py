@@ -231,7 +231,7 @@ def blaney_criddle(tmin, tmax, meteoindex, latitude, k=0.8, tx=4):
     return pet
 
 
-def jensen_haise(tmax, tmin, meteoindex, latitude,solar, Ct=0.02, tx=4):
+def jensen_haise(tmax, tmin, meteoindex, latitude, solar, Ct=0.02, tx=4):
     """
     Ra = extraterrestrial radiation (MJ m-2 day-1)
     lambd = latent heat of vaporization (MJ kg-1)
