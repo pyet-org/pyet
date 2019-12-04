@@ -153,33 +153,102 @@ The introduction should briefly place the study in a broad context and highlight
 
 
 \subsection{Evaluation of PET models with default coefficients}
-Penman \cite{asce2005asce}
+same Rn same rh same T...
+
+Penman 
 \begin{equation}
 E = \frac{1}{\lambda \rho_w} \frac{\Delta (R_{n}-G) + K_u \gamma(a_w+b_wu_2)(e_{s}-e_{a})}{\Delta +\gamma}
 \end{equation}
-where $a_w$ and $b_w$ are wind function coefficients
-\newline
+where $a_w$ and $b_w$ are wind function coefficients that are usually receive a local or regional calibration.
+Parameter $K_u$ =6.43 for ET in mmd$^{-1}$ and $K_u$ =0.268 for ET in mmhour$^{-1}$.
+Penman \cite{penman1963vegetation} used for clipped grass \cite{asce2005asce} $a_w$ = 1.0 and $b_w$ = 0.537, respectively,for wind speed in ms $^{-1}$, $es-ea$ in kPa and grass ETo in mmd$^{-1}$. The equations were intended for use with daily computations. In application of the 1963 Penman, saturation vapor pressure is traditionally based on mean daily air temperature rather than on Tmax and Tmin$"$ \cite{jensen1990evapotranspiration}.
+
+
+
 Penman-Monteith \cite{asce2005asce}
 \begin{equation}
 E = \frac{1}{\lambda} \frac{\Delta (R_{n}-G)+ \rho_a c_p  (e_{s}-e_{a})/r_{ah}}{\left[ \Delta +\gamma (1+\frac{r_s}{r_{ah}})\right]}
 \end{equation}
 
 Priestley-Taylor \cite{asce2005asce}
+\begin{equation}
+E = \frac{1.26}{\lambda} \frac{\Delta}{\Delta +\gamma}(R_{n}-G)
+\end{equation}
 
 Kimberley-Penman \cite{asce2005asce}
-
+\begin{equation}
+E = \frac{1}{\lambda \rho_w} \frac{\Delta (R_{n}-G) + K_u \gamma(a_w+b_wu_2)(e_{s}-e_{a})}{\Delta +\gamma} 
+\end{equation}
+where:
+\begin{equation}
+a_w = 0.4 + 1.4 exp{-\left[\left(\frac{J-173}{58}\right)^2\right]}
+\end{equation}
+\begin{equation}
+b_w = 0.605 + 0.345 exp{-\left[\left(\frac{J-243}{80}\right)^2\right]}
+\end{equation}
 Hamon
 
 Turc--
 
 Makink \cite{asce2005asce}
+\begin{equation}
+ET_0 = 0.61 \frac{\Delta}{\Delta+\gamma}\frac{R_s}{2.45}-0.12
+\end{equation}
+Doorenbos and Pruitt \cite{doorenbos1977crop}
+\begin{equation}
+ET_0 = c \frac{\Delta}{\Delta+\gamma}\frac{R_s}{2.45}-0.3
+\end{equation}
+where c is the calibration factor that is a fucntion of rh and ud.
+allen and pruitt \cite{allen1991fao}:
+\begin{equation}
+c = 1.066-0.00128 RH_{mean} + 0.045u_d -0.0002RH{mean}u_d-0.0000315(RH{mean}^2)-0.001103(u_d)^2
+\end{equation}
+$u_d$ has limits 0 < $u_d$ < 10 ms$^{-1}$.
 
-Hargreaves
-
+Hargreaves \cite{hargreaves1982estimating}
+\begin{equation}
+ET_0 = 0.0023(T_{max}-T_{min})^{0.5}(T_{mean}+17.8) \frac{R_a}{\lambda \rho _w}
+\end{equation}
+Ra is average daily exoatmospheric radiation(extra terrestrial)
 Blaney-Criddle \cite{asce2005asce}
 
-Jensen-Haise \cite{asce2005asce}
+Jensen-Haise \cite{asce2005asce} - ET$_r$ is alfalfa reference ET
+\begin{equation}
+ET_r = \frac{1}{\lambda} C_r(T-Tx)R_s
+\end{equation}
+$C_r$ and $T_x$ should be constant for a given area...
+Later Jensen defined:
+\begin{equation}
+C_r = \frac{1}{C_1+C_2C_H}
+\end{equation}
+\begin{equation}
+C_H = \frac{5}{e_2 + e_1}
+\end{equation}
+e2 and e1 are the saturation vapor pressures in kPa at the mean daily maximum and mean daily minimum temperatures, respectively, for the average warmest month of the year in an area, and C1 and C2 are constants (C2 = 13 degress F or 7.3 degrees C).
+\begin{equation}
+C_1 = 38-(2Elev/305)
+\end{equation}
+\begin{equation}
+T_x = -2.5 - 1.4 (e_2-e_1) - Elev/550
+\end{equation}
 
+
+
+\subsubsection{Inputs}
+
+$R_n$ net longwave radiation
+\begin{equation}
+R_nl = f_{cd} (a_1+b_1\sqrt{e_a})\sigma T^4
+\end{equation}
+if 24-hour or longer time steps...$T^4$ transforms to ($T^4_{max}-T^4_{min}$)/2. \\
+$\sigma$ is for daily values 4.901 x 10$^{-9}$ MJm$^{-2}$d$^{-1}$K$^{-4}$ with Rnl in MJm$^{-2}$d$^{-1}$ \\
+for hourly calculations $\sigma$ = 2.042 x 10$^{-10}$ MJm2 h$^{-1}$K$^{-4}$, Rnl is in MJm$^{-2}$ h$^{-1}$.
+
+Wright and Jensen \cite{wright1972peak} developed an expression for $f_{cd}$:
+\begin{equation}
+f_{cd} = a \frac{R_S}{R_{SO}} + b
+\end{equation}
+a and b are empirical coefficients. General a= 1.3, b=0.3, $a_1$ = 0.39 and $b_1$=0.158
 \subsubsection{Evaluation of calibrated/validated PET models}
 TEXT
 

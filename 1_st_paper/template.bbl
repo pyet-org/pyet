@@ -1,11 +1,46 @@
 \begin{thebibliography}{-------}
 \providecommand{\natexlab}[1]{#1}
 
+\bibitem[Penman(1963)]{penman1963vegetation}
+Penman, H.L.
+\newblock Vegetation and hydrology.
+\newblock {\em Soil Science} {\bf 1963}, {\em 96},~357.
+
 \bibitem[ASCE-EWRI(2005)]{asce2005asce}
 ASCE-EWRI.
 \newblock The ASCE standardized reference evapotranspiration equation.
 \newblock {\em Technical Committee Rep. to the Environmental and Water
   Resources Institute of ASCE from the Task Committee on Standardization of
   Reference Evapotranspiration} {\bf 2005}.
+
+\bibitem[Jensen \em{et~al.}(1990)Jensen, Burman, and
+  Allen]{jensen1990evapotranspiration}
+Jensen, M.E.; Burman, R.D.; Allen, R.G.
+\newblock Evapotranspiration and irrigation water requirements.
+\newblock ASCE,  1990.
+
+\bibitem[Doorenbos and Pruitt(1977)]{doorenbos1977crop}
+Doorenbos, J.; Pruitt, W.
+\newblock Crop water requirements. FAO irrigation and drainage paper 24.
+\newblock {\em Land and Water Development Division, FAO, Rome} {\bf 1977}, {\em
+  144}.
+
+\bibitem[Allen and Pruitt(1991)]{allen1991fao}
+Allen, R.G.; Pruitt, W.O.
+\newblock FAO-24 reference evapotranspiration factors.
+\newblock {\em Journal of irrigation and drainage engineering} {\bf 1991}, {\em
+  117},~758--773.
+
+\bibitem[Hargreaves and Samani(1982)]{hargreaves1982estimating}
+Hargreaves, G.H.; Samani, Z.A.
+\newblock Estimating potential evapotranspiration.
+\newblock {\em Journal of the irrigation and Drainage Division} {\bf 1982},
+  {\em 108},~225--230.
+
+\bibitem[Wright and Jensen(1972)]{wright1972peak}
+Wright, J.L.; Jensen, M.E.
+\newblock Peak water requirements of crops in southern Idaho.
+\newblock {\em Proceedings of the American Society of Civil Engineers, Journal
+  of the Irrigation and Drainage Division} {\bf 1972}, {\em 98},~193--201.
 
 \end{thebibliography}

@@ -1,3 +1,9 @@
 This is BibTeX, Version 0.99dThe top-level auxiliary file: template.aux
 The style file: Definitions/mdpi.bst
 Database file #1: evapo_article.bib
+Repeated entry---line 62 of file evapo_article.bib
+ : @inproceedings{jensen1990evapotranspiration
+ :                                            ,
+I'm skipping whatever remains of this entry
+Warning--empty booktitle in jensen1990evapotranspiration
+(There was 1 error message)
