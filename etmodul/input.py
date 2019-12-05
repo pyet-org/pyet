@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
-def ea_calc(temperature=None, rh=None, tmin=None, tmax=None, rhmin=None, rhmax=None):
-    if temperature is None and rh is None:
+def ea_calc(t=None, rh=None, tmin=None, tmax=None, rhmin=None, rhmax=None):
+    if t is None and rh is None:
         #saturation vapour pressure at daily minimum temperature [kPa]
         emin = 0.6108 * np.exp((17.27 * tmin) / (tmin + 237.3))
         #saturation vapour pressure at daily maximum temperature [kPa]
@@ -12,11 +12,11 @@ def ea_calc(temperature=None, rh=None, tmin=None, tmax=None, rhmin=None, rhmax=N
     else:
         #actual vapour pressure [kPa]
         #Based on equation 19, page 39 in Allen et al (1998).
-        ea = (rh/100) * es_calc(temperature)
+        ea = (rh/100) * es_calc(t=t)
     return ea
 
-def es_calc(temperature=None, tmin=None, tmax=None):
-    if temperature is None:
+def es_calc(t=None, tmin=None, tmax=None):
+    if t is None:
         #saturation vapour pressure at daily minimum temperature [kPa]
         emin = 0.6108 * np.exp((17.27 * tmin) / (tmin + 237.3))
         #saturation vapour pressure at daily maximum temperature [kPa]
@@ -26,7 +26,7 @@ def es_calc(temperature=None, tmin=None, tmax=None):
         return (emax + emin) / 2
     else:
         # mean saturation vapour pressure hour...
-        return e0_calc(temperature)
+        return e0_calc(t)
 
 def Ra_calc(meteoindex, latitude):
     # inverse relative distance Earth-Sun
@@ -65,10 +65,10 @@ def sunset_hangle_calc(meteoindex, latitude):
     # Based on equation 21, page 46 in Allen et al (1998).
     omega = np.arccos(-np.tan(lat) * np.tan(sol_dec))
     return omega
-def e0_calc(temperature):
+def e0_calc(t):
     # saturation vapour pressure at the air temperature T [kPa].
     # Based on equation 11, page 36 in Allen et al (1998).
-    e0 = 0.6108 * np.exp((17.27 * temperature) / (temperature + 237.3))
+    e0 = 0.6108 * np.exp((17.27 * t) / (t + 237.3))
     return e0
 
 

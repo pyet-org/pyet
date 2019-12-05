@@ -1,6 +1,6 @@
 import numpy as np
 import pandas as pd
-from etmodul.input import Rn_calc, vpc_calc, ea_calc, es_calc, psi_calc, \
+from input import Rn_calc, vpc_calc, ea_calc, es_calc, psi_calc, \
     lambda_calc, day_of_year, sunset_hangle_calc, Ra_calc
 
 
@@ -93,6 +93,112 @@ def penman_monteith(u2, tmax, tmin, rhmin, rhmax, elevation, latitude,
     pet = pd.DataFrame(data=pet, index=meteoindex)
     return pet
 
+def veronika_pm(u2, t, rh, elevation, latitude,
+                    meteoindex, solar=None, net=None, g=None):
+    """
+    u2 = wind speed at 2m
+    Rn = net solar radiation (MJ m-2 day-1)
+    vpc = Slope of vapor pressure curve (kPa degC-1)
+    psi  = psychrometric constant (kPa degC-1)
+    lambd = latent heat of vaporization (MJ kg-1)
+    q = water density (1000 kg L-1)
+    ea = actual vapour pressure (kPa)
+    ed = saturation vapour pressure (kPa)
+    """
+
+    t = t.to_numpy()
+    rh = rh.to_numpy()
+    u2 = u2.to_numpy()
+
+    # Inputs
+    if solar is None:
+        rn = net.to_numpy()
+    else:
+        solar = solar.to_numpy()
+        rn = Rn_calc(solar, t, rh, elevation, latitude,
+            meteoindex)
+    if g is None:
+        g = 0
+    else:
+        for i in range(0, len(g)):
+            if -0.09 < g[i] < 0.27:
+                pass
+            else:
+                g[i] = 0
+
+    psi = 0.0615
+    vpc = vpc_calc(t)
+    ea = ea_calc(t=t, rh=rh)
+    es = es_calc(t=t)
+    lambd = lambda_calc(t)
+    cn = 37
+    cd = np.full(len(lambd), 1)
+    for i in range(0, len(rn)):
+        if rn[i] > 0:
+            cd[i] = 0.34
+        else:
+            cd[i] = 0.96
+
+    num1 = 0.408 * vpc * (rn-g) + psi*cn*u2*(es-ea)/(t+273)
+    num2 = (vpc+(psi*(1+0.24*u2)))
+    pet = (num1 / num2)
+    pet = pd.DataFrame(data=pet, index=meteoindex)
+    num1 = pd.DataFrame(data=num1, index=meteoindex)
+    num2 = pd.DataFrame(data=num2, index=meteoindex)
+    return pet
+def fao_pm(u2, t, rh, elevation, latitude,
+                    meteoindex, solar=None, net=None, g=None):
+    """
+    u2 = wind speed at 2m
+    Rn = net solar radiation (MJ m-2 day-1)
+    vpc = Slope of vapor pressure curve (kPa degC-1)
+    psi  = psychrometric constant (kPa degC-1)
+    lambd = latent heat of vaporization (MJ kg-1)
+    q = water density (1000 kg L-1)
+    ea = actual vapour pressure (kPa)
+    ed = saturation vapour pressure (kPa)
+    """
+
+    t = t.to_numpy()
+    rh = rh.to_numpy()
+    u2 = u2.to_numpy()
+
+    # Inputs
+    if solar is None:
+        rn = net.to_numpy()
+    else:
+        solar = solar.to_numpy()
+        rn = Rn_calc(solar, t, rh, elevation, latitude,
+            meteoindex)
+    if g is None:
+        g = 0
+    else:
+        for i in range(0, len(g)):
+            if -0.09 < g[i] < 0.27:
+                pass
+            else:
+                g[i] = 0
+
+    psi = psi_calc(elevation)
+    vpc = vpc_calc(t)
+    ea = ea_calc(t=t, rh=rh)
+    es = es_calc(t=t)
+    lambd = lambda_calc(t)
+    cn = 37
+    cd = np.full(len(lambd), 1)
+    for i in range(0, len(rn)):
+        if rn[i] > 0:
+            cd[i] = 0.34
+        else:
+            cd[i] = 0.96
+
+    num1 = 0.408 * vpc * (rn-g) + psi*cn*u2*(es-ea)/(t+273)
+    num2 = (vpc+(psi*(1+cd*u2)))
+    pet = (num1 / num2)
+    pet = pd.DataFrame(data=pet, index=meteoindex)
+    num1 = pd.DataFrame(data=num1, index=meteoindex)
+    num2 = pd.DataFrame(data=num2, index=meteoindex)
+    return pet
 
 def priestley_taylor(tmin, tmax, elevation, latitude, rhmin, rhmax, meteoindex,
                      solar=None, net=None):
