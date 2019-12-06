@@ -1,6 +1,68 @@
 \begin{thebibliography}{-------}
 \providecommand{\natexlab}[1]{#1}
 
+\bibitem[White \em{et~al.}(2016)White, Fienen, and Doherty]{white2016python}
+White, J.T.; Fienen, M.N.; Doherty, J.E.
+\newblock A python framework for environmental model uncertainty analysis.
+\newblock {\em Environmental Modelling \& Software} {\bf 2016}, {\em
+  85},~217--228.
+
+\bibitem[Tenn{\o}e \em{et~al.}(2018)Tenn{\o}e, Halnes, and
+  Einevoll]{tennoe2018uncertainpy}
+Tenn{\o}e, S.; Halnes, G.; Einevoll, G.T.
+\newblock Uncertainpy: A Python toolbox for uncertainty quantification and
+  sensitivity analysis in computational neuroscience.
+\newblock {\em Frontiers in neuroinformatics} {\bf 2018}, {\em 12}.
+
+\bibitem[Van~Daele \em{et~al.}(2015)Van~Daele, Van~Hoey, and
+  Nopens]{van2015pyideas}
+Van~Daele, T.; Van~Hoey, S.; Nopens, I.
+\newblock pyIDEAS: an open source Python package for model analysis. In {\em
+  Computer Aided Chemical Engineering}; Elsevier,  2015; Vol.~37, pp. 569--574.
+
+\bibitem[Herman and Usher(2017)]{herman2017salib}
+Herman, J.D.; Usher, W.
+\newblock SALib: An open-source Python library for Sensitivity Analysis.
+\newblock {\em J. Open Source Software} {\bf 2017}, {\em 2},~97.
+
+\bibitem[Pianosi \em{et~al.}(2016)Pianosi, Beven, Freer, Hall, Rougier,
+  Stephenson, and Wagener]{pianosi2016sensitivity}
+Pianosi, F.; Beven, K.; Freer, J.; Hall, J.W.; Rougier, J.; Stephenson, D.B.;
+  Wagener, T.
+\newblock Sensitivity analysis of environmental models: A systematic review
+  with practical workflow.
+\newblock {\em Environmental Modelling \& Software} {\bf 2016}, {\em
+  79},~214--232.
+
+\bibitem[Wiecki \em{et~al.}(2013)Wiecki, Sofer, and Frank]{wiecki2013hddm}
+Wiecki, T.V.; Sofer, I.; Frank, M.J.
+\newblock HDDM: Hierarchical Bayesian estimation of the drift-diffusion model
+  in Python.
+\newblock {\em Frontiers in neuroinformatics} {\bf 2013}, {\em 7},~14.
+
+\bibitem[Miranda \em{et~al.}(2018)Miranda et~al.]{miranda2018pyswarms}
+Miranda, L.J.V.; others.
+\newblock PySwarms: a research toolkit for Particle Swarm Optimization in
+  Python.
+\newblock {\em J. Open Source Software} {\bf 2018}, {\em 3},~433.
+
+\bibitem[Obojes \em{et~al.}(2015)Obojes, Bahn, Tasser, Walde, Inauen,
+  Hiltbrunner, Saccone, Lochet, Cl{\'e}ment, Lavorel,
+  et~al.]{obojes2015vegetation}
+Obojes, N.; Bahn, M.; Tasser, E.; Walde, J.; Inauen, N.; Hiltbrunner, E.;
+  Saccone, P.; Lochet, J.; Cl{\'e}ment, J.C.; Lavorel, S.; others.
+\newblock Vegetation effects on the water balance of mountain grasslands depend
+  on climatic conditions.
+\newblock {\em Ecohydrology} {\bf 2015}, {\em 8},~552--569.
+
+\bibitem[Leitinger \em{et~al.}(2015)Leitinger, Ruggenthaler, Hammerle, Lavorel,
+  Schirpke, Clement, Lamarque, Obojes, and Tappeiner]{leitinger2015impact}
+Leitinger, G.; Ruggenthaler, R.; Hammerle, A.; Lavorel, S.; Schirpke, U.;
+  Clement, J.C.; Lamarque, P.; Obojes, N.; Tappeiner, U.
+\newblock Impact of droughts on water provision in managed alpine grasslands in
+  two climatically different regions of the Alps.
+\newblock {\em Ecohydrology} {\bf 2015}, {\em 8},~1600--1613.
+
 \bibitem[Parmele(1972)]{parmele1972errors}
 Parmele, L.H.
 \newblock Errors in output of hydrologic models due to errors in input
@@ -20,10 +82,30 @@ McGuinness, J.; Bordne, E.
 \newblock {\em Agric. Res. Serv., US Dep. of Agric., Washington, DC} {\bf
   1972}.
 
-\bibitem[Penman(1963)]{penman1963vegetation}
-Penman, H.L.
-\newblock Vegetation and hydrology.
-\newblock {\em Soil Science} {\bf 1963}, {\em 96},~357.
+\bibitem[Jensen and Haise(1963)]{jensen1963estimating}
+Jensen, M.E.; Haise, H.R.
+\newblock Estimating evapotranspiration from solar radiation.
+\newblock {\em Proceedings of the American Society of Civil Engineers, Journal
+  of the Irrigation and Drainage Division} {\bf 1963}, {\em 89},~15--41.
+
+\bibitem[Andr{\'e}assian \em{et~al.}(2004)Andr{\'e}assian, Perrin, and
+  Michel]{andreassian2004impact}
+Andr{\'e}assian, V.; Perrin, C.; Michel, C.
+\newblock Impact of imperfect potential evapotranspiration knowledge on the
+  efficiency and parameters of watershed models.
+\newblock {\em Journal of Hydrology} {\bf 2004}, {\em 286},~19--35.
+
+\bibitem[Jensen \em{et~al.}(1990)Jensen, Burman, and
+  Allen]{jensen1990evapotranspiration}
+Jensen, M.E.; Burman, R.D.; Allen, R.G.
+\newblock Evapotranspiration and irrigation water requirements.
+\newblock ASCE,  1990.
+
+\bibitem[Xu and Singh(2002)]{xu2002cross}
+Xu, C.Y.; Singh, V.
+\newblock Cross comparison of empirical equations for calculating potential
+  evapotranspiration with data from Switzerland.
+\newblock {\em Water Resources Management} {\bf 2002}, {\em 16},~197--219.
 
 \bibitem[ASCE-EWRI(2005)]{asce2005asce}
 ASCE-EWRI.
@@ -32,29 +114,54 @@ ASCE-EWRI.
   Resources Institute of ASCE from the Task Committee on Standardization of
   Reference Evapotranspiration} {\bf 2005}.
 
-\bibitem[Jensen \em{et~al.}(1990)Jensen, Burman, and
-  Allen]{jensen1990evapotranspiration}
-Jensen, M.E.; Burman, R.D.; Allen, R.G.
-\newblock Evapotranspiration and irrigation water requirements.
-\newblock ASCE,  1990.
+\bibitem[Makkink(1957)]{makkink1957testing}
+Makkink, G.
+\newblock Testing the Penman formula by means of lysimeters.
+\newblock {\em Journal of the Institution of Water Engineerrs} {\bf 1957}, {\em
+  11},~277--288.
 
-\bibitem[Doorenbos and Pruitt(1977)]{doorenbos1977crop}
-Doorenbos, J.; Pruitt, W.
-\newblock Crop water requirements. FAO irrigation and drainage paper 24.
-\newblock {\em Land and Water Development Division, FAO, Rome} {\bf 1977}, {\em
-  144}.
+\bibitem[Blaney and Criddle(1950)]{blaney1950determining}
+Blaney, H.; Criddle, W.
+\newblock Determining water needs from climatological data.
+\newblock {\em USDA Soil Conservation Service. SOS--TP, USA} {\bf 1950}, pp.
+  8--9.
 
-\bibitem[Allen and Pruitt(1991)]{allen1991fao}
-Allen, R.G.; Pruitt, W.O.
-\newblock FAO-24 reference evapotranspiration factors.
-\newblock {\em Journal of irrigation and drainage engineering} {\bf 1991}, {\em
-  117},~758--773.
+\bibitem[Hargreaves(1975)]{hargreaves1975moisture}
+Hargreaves, G.H.
+\newblock Moisture availability and crop production.
+\newblock {\em Transactions of the ASAE} {\bf 1975}, {\em 18},~980--0984.
+
+\bibitem[Hargreaves and Samani(1985)]{hargreaves1985reference}
+Hargreaves, G.H.; Samani, Z.A.
+\newblock Reference crop evapotranspiration from temperature.
+\newblock {\em Applied engineering in agriculture} {\bf 1985}, {\em 1},~96--99.
 
 \bibitem[Hargreaves and Samani(1982)]{hargreaves1982estimating}
 Hargreaves, G.H.; Samani, Z.A.
 \newblock Estimating potential evapotranspiration.
 \newblock {\em Journal of the irrigation and Drainage Division} {\bf 1982},
   {\em 108},~225--230.
+
+\bibitem[Allen \em{et~al.}(1998)Allen, Pereira, Raes, Smith,
+  et~al.]{allen1998crop}
+Allen, R.G.; Pereira, L.S.; Raes, D.; Smith, M.; others.
+\newblock Crop evapotranspiration-Guidelines for computing crop water
+  requirements-FAO Irrigation and drainage paper 56.
+\newblock {\em Fao, Rome} {\bf 1998}, {\em 300},~D05109.
+
+\bibitem[Penman(1963)]{penman1963vegetation}
+Penman, H.L.
+\newblock Vegetation and hydrology.
+\newblock {\em Soil Science} {\bf 1963}, {\em 96},~357.
+
+\bibitem[Oudin \em{et~al.}(2005)Oudin, Hervieu, Michel, Perrin,
+  Andr{\'e}assian, Anctil, and Loumagne]{oudin2005potential}
+Oudin, L.; Hervieu, F.; Michel, C.; Perrin, C.; Andr{\'e}assian, V.; Anctil,
+  F.; Loumagne, C.
+\newblock Which potential evapotranspiration input for a lumped
+  rainfall--runoff model?: Part 2—Towards a simple and efficient potential
+  evapotranspiration model for rainfall--runoff modelling.
+\newblock {\em Journal of hydrology} {\bf 2005}, {\em 303},~290--306.
 
 \bibitem[Wright and Jensen(1972)]{wright1972peak}
 Wright, J.L.; Jensen, M.E.

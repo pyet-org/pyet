@@ -67,8 +67,7 @@
 
 %=================================================================
 % Full title of the paper (Capitalized)
-\Title{Implication of vegetation response to climate change for mountain grasslands-
-Evaluation of PET models in permanent grasslands-climate change lysimeter study}
+\Title{Potential evapotranspiration of managed grasslands - a climate change lysimeter study}
 
 % Author Orchid ID: enter ID or remove command
 \newcommand{\orcidauthorA}{0000-0000-000-000X} % Add \orcidA{} behind the author's name
@@ -106,6 +105,7 @@ $^{2}$ \quad Affiliation 2; e-mail@e-mail.com}
 	5. Implication of warming in PET models \\
 	6. Combined effect of warming and elevated $CO_2$ in PET models \\
 	7. Evaluation, Sensitivity analysis and model uncertainty of calibrated PET models \\
+	\cite{white2016python}, \cite{tennoe2018uncertainpy}, \cite{van2015pyideas}, \cite{herman2017salib}, \cite{pianosi2016sensitivity}, \cite{wiecki2013hddm}, \cite{miranda2018pyswarms} \\
 	8. Conclusion}
 
 % Keywords
@@ -147,8 +147,10 @@ The template details the sections that can be used in a manuscript. Note that th
 %The order of the section titles is: Introduction, Materials and Methods, Results, Discussion, Conclusions for these journals: aerospace,algorithms,antibodies,antioxidants,atmosphere,axioms,biomedicines,carbon,crystals,designs,diagnostics,environments,fermentation,fluids,forests,fractalfract,informatics,information,inventions,jfmk,jrfm,lubricants,neonatalscreening,neuroglia,particles,pharmaceutics,polymers,processes,technologies,viruses,vision
 
 \section{Introduction}
+\cite{obojes2015vegetation} - higher PET with managed grasslands and \cite{leitinger2015impact}
 
-\section{Evaluation of PET models}
+
+\section{Evaluation of PET models(Materials and methos)}
 
 \subsection{Previous research}
 Sensitivity to erros in potential evapotranspiration input \cite{parmele1972errors}
@@ -159,30 +161,54 @@ Sensitivity to erros in potential evapotranspiration input \cite{parmele1972erro
 f(u)=0.35+0.0035*u_2
 \end{equation}
 
+Search for best PE formula \cite{jensen1990evapotranspiration}, \cite{xu2002cross}
 
-\subsection{Evaluation of PET models with default coefficients}
-same Rn same rh same T...
-
-Penman 
+\subsection{Used PET models}
+\cite{xu2002cross} \\
+Priestley-Taylor \cite{asce2005asce}
+\begin{equation}
+E = \frac{\alpha}{\lambda} \frac{\Delta}{\Delta +\gamma}R_{n}
+\end{equation}
+$\alpha$ = 1.26
+\\
+Makink (default) \cite{asce2005asce} \cite{makkink1957testing}
+\begin{equation}
+ET = \frac{1}{\lambda \rho} \left(\frac{0.63 R_s \Delta}{\Delta+\gamma}-14 \right)
+\end{equation}
+\\
+Blaney-Criddle \cite{asce2005asce} \\
+\begin{equation}
+ET = kp (0.46T_a+8.13) 
+\end{equation}
+where p = percentage of total daytime hours for the used period (daily or
+monthly) out of total daytime hours of the year (365x12);k = monthly consumptive use coefficient, depending on vegetation
+type, location and season and for the growing season (May to October),
+k varies from 0.5 for orange tree to 1.2 for dense natural
+vegetation.
+Following the recommendation of Blaney and Criddle (1950)\cite{blaney1950determining}, in the first stage of
+the comparative study, values of 0.85 and 0.45 were used for the growing season
+(April to September) and the non-growing season (October toMarch), respectively.
+\\
+Hargreaves \cite{hargreaves1975moisture}\cite{hargreaves1985reference}\cite{hargreaves1982estimating}
+\begin{equation}
+ET = a(T_{max}-T_{min})^{0.5}(T_{mean}+17.8) \frac{R_a}{\lambda \rho _w}
+\end{equation}
+a=0.0023 \\
+Ra is average daily exoatmospheric radiation(extra terrestrial) \\
+\\
+FAO PM for reference(potential) evapotranspiration \cite{allen1998crop}
+\begin{equation}
+ET = \frac{0.408\Delta (R_{n}-G) + \gamma \frac{900}{T_a + 273} U_2 (e_{s}-e_{a})}{\Delta +\gamma (1+0.34u_2)}
+\end{equation}
+\\
+Penman \\
 \begin{equation}
 E = \frac{1}{\lambda \rho_w} \frac{\Delta (R_{n}-G) + K_u \gamma(a_w+b_wu_2)(e_{s}-e_{a})}{\Delta +\gamma}
 \end{equation}
 where $a_w$ and $b_w$ are wind function coefficients that are usually receive a local or regional calibration.
 Parameter $K_u$ =6.43 for ET in mmd$^{-1}$ and $K_u$ =0.268 for ET in mmhour$^{-1}$.
-Penman \cite{penman1963vegetation} used for clipped grass \cite{asce2005asce} $a_w$ = 1.0 and $b_w$ = 0.537, respectively,for wind speed in ms $^{-1}$, $es-ea$ in kPa and grass ETo in mmd$^{-1}$. The equations were intended for use with daily computations. In application of the 1963 Penman, saturation vapor pressure is traditionally based on mean daily air temperature rather than on Tmax and Tmin$"$ \cite{jensen1990evapotranspiration}.
-
-
-
-Penman-Monteith \cite{asce2005asce}
-\begin{equation}
-E = \frac{1}{\lambda} \frac{\Delta (R_{n}-G)+ \rho_a c_p  (e_{s}-e_{a})/r_{ah}}{\left[ \Delta +\gamma (1+\frac{r_s}{r_{ah}})\right]}
-\end{equation}
-
-Priestley-Taylor \cite{asce2005asce}
-\begin{equation}
-E = \frac{1.26}{\lambda} \frac{\Delta}{\Delta +\gamma}(R_{n}-G)
-\end{equation}
-
+Penman \cite{penman1963vegetation} used for clipped grass \cite{asce2005asce} $a_w$ = 1.0 and $b_w$ = 0.537, respectively,for wind speed in ms $^{-1}$, $es-ea$ in kPa and grass ETo in mmd$^{-1}$. The equations were intended for use with daily computations. In application of the 1963 Penman, saturation vapor pressure is traditionally based on mean daily air temperature rather than on Tmax and Tmin$"$ \cite{jensen1990evapotranspiration}. \\
+\\
 Kimberley-Penman \cite{asce2005asce}
 \begin{equation}
 E = \frac{1}{\lambda \rho_w} \frac{\Delta (R_{n}-G) + K_u \gamma(a_w+b_wu_2)(e_{s}-e_{a})}{\Delta +\gamma} 
@@ -194,36 +220,8 @@ a_w = 0.4 + 1.4 exp{-\left[\left(\frac{J-173}{58}\right)^2\right]}
 \begin{equation}
 b_w = 0.605 + 0.345 exp{-\left[\left(\frac{J-243}{80}\right)^2\right]}
 \end{equation}
-Hamon
-
-Turc--
-
-Makink (default) \cite{asce2005asce}
-\begin{equation}
-ET_0 = 0.61 \frac{\Delta}{\Delta+\gamma}\frac{R_s}{2.45}-0.12
-\end{equation}
-Makink to calibrate \cite{asce2005asce}
-\begin{equation}
-ET_0 = f * 0.61 \frac{\Delta}{\Delta+\gamma}\frac{R_s}{2.45}-0.12
-\end{equation}
-Doorenbos and Pruitt \cite{doorenbos1977crop}
-\begin{equation}
-ET_0 = c \frac{\Delta}{\Delta+\gamma}\frac{R_s}{2.45}-0.3
-\end{equation}
-where c is the calibration factor that is a fucntion of rh and ud.
-allen and pruitt \cite{allen1991fao}:
-\begin{equation}
-c = 1.066-0.00128 RH_{mean} + 0.045u_d -0.0002RH{mean}u_d-0.0000315(RH{mean}^2)-0.001103(u_d)^2
-\end{equation}
-$u_d$ has limits 0 < $u_d$ < 10 ms$^{-1}$.
-
-Hargreaves \cite{hargreaves1982estimating}
-\begin{equation}
-ET_0 = 0.0023(T_{max}-T_{min})^{0.5}(T_{mean}+17.8) \frac{R_a}{\lambda \rho _w}
-\end{equation}
-Ra is average daily exoatmospheric radiation(extra terrestrial)
-Blaney-Criddle \cite{asce2005asce}
-
+Reference ET FAO with kc for grass\\
+\\
 Jensen-Haise \cite{asce2005asce} - ET$_r$ is alfalfa reference ET
 \begin{equation}
 ET_r = \frac{1}{\lambda} C_r(T-Tx)R_s
@@ -243,6 +241,62 @@ C_1 = 38-(2Elev/305)
 \begin{equation}
 T_x = -2.5 - 1.4 (e_2-e_1) - Elev/550
 \end{equation}
+\\
+Penman-Monteith \cite{asce2005asce}
+\begin{equation}
+E = \frac{1}{\lambda} \frac{\Delta (R_{n}-G)+ \rho_a c_p  (e_{s}-e_{a})/r_{ah}}{\left[ \Delta +\gamma (1+\frac{r_s}{r_{ah}})\right]}
+\end{equation}
+\\
+Oudin \cite{oudin2005potential}
+\begin{equation}
+ET = \frac{R_e}{\lambda \rho} \frac{T_a+5}{100}, if T_a + 5 > 0, else ET = 0
+\end{equation}
+\\
+Hamon \cite{oudin2005potential}
+\begin{equation}
+ET = \left(\frac{DL}{12}\right)^2 exp \left(\frac{T_a}{16}\right)
+\end{equation}
+\section{Evaluation of PET models with original constant values}
+Priestley-Taylor
+Makkink
+Blaney-Criddle
+Hargreaves
+FAO-pm-reference
+Kimberley-Penman
+Jensen-Haise
+Penman-Monteith
+Penman
+Oudin
+Hamon
+FAO-pm-reference + crop coefficient
+
+\section{Evaluation of PET models with calibrated constant values}
+
+Priestley-Taylor \\
+$\alpha$
+\\
+Makink to calibrate \cite{asce2005asce}
+\begin{equation}
+ET = f * \frac{1}{\lambda \rho} \left(\frac{0.63 R_s \Delta}{\Delta+\gamma}-14 \right)
+\end{equation}
+\\
+Blaney-Criddle \\
+1. k \\
+2. a, b 
+Hargreaves \\
+a \\
+Kimberley-Penman = Penman \\
+a, b \\
+Jensen-Haise \\
+Cr, tx \\
+Penman-Monteith \\
+rs, ra \\
+Oudin \\
+k1, k2 \\
+FAO-pm-reference + crop coefficient \\
+crop coefficient($k_max$) 
+\section{Evaluation of PET models with original constant values/results}
+\section{Evaluation of PET models with calibrated constant values/results}
 
 
 
@@ -261,24 +315,6 @@ Wright and Jensen \cite{wright1972peak} developed an expression for $f_{cd}$:
 f_{cd} = a \frac{R_S}{R_{SO}} + b
 \end{equation}
 a and b are empirical coefficients. General a= 1.3, b=0.3, $a_1$ = 0.39 and $b_1$=0.158
-\subsubsection{Evaluation of calibrated/validated PET models}
-TEXT
-
-
-\subsubsection{Evaluation of calibrated PET models}
-TEXT 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Results}
-
-This section may be divided by subheadings. It should provide a concise and precise description of the experimental results, their interpretation as well as the experimental conclusions that can be drawn.
-\begin{quote}
-This section may be divided by subheadings. It should provide a concise and precise description of the experimental results, their interpretation as well as the experimental conclusions that can be drawn.
-\end{quote}
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{Subsection}
-\unskip
-\subsubsection{Subsubsection}
 
 Bulleted lists look like this:
 \begin{itemize}[leftmargin=*,labelsep=5.8mm]
