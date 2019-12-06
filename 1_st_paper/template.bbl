@@ -1,6 +1,25 @@
 \begin{thebibliography}{-------}
 \providecommand{\natexlab}[1]{#1}
 
+\bibitem[Parmele(1972)]{parmele1972errors}
+Parmele, L.H.
+\newblock Errors in output of hydrologic models due to errors in input
+  potential evapotranspiration.
+\newblock {\em Water Resources Research} {\bf 1972}, {\em 8},~348--359.
+
+\bibitem[Parmele and McGuinness(1974)]{parmele1974comparisons}
+Parmele, L.; McGuinness, J.
+\newblock Comparisons of measured and estimated daily potential
+  evapotranspiration in a humid region.
+\newblock {\em Journal of Hydrology} {\bf 1974}, {\em 22},~239--251.
+
+\bibitem[McGuinness and Bordne(1972)]{mcguinness1972comparison}
+McGuinness, J.; Bordne, E.
+\newblock A comparison of lysimeter derived potential evapotranspiration with
+  computed values, Tech. Bull., 1452.
+\newblock {\em Agric. Res. Serv., US Dep. of Agric., Washington, DC} {\bf
+  1972}.
+
 \bibitem[Penman(1963)]{penman1963vegetation}
 Penman, H.L.
 \newblock Vegetation and hydrology.
