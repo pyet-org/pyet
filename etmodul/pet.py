@@ -1,6 +1,6 @@
 import numpy as np
 import pandas as pd
-from etmodul.input import Rn_calc, vpc_calc, ea_calc, es_calc, psi_calc, \
+from input import Rn_calc, vpc_calc, ea_calc, es_calc, psi_calc, \
     lambda_calc, day_of_year, sunset_hangle_calc, Ra_calc
 
 
@@ -47,7 +47,8 @@ def penman(tmax, tmin, rhmin, rhmax, elevation, latitude, meteoindex, u2,
 
 
 def penman_monteith(u2, tmax, tmin, rhmin, rhmax, elevation, latitude,
-                    meteoindex, solar=None, net=None, rs=69, ra1=208, w1=1500):
+                    meteoindex, solar=None, net=None, rs1=70, ra1=208, h=None,
+                    lai=None, rl=100):
     """
     u2 = wind speed at 2m
     Rn = net solar radiation (MJ m-2 day-1)
@@ -73,20 +74,32 @@ def penman_monteith(u2, tmax, tmin, rhmin, rhmax, elevation, latitude,
         solar = solar.to_numpy()
         rn = Rn_calc(solar, tmax, tmin, rhmin, rhmax, elevation, latitude,
             meteoindex)
+    if h is None:
+        ra = ra1/u2
+    else:
+        ra = (np.log((2-0.67*h)/(0.123*h)))*(np.log((2-0.67*h)/(0.0123*h)))\
+             /(0.41**2)/(u2)
+
+    if lai is None:
+        rs = rs1
+    else:
+        rs = rl/(0.5*lai)
+
     psi = psi_calc(elevation)
     vpc = vpc_calc(ta)
-
+    pressure=101.3 * ((293 - 0.0065 * elevation) / 293) ** (5.26)
+    qa = (pressure)/(1.01*(ta+273)*0.287)
+    cp = psi* 0.622* 2.45/pressure
     ea = ea_calc(tmin=tmin, tmax=tmax, rhmin=rhmin, rhmax=rhmax)
     es = es_calc(tmin=tmin, tmax=tmax)
     lambd = lambda_calc(ta)
-    aird = 1.225
-    cp = 1
-    ra = ra1/u2
+
+
     num1 = vpc * rn / (lambd*(vpc+(psi*(1+rs/ra))))
-    num2 =psi*w1*(es-ea) * aird * cp / ra / (lambd*(vpc+(psi*(1+rs/ra))))
+    num2 = 86400 * cp * qa * (es-ea) / ra / (lambd*(vpc+(psi*(1+rs/ra))))
     pet = (num1 + num2)
     pet = pd.DataFrame(data=pet, index=meteoindex)
-    return pet
+    return pet, num1, num2
 
 def veronika_pm(u2, t, rh, elevation, latitude,
                     meteoindex, solar=None, net=None, g=None):

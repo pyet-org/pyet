@@ -238,8 +238,17 @@ T_x = -2.5 - 1.4 (e_2-e_1) - Elev/550
 \\
 Penman-Monteith \cite{asce2005asce}
 \begin{equation}
-E = \frac{1}{\lambda} \frac{\Delta (R_{n}-G)+ \rho_a c_p  (e_{s}-e_{a})/r_{ah}}{\left[ \Delta +\gamma (1+\frac{r_s}{r_{ah}})\right]}
+E = \frac{1}{\lambda} \left[ \frac{\Delta (R_{n}-G)+ K_min \rho_a c_p  (e_{s}-e_{a})/r_{ah}}{\left[ \Delta +\gamma (1+\frac{r_s}{r_{ah}})\right]}\right]
 \end{equation}
+, where $K_min$ units conversion, equal to 86,400 s d-1 for ET in mm d-1 and equal to 3600 s h-1 for ET in mm h-1.
+\begin{equation}
+r_a = \frac{ln \left[\frac{z_w-d}{z_{om}}\right]ln \left[\frac{z_h-d}{z_{oh}}\right]}{k^2 u_z}
+\end{equation}
+where zw = 2, zh = 2, d = 0.67 * h, zom = 0.123*h, zoh = 0.0123*h, k=0.41, u=wind, h=vegetation height
+\begin{equation}
+r_s = \frac{rl}{LAI_{active}}
+\end{equation}
+where rl = bulk stomatal resistance of a well-illuminated leaf 100sm-1, and $LAI_{active}$=0.5 LAI. rs=1/gs
 \\
 Oudin \cite{oudin2005potential}
 \begin{equation}

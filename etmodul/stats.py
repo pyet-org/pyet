@@ -37,8 +37,7 @@ def R2 (obs, sim):
     
     sim[np.isnan(obs)] = np.nan
     obs[np.isnan(sim)] = np.nan
-    
-    nad = obs-sim
+
     obsmean = obs-np.nanmean(obs)
     simmean = sim-np.nanmean(sim)
     

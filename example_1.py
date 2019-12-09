@@ -4,8 +4,30 @@ Created on Mon Dec  2 11:29:05 2019
 
 @author: matevz
 """
+import datetime
+import pandas as pd
+import numpy as np
+import pickle
+import sys
+sys.path.append(r'C:\Matevz_arbeit\etmodul\etmodul')
+sys.path
+import matplotlib.pyplot as plt
+from stats import RMSE, nanp, R2, MBE
+from pet import penman, penman_monteith, priestley_taylor, fao_pm, \
+kimberly_penman, hamon, makink, hargreaves, blaney_criddle, jensen_haise, oudin
+from sklearn.linear_model import LinearRegression
 
+#------------------------------------------------------------------------------
 
+meteoh = pd.read_csv("C:\\Matevz_arbeit\\My_papers\\Veronika_papers\\response_of_evapo_non-ranfall_to_climate_change\\daten\\meteo_hourly.txt", sep="\t", parse_dates=True, 
+                         index_col=0, dayfirst=True)
+
+meteoh["Short_rad"].plot()
+
+radio = pd.read_csv("C:\\Matevz_arbeit\\My_papers\\Veronika_papers\\response_of_evapo_non-ranfall_to_climate_change\\daten\\2016_2018_radiation.txt", sep="\t", parse_dates=True, 
+                         index_col=0, dayfirst=True)
+radioh = radio.resample("h").sum()
+radio["tPAR_Top"].plot()
 #datah = pd.read_csv("hourly.txt", sep="\t", parse_dates=True, index_col=0,
 #                    dayfirst=True)
 #
@@ -38,8 +60,7 @@ Created on Mon Dec  2 11:29:05 2019
 #ethour=ethour[:]["2015-01-01 00:00:00":"2016-12-31 00:00:00"]
 #pickle_out = open("etday","wb")
 #pickle.dump(ethour, pickle_out)
-
-# example 1
+#------------------------------------------------------------------------------
 # kcb determination alfalda hay
 kinit = 0.4
 kmid = 1.2
@@ -58,7 +79,7 @@ ldew1=10
 lmid1=10
 llate1=5
 
-import datetime
+
 k=pd.DataFrame(np.nan, index=etday.index, columns=["k"])
 start1 = ("2015-04-01", "2016-04-01")
 end1 = ("2015-10-31", "2016-10-31")
@@ -99,16 +120,10 @@ end = ()
 k1 = etday["GS-2"]/pm[0]
 k1[k1>1.6]=np.nan
 k1[k1<0.35]=np.nan
-# 1. Interpolate between start1 and start2
-# 2. Interpolate between start2 and start3
-# 3. Interpolate between start3 and end
-# 4. k between winter = kinit
 
-import pandas as pd
-import numpy as np
-import pickle
-import matplotlib.pyplot as plt
-from etmodul.statistics import RMSE, nanp, R2, MBE
+#-----------------------------------------------------------------------------
+
+
 
 pickle_in = open("data/datad","rb")
 datad = pickle.load(pickle_in)
@@ -118,9 +133,7 @@ etday = pickle.load(pickle_in1)
 etday[etday>10]=1.102
 etday[etday==np.nan]=1
 
-from etmodul.pet import penman, penman_monteith, priestley_taylor, fao_pm, \
-kimberly_penman, hamon, makink, hargreaves, blaney_criddle, jensen_haise, oudin
-from sklearn.linear_model import LinearRegression
+tmax1=tmax["2015-05-27":"2015-05-29","2016-05-27":"2016-05-29"]
 #inputs
 tmax = datad["tmax"]
 tmin = datad["tmin"]
@@ -145,8 +158,9 @@ fao = fao_pm(tmax, tmin, rhmin, rhmax, elevation, latitude, meteoindex, u2,
 kp = kimberly_penman(meteoindex, tmin, tmax, rhmin, rhmax, 
                                  elevation,latitude, u2, net=net)
 jh = jensen_haise(tmax, tmin, meteoindex, solar)
-pm = penman_monteith(u2, tmax, tmin, rhmin, rhmax, elevation, 
-                                 latitude, meteoindex, net=net)
+pm, num1, num2 = penman_monteith(u2, tmax, tmin, rhmin, rhmax, elevation, 
+                                 latitude, meteoindex, net=net, h=h,
+                                 lai=laids)
 pen = penman(tmax, tmin, rhmin, rhmax, elevation, latitude, meteoindex, u2,
              net=net)
 oud = oudin(tmax, tmin, meteoindex, latitude, k1=5, k2=100)
@@ -199,7 +213,7 @@ for short, x, y, name in zip(shorts,xaxis,yaxis, names):
     x1=etday.to_numpy()
     y1=short.to_numpy()
     model.fit(x1, y1)    
-    ax[x,y].text(0.2, 10.3, name + "\n" + \
+    ax[x,y].text(0.2, 17.3, name + "\n" + \
       "y = " + str(round(model.coef_[0,0],3)) + "*k + " + \
       str(round(model.intercept_[0],3)) + "\n" + \
       "R2 = "+str(round(R2(etday.to_numpy(), short.to_numpy()),3)) + "\n" + \
@@ -211,3 +225,5 @@ for short, x, y, name in zip(shorts,xaxis,yaxis, names):
     ax[x,y].plot(xfit, yfit)
     x2 = np.arange(0,100)
 plt.tight_layout()
+
+etday.to_numpy()
