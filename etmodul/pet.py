@@ -1,6 +1,6 @@
 import numpy as np
 import pandas as pd
-from input import Rn_calc, vpc_calc, ea_calc, es_calc, psi_calc, \
+from etmodul.input import Rn_calc, vpc_calc, ea_calc, es_calc, psi_calc, \
     lambda_calc, day_of_year, sunset_hangle_calc, Ra_calc
 
 
@@ -43,11 +43,11 @@ def penman(tmax, tmin, rhmin, rhmax, elevation, latitude, meteoindex, u2,
     pet = pd.DataFrame(data=pet, index=meteoindex)
     num1 = pd.DataFrame(data=num1, index=meteoindex)
     num2 = pd.DataFrame(data=num2, index=meteoindex)
-    return pet, num1, num2
+    return pet
 
 
 def penman_monteith(u2, tmax, tmin, rhmin, rhmax, elevation, latitude,
-                    meteoindex, solar=None, net=None, rs=69, ra1=208):
+                    meteoindex, solar=None, net=None, rs=69, ra1=208, w1=1500):
     """
     u2 = wind speed at 2m
     Rn = net solar radiation (MJ m-2 day-1)
@@ -75,15 +75,15 @@ def penman_monteith(u2, tmax, tmin, rhmin, rhmax, elevation, latitude,
             meteoindex)
     psi = psi_calc(elevation)
     vpc = vpc_calc(ta)
+
     ea = ea_calc(tmin=tmin, tmax=tmax, rhmin=rhmin, rhmax=rhmax)
     es = es_calc(tmin=tmin, tmax=tmax)
     lambd = lambda_calc(ta)
     aird = 1.225
-    airq = 0.001
-
+    cp = 1
     ra = ra1/u2
     num1 = vpc * rn / (lambd*(vpc+(psi*(1+rs/ra))))
-    num2 = psi*(es-ea) * aird * airq / ra / (lambd*(vpc+(psi*(1+rs/ra))))
+    num2 =psi*w1*(es-ea) * aird * cp / ra / (lambd*(vpc+(psi*(1+rs/ra))))
     pet = (num1 + num2)
     pet = pd.DataFrame(data=pet, index=meteoindex)
     return pet
@@ -168,7 +168,9 @@ def fao_pm(tmax, tmin, rhmin, rhmax, elevation, latitude, meteoindex, u2,
     else:
         solar = solar.to_numpy()
         rn = Rn_calc(solar, tmax, tmin, rhmin, rhmax, elevation, latitude,
-            meteoindex)
+            meteoindex).to_numpy()
+    if g is None:
+        g=0
 
     psi = psi_calc(elevation)
     vpc = vpc_calc(ta)
@@ -295,7 +297,7 @@ def kimberly_penman(meteoindex, tmin, tmax, rhmin, rhmax, elevation, latitude,
     num2 = psi*(es-ea)*w * (a+b*u2) / (lambd * (psi + vpc))
     pet = num1 + num2
     pet = pd.DataFrame(data=pet, index=meteoindex)
-    return pet, num1, num2
+    return pet
 
 
 def hamon(tmin, tmax, meteoindex, latitude):
@@ -326,9 +328,8 @@ def makink(solar, tmin, tmax, elevation, f=1):
     psi = psi_calc(elevation)
     vpc = vpc_calc(ta)
     lambd = lambda_calc(ta)
-    q = 1
 
-    pet = f * 1/(lambd * q) * (0.63 * solar * vpc/(vpc+psi) - 14)
+    pet = f * 1/(lambd) * 0.61 * solar * vpc/(vpc+psi) - 0.12
     pet = pd.DataFrame(data=pet, index=tmin.index)
     return pet
 
@@ -351,7 +352,7 @@ def hargreaves(meteoindex, tmax, tmin, latitude, a=0.0023, tx=17.8):
     return pet
 
 
-def blaney_criddle(tmin, tmax, meteoindex, latitude, k=0.8, tx=4):
+def blaney_criddle(tmin, tmax, meteoindex, latitude, k=0.75, tx=8):
     """
     Ta = air temperature (degrees C)
     k= (0.82)(Oudin)
@@ -359,18 +360,20 @@ def blaney_criddle(tmin, tmax, meteoindex, latitude, k=0.8, tx=4):
     mean daily percentage of annual daytime hours (%)
     """
     # Inputs
-    ta=(tmax+tmin)/2
-    sunset_hangle = sunset_hangle_calc(meteoindex, latitude)
-    dl = 24 / np.pi * sunset_hangle  # hours of daylight
-
-    d = dl/24  # bright sunshine (h day-1)
-
-    pet = k * d * (0.46 * ta + tx)
+    ta = (tmax+tmin)/2
+    months = np.arange (1, 13)
+    daily_p = (0.195, 0.23, 0.27, 0.305, 0.34, 0.355, 0.345, 0.32, 0.28, 0.24,
+               0.25, 0.17)
+    dl = pd.DataFrame (np.nan, index=meteoindex, columns=["dl"])
+    for month, dyp in zip (months, daily_p):
+        dl["dl"].loc[(dl.index.month == month)] = dyp
+    dl=dl.to_numpy().flatten()
+    pet = k * dl * (0.46 * ta + tx)
     pet = pd.DataFrame(data=pet, index=meteoindex)
-    return pet
+    return pet, dl
 
 
-def jensen_haise(tmax, tmin, meteoindex, solar, cr=0.02, tx=4):
+def jensen_haise(tmax, tmin, meteoindex, solar, cr=0.025, tx=-3):
     """
     Ra = extraterrestrial radiation (MJ m-2 day-1)
     lambd = latent heat of vaporization (MJ kg-1)
@@ -397,13 +400,12 @@ def oudin(tmax, tmin, meteoindex, latitude, k1=5, k2=100):
     ta = (tmax+tmin)/2
     lambd = lambda_calc(ta)
     ra = Ra_calc(meteoindex, latitude)
-    q=1
     petd=[]
     for i in range(0, len(ta)):
         if (ta[i] + k1) < 0:
             petd.append(0)
         else:
-            petv = ra[i] *(ta+k1) / (lambd * q * k2)
+            petv = ra[i] *(ta[i]+k1) / (lambd[i] * k2)
             petd.append(petv)
     pet = pd.DataFrame(data=petd, index=meteoindex)
     return pet

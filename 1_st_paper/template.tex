@@ -171,9 +171,9 @@ E = \frac{\alpha}{\lambda} \frac{\Delta}{\Delta +\gamma}R_{n}
 \end{equation}
 $\alpha$ = 1.26
 \\
-Makink (default) \cite{asce2005asce} \cite{makkink1957testing}
+Makkink (default) \cite{asce2005asce} \cite{makkink1957testing}
 \begin{equation}
-ET = \frac{1}{\lambda \rho} \left(\frac{0.63 R_s \Delta}{\Delta+\gamma}-14 \right)
+ET = 0.61 \frac{\Delta}{\Delta+\gamma} \frac{R_s}{\lambda} -0.12 
 \end{equation}
 \\
 Blaney-Criddle \cite{asce2005asce} \\
@@ -228,13 +228,7 @@ ET_r = \frac{1}{\lambda} C_r(T-Tx)R_s
 \end{equation}
 $C_r$ and $T_x$ should be constant for a given area...
 Later Jensen defined:
-\begin{equation}
-C_r = \frac{1}{C_1+C_2C_H}
-\end{equation}
-\begin{equation}
-C_H = \frac{5}{e_2 + e_1}
-\end{equation}
-e2 and e1 are the saturation vapor pressures in kPa at the mean daily maximum and mean daily minimum temperatures, respectively, for the average warmest month of the year in an area, and C1 and C2 are constants (C2 = 13 degress F or 7.3 degrees C).
+"Jensen and Haise (1963) evaluated 3,000 observations of ET as determined by soil sampling procedures over a 35-year period. From about 100 values for well-watered crops with full cover in the western United States, a linear relationship of a solar radiation coefficient and mean air temperature was apparent. From these data, the constants for the following linear equation were CT=0.025 and Tx=-3 for temperature in C. Rs has the same units as $\lambda$ ETr."
 \begin{equation}
 C_1 = 38-(2Elev/305)
 \end{equation}
@@ -257,18 +251,18 @@ Hamon \cite{oudin2005potential}
 ET = \left(\frac{DL}{12}\right)^2 exp \left(\frac{T_a}{16}\right)
 \end{equation}
 \section{Evaluation of PET models with original constant values}
-Priestley-Taylor
-Makkink
-Blaney-Criddle
-Hargreaves
-FAO-pm-reference
-Kimberley-Penman
-Jensen-Haise
-Penman-Monteith
-Penman
-Oudin
-Hamon
-FAO-pm-reference + crop coefficient
+Priestley-Taylor \\
+Makkink \\
+Blaney-Criddle \\
+Hargreaves \\
+FAO-pm-reference \\
+Kimberley-Penman \\
+Jensen-Haise \\
+Penman-Monteith \\
+Penman \\
+Oudin \\
+Hamon \\
+FAO-pm-reference + crop coefficient \\
 
 \section{Evaluation of PET models with calibrated constant values}
 
