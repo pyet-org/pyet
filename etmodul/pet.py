@@ -1,6 +1,6 @@
 import numpy as np
 import pandas as pd
-from input import Rn_calc, vpc_calc, ea_calc, es_calc, psi_calc, \
+from inputs import Rn_calc, vpc_calc, ea_calc, es_calc, psi_calc, \
     lambda_calc, day_of_year, sunset_hangle_calc, Ra_calc
 
 
