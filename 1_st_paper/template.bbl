@@ -1,6 +1,19 @@
 \begin{thebibliography}{-------}
 \providecommand{\natexlab}[1]{#1}
 
+\bibitem[Seiller and Anctil(2016)]{seiller2016potential}
+Seiller, G.; Anctil, F.
+\newblock How do potential evapotranspiration formulas influence hydrological
+  projections?
+\newblock {\em Hydrological Sciences Journal} {\bf 2016}, {\em 61},~2249--2266.
+
+\bibitem[Her \em{et~al.}(2019)Her, Yoo, Cho, Hwang, Jeong, and
+  Seong]{her2019uncertainty}
+Her, Y.; Yoo, S.H.; Cho, J.; Hwang, S.; Jeong, J.; Seong, C.
+\newblock Uncertainty in hydrological analysis of climate change:
+  multi-parameter vs. multi-GCM ensemble predictions.
+\newblock {\em Scientific reports} {\bf 2019}, {\em 9},~4974.
+
 \bibitem[White \em{et~al.}(2016)White, Fienen, and Doherty]{white2016python}
 White, J.T.; Fienen, M.N.; Doherty, J.E.
 \newblock A python framework for environmental model uncertainty analysis.
@@ -107,40 +120,11 @@ Xu, C.Y.; Singh, V.
   evapotranspiration with data from Switzerland.
 \newblock {\em Water Resources Management} {\bf 2002}, {\em 16},~197--219.
 
-\bibitem[ASCE-EWRI(2005)]{asce2005asce}
-ASCE-EWRI.
-\newblock The ASCE standardized reference evapotranspiration equation.
-\newblock {\em Technical Committee Rep. to the Environmental and Water
-  Resources Institute of ASCE from the Task Committee on Standardization of
-  Reference Evapotranspiration} {\bf 2005}.
-
-\bibitem[Makkink(1957)]{makkink1957testing}
-Makkink, G.
-\newblock Testing the Penman formula by means of lysimeters.
-\newblock {\em Journal of the Institution of Water Engineerrs} {\bf 1957}, {\em
-  11},~277--288.
-
 \bibitem[Blaney and Criddle(1950)]{blaney1950determining}
 Blaney, H.; Criddle, W.
 \newblock Determining water needs from climatological data.
 \newblock {\em USDA Soil Conservation Service. SOS--TP, USA} {\bf 1950}, pp.
   8--9.
-
-\bibitem[Hargreaves(1975)]{hargreaves1975moisture}
-Hargreaves, G.H.
-\newblock Moisture availability and crop production.
-\newblock {\em Transactions of the ASAE} {\bf 1975}, {\em 18},~980--0984.
-
-\bibitem[Hargreaves and Samani(1985)]{hargreaves1985reference}
-Hargreaves, G.H.; Samani, Z.A.
-\newblock Reference crop evapotranspiration from temperature.
-\newblock {\em Applied engineering in agriculture} {\bf 1985}, {\em 1},~96--99.
-
-\bibitem[Hargreaves and Samani(1982)]{hargreaves1982estimating}
-Hargreaves, G.H.; Samani, Z.A.
-\newblock Estimating potential evapotranspiration.
-\newblock {\em Journal of the irrigation and Drainage Division} {\bf 1982},
-  {\em 108},~225--230.
 
 \bibitem[Allen \em{et~al.}(1998)Allen, Pereira, Raes, Smith,
   et~al.]{allen1998crop}
@@ -149,10 +133,46 @@ Allen, R.G.; Pereira, L.S.; Raes, D.; Smith, M.; others.
   requirements-FAO Irrigation and drainage paper 56.
 \newblock {\em Fao, Rome} {\bf 1998}, {\em 300},~D05109.
 
+\bibitem[Hargreaves(1975)]{hargreaves1975moisture}
+Hargreaves, G.H.
+\newblock Moisture availability and crop production.
+\newblock {\em Transactions of the ASAE} {\bf 1975}, {\em 18},~980--0984.
+
+\bibitem[Wright and Jensen(1972)]{wright1972peak}
+Wright, J.L.; Jensen, M.E.
+\newblock Peak water requirements of crops in southern Idaho.
+\newblock {\em Proceedings of the American Society of Civil Engineers, Journal
+  of the Irrigation and Drainage Division} {\bf 1972}, {\em 98},~193--201.
+
+\bibitem[Makkink(1957)]{makkink1957testing}
+Makkink, G.
+\newblock Testing the Penman formula by means of lysimeters.
+\newblock {\em Journal of the Institution of Water Engineerrs} {\bf 1957}, {\em
+  11},~277--288.
+
+\bibitem[Penman(1948)]{penman1948natural}
+Penman, H.L.
+\newblock Natural evaporation from open water, bare soil and grass.
+\newblock {\em Proceedings of the Royal Society of London. Series A.
+  Mathematical and Physical Sciences} {\bf 1948}, {\em 193},~120--145.
+
+\bibitem[Priestley and Taylor(1972)]{priestley1972assessment}
+Priestley, C.H.B.; Taylor, R.
+\newblock On the assessment of surface heat flux and evaporation using
+  large-scale parameters.
+\newblock {\em Monthly weather review} {\bf 1972}, {\em 100},~81--92.
+
 \bibitem[Penman(1963)]{penman1963vegetation}
 Penman, H.L.
 \newblock Vegetation and hydrology.
 \newblock {\em Soil Science} {\bf 1963}, {\em 96},~357.
+
+\bibitem[ASCE-EWRI(2005)]{asce2005asce}
+ASCE-EWRI.
+\newblock The ASCE standardized reference evapotranspiration equation.
+\newblock {\em Technical Committee Rep. to the Environmental and Water
+  Resources Institute of ASCE from the Task Committee on Standardization of
+  Reference Evapotranspiration} {\bf 2005}.
 
 \bibitem[Oudin \em{et~al.}(2005)Oudin, Hervieu, Michel, Perrin,
   Andr{\'e}assian, Anctil, and Loumagne]{oudin2005potential}
@@ -162,11 +182,5 @@ Oudin, L.; Hervieu, F.; Michel, C.; Perrin, C.; Andr{\'e}assian, V.; Anctil,
   rainfall--runoff model?: Part 2—Towards a simple and efficient potential
   evapotranspiration model for rainfall--runoff modelling.
 \newblock {\em Journal of hydrology} {\bf 2005}, {\em 303},~290--306.
-
-\bibitem[Wright and Jensen(1972)]{wright1972peak}
-Wright, J.L.; Jensen, M.E.
-\newblock Peak water requirements of crops in southern Idaho.
-\newblock {\em Proceedings of the American Society of Civil Engineers, Journal
-  of the Irrigation and Drainage Division} {\bf 1972}, {\em 98},~193--201.
 
 \end{thebibliography}
