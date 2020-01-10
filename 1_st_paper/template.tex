@@ -58,7 +58,7 @@
 %\newcommand{\orcidauthorB}{0000-0000-000-000X} % Add \orcidB{} behind the author's name
 
 % Authors, for the paper (add full first names)
-\Author{Matevž LVremec $^{1,\dagger,\ddagger}$\orcidA{}, Veronika Forstner $^{1,,\dagger\ddagger}$ and Steffen Birk $^{2,\dagger,}$*}
+\Author{Matevž Vremec $^{1,\dagger,\ddagger}$\orcidA{}, Veronika Forstner $^{1,,\dagger\ddagger}$ and Steffen Birk $^{2,\dagger,}$*}
 
 % Authors, for metadata in PDF
 \AuthorNames{Firstname Lastname, Firstname Lastname and Firstname Lastname}
@@ -218,8 +218,39 @@ Data notations and units \\
 		Hamon \cite{oudin2005potential} & $PE = \left(\frac{DL}{a}\right)^2 exp \left(\frac{T_a}{b}\right)$, with a=12 and b=16 & a, b /
 	\end{tabular}
 \end{table}
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=10 cm]{figures/default_pet}
+	\caption{Default PET}
+\end{figure}   
+\begin{table}[H]
+	\centering
+	\caption{Effect of LAI and height data to efficiency of the model}
+	\begin{tabular}{c|c|c|c|c}
+		\toprule
+		\textbf{n.} & \textbf{LAI} & \textbf{h} & \textbf{RMSE} & \textbf{R2} \\
+		\midrule
+		1 & const & const & 0.921 & 0.14 \\
+		2 & meas & const & 0.934 & 0.148 \\
+		3 & const & meas & 0.835 & 0.143 \\
+		4 & LAI from h & const & 0.846 & 0.148 \\
+		5 & LAI from h & meas & 0.801 & 0.148 \\
+	\end{tabular}
+\end{table}
+\section{Statistical analyses}
+Correlation Coefficient \\
+\begin{equation}
+r = \frac{\sum ^n _{i=1}(e_i - \bar{e})(s_i - \bar{s})}{\sqrt{\sum ^n _{i=1}(e_i - \bar{e})^2} \sqrt{\sum ^n _{i=1}(s_i - \bar{s})^2}}
+\end{equation}
 
-Penman \\
+
+
+Standard errors of estimates (SEEs) \cite{jensen2016evaporation} \\
+cRegression coefficient (slope) for regression through the origin of lysimeter versus equation estimate \\
+dCorrelation coefficient for regression through the origin of lysimeter versus equation estimate. \\
+fWeighted standard error of estimate\\
+$R_2$ \cite{xu2002cross}
+
 $a_w$ and $b_w$ are wind function coefficients that are usually receive a local or regional calibration.
 Penman \cite{penman1963vegetation} used for clipped grass \cite{asce2005asce} $a_w$ = 1.0 and $b_w$ = 0.537.\\
 \\
@@ -234,7 +265,7 @@ FAO-reference + crop coefficient
 
 \section{Evaluation of PET models with original constant values}
 Priestley-Taylor \\
-Makkink \\
+Makkink \\ 
 Blaney-Criddle \\
 Hargreaves \\
 FAO-pm-reference \\
@@ -247,18 +278,34 @@ Hamon \\
 FAO-pm-reference + crop coefficient \\
 
 \section{Evaluation of PET models with calibrated constant values}
-Priestley-Taylor \\
-Makkink \\
-Blaney-Criddle \\
-Hargreaves \\
-Kimberley-Penman=Penman \\
-Jensen-Haise \\
-Penman-Monteith \\
-Oudin \\
-Hamon \\
-\\
-Own plot\\
-FAO-pm-reference + crop coefficient \\
+\begin{table}[H]
+	\centering
+	\caption{PET Computations}
+	\begin{tabular}{c|ll}
+		\toprule
+		\textbf{PET method}	&  \textbf{Default} & \textbf{Calibrated} \\ \midrule
+		Blaney-Criddle \cite{blaney1950determining}& a=0.46, b=8.13, k=0.5  & a=, b=, k= \\
+		Hargreaves \cite{hargreaves1975moisture} & a=0.0023 and $T_x$=17.8 & a=, $T_x$= \\
+		 \\
+		Jensen-Haise & $C_r$ = 0.025,$T_x$=-3 & $C_r$=, $ T_x$= \\
+		Kimberley-Penman/Penman & Penman $a_w$=2.6, $b_w$=0.536 & $a_w$=, $b_w$=\\
+		& Kimberley-Penman:  $a_w = 0.4 + 1.4 exp{-\left[\left(\frac{J-173}{58}\right)^2\right]}$ \\
+		& and $b_w = 0.605 + 0.345 exp{-\left[\left(\frac{J-243}{80}\right)^2\right]}$ \\
+		Makkink \cite{makkink1957testing} & a=0.61, b=0.12 & a=, b=\\
+		& or f=1 & f= \\ 	
+		Priestley-Taylor \cite{priestley1972assessment} & $\alpha$ = 1.26 & $\alpha$=\\
+		Penman-Monteith/FAO \cite{asce2005asce} & $r_a$=, $r_s$ & $r_a$, $r_s$\\
+		Oudin \cite{oudin2005potential} &  $K_1$=100 and $K_2$=5 & $K_1$=, $K_2$=\\
+		Hamon \cite{oudin2005potential} & a=12 and b=16 & a=, b= 
+	\end{tabular}
+\end{table}
+
+\section{Implication of vegetation response to elevated $CO_2$ concentrations}
+Aimsworth\cite{ainsworth2005have} evaluated data from 12 FACE experiments and discovered that elevated $CO_2$ reduces stomatal conductance by 20 \%, when averaged over 40 different species at the 12 locations. \\
+1. Following \cite{yang2019hydrologic} for Penman monteith \\
+2. Following \cite{kruijt2008effects} for Makkink \\
+
+
 
 \section{Evaluation of PET models with calibrated constant values}
 
@@ -428,11 +475,6 @@ Interventionary studies involving animals or humans, and other studies require e
 
 This section is not mandatory, but can be added to the manuscript if the discussion is unusually long or complex.
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Patents}
-This section is not mandatory, but may be added if there are patents resulting from the work reported in this manuscript.
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \vspace{6pt} 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

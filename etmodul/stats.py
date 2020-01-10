@@ -8,10 +8,10 @@ Created on Mon Sep  2 08:24:23 2019
 import numpy as np
 import pandas as pd
 
-def RMSE(obs,sim):
-    from math import sqrt
-    n = np.count_nonzero(~np.isnan(obs))
-    rmse = sqrt(np.nansum(np.power((sim-obs),2)/n))
+def rmse(observed, simulated):
+    sim, obs = np.array(simulated), np.array(observed)
+    mse = np.nanmean((obs - sim) ** 2)
+    rmse = np.sqrt(mse)
     return rmse
 
 def MBE(obs,sim):
@@ -45,3 +45,11 @@ def R2 (obs, sim):
     R2 = 1-(np.power((np.nansum(obsmean*simmean)),2))/(np.nansum(np.power(obsmean,2))*np.nansum(np.power(simmean,2)))
 
     return R2
+
+
+def nash(observed, simulated):
+    sim, obs = np.array(simulated), np.array(observed)
+    mean_obs = np.nanmean(obs)
+    num = np.nansum((obs-sim) ** 2)
+    denom = np.nansum((obs-mean_obs)**2)
+    return 1 - (num/denom)

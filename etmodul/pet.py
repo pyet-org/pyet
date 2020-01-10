@@ -83,7 +83,9 @@ def penman_monteith(u2, tmax, tmin, rhmin, rhmax, elevation, latitude,
     if lai is None:
         rs = rs1
     else:
-        rs = rl/(0.5*lai)
+        laief=0.5*lai
+        #laief=lai/(0.3*lai+1.2)
+        rs = rl/(0.5*laief)
 
     psi = psi_calc(elevation)
     vpc = vpc_calc(ta)
@@ -99,7 +101,8 @@ def penman_monteith(u2, tmax, tmin, rhmin, rhmax, elevation, latitude,
     num2 = 86400 * cp * qa * (es-ea) / ra / (lambd*(vpc+(psi*(1+rs/ra))))
     pet = (num1 + num2)
     pet = pd.DataFrame(data=pet, index=meteoindex)
-    return pet, num1, num2
+    pet.columns = [0]
+    return pet
 
 def veronika_pm(u2, t, rh, elevation, latitude,
                     meteoindex, solar=None, net=None, g=None):
@@ -421,4 +424,100 @@ def oudin(tmax, tmin, meteoindex, latitude, k1=5, k2=100):
             petv = ra[i] *(ta[i]+k1) / (lambd[i] * k2)
             petd.append(petv)
     pet = pd.DataFrame(data=petd, index=meteoindex)
+    return pet
+
+def pm_yang(u2, tmax, tmin, rhmin, rhmax, elevation, latitude,
+            meteoindex, solar=None, net=None, co=301, ra1=208,
+            rrs=55, srs=0.0009, h=None, lai=None, rl=100):
+    """
+    u2 = wind speed at 2m
+    Rn = net solar radiation (MJ m-2 day-1)
+    vpc = Slope of vapor pressure curve (kPa degC-1)
+    psi  = psychrometric constant (kPa degC-1)
+    lambd = latent heat of vaporization (MJ kg-1)
+    q = water density (1000 kg L-1)
+    ea = actual vapour pressure (kPa)
+    ed = saturation vapour pressure (kPa)
+    """
+
+    tmax = tmax.to_numpy()
+    tmin = tmin.to_numpy()
+    rhmin = rhmin.to_numpy()
+    rhmax = rhmax.to_numpy()
+    u2 = u2.to_numpy()
+    # Inputs
+    ta = (tmax+tmin)/2
+    if solar is None:
+        rn = net.to_numpy()
+    else:
+        solar = solar.to_numpy()
+        rn = Rn_calc(solar, tmax, tmin, rhmin, rhmax, elevation, latitude,
+            meteoindex)
+
+    if h is None:
+        ra = ra1/u2
+    else:
+        ra = (np.log((2-0.67*h)/(0.123*h)))*(np.log((2-0.67*h)/(0.0123*h)))\
+             /(0.41**2)/(u2)
+
+    if lai is None:
+        rs = rrs * (1+srs * (co-300))
+    else:
+        rs = (rrs * (1+srs *(co-300)))*0.12*24 /lai
+    psi = psi_calc(elevation)
+    vpc = vpc_calc(ta)
+    pressure = 101.3 * ((293 - 0.0065 * elevation) / 293) ** (5.26)
+    qa = (pressure)/(1.01*(ta+273)*0.287)
+    cp = psi* 0.622* 2.45/pressure
+    ea = ea_calc(tmin=tmin, tmax=tmax, rhmin=rhmin, rhmax=rhmax)
+    es = es_calc(tmin=tmin, tmax=tmax)
+    lambd = lambda_calc(ta)
+
+
+    num1 = vpc * rn / (lambd*(vpc+(psi*(1+rs/ra))))
+    num2 = 86400 * cp * qa * (es-ea) / ra / (lambd*(vpc+(psi*(1+rs/ra))))
+    pet = (num1 + num2)
+    pet = pd.DataFrame(data=pet, index=meteoindex)
+    pet.columns = [0]
+    return pet
+
+def fao_yang(tmax, tmin, rhmin, rhmax, elevation, latitude, meteoindex, u2,
+           solar=None, net=None, g=None, cn=900, co=320):
+    """
+    u2 = wind speed at 2m
+    Rn = net solar radiation (MJ m-2 day-1)
+    vpc = Slope of vapor pressure curve (kPa degC-1)
+    psi  = psychrometric constant (kPa degC-1)
+    lambd = latent heat of vaporization (MJ kg-1)
+    q = water density (1000 kg L-1)
+    ea = actual vapour pressure (kPa)
+    ed = saturation vapour pressure (kPa)
+    """
+
+    tmax = tmax.to_numpy()
+    tmin = tmin.to_numpy()
+    rhmin = rhmin.to_numpy()
+    rhmax = rhmax.to_numpy()
+    u2 = u2.to_numpy()
+
+    # Inputs
+    ta = (tmax+tmin)/2
+    if solar is None:
+        rn = net.to_numpy()
+    else:
+        solar = solar.to_numpy()
+        rn = Rn_calc(solar, tmax, tmin, rhmin, rhmax, elevation, latitude,
+            meteoindex).to_numpy()
+    if g is None:
+        g=0
+
+    psi = psi_calc(elevation)
+    vpc = vpc_calc(ta)
+    ea = ea_calc(tmin=tmin, tmax=tmax, rhmin=rhmin, rhmax=rhmax)
+    es = es_calc(tmin=tmin, tmax=tmax)
+
+    num1 = 0.408 * vpc * (rn-g) + psi*cn*u2*(es-ea)/(ta+273)
+    den2 = (vpc+(psi*(1+u2*(0.34+2.4*10**(-4)*(co-300)))))
+    pet = (num1 / den2)
+    pet = pd.DataFrame(data=pet, index=meteoindex)
     return pet

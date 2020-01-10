@@ -121,10 +121,9 @@ Xu, C.Y.; Singh, V.
 \newblock {\em Water Resources Management} {\bf 2002}, {\em 16},~197--219.
 
 \bibitem[Blaney and Criddle(1950)]{blaney1950determining}
-Blaney, H.; Criddle, W.
-\newblock Determining water needs from climatological data.
-\newblock {\em USDA Soil Conservation Service. SOS--TP, USA} {\bf 1950}, pp.
-  8--9.
+Blaney, H.F.; Criddle, W.D.
+\newblock Determining water requirements in irrigated areas from climatological
+  and irrigation data {\bf 1950}.
 
 \bibitem[Allen \em{et~al.}(1998)Allen, Pereira, Raes, Smith,
   et~al.]{allen1998crop}
@@ -162,11 +161,6 @@ Priestley, C.H.B.; Taylor, R.
   large-scale parameters.
 \newblock {\em Monthly weather review} {\bf 1972}, {\em 100},~81--92.
 
-\bibitem[Penman(1963)]{penman1963vegetation}
-Penman, H.L.
-\newblock Vegetation and hydrology.
-\newblock {\em Soil Science} {\bf 1963}, {\em 96},~357.
-
 \bibitem[ASCE-EWRI(2005)]{asce2005asce}
 ASCE-EWRI.
 \newblock The ASCE standardized reference evapotranspiration equation.
@@ -182,5 +176,36 @@ Oudin, L.; Hervieu, F.; Michel, C.; Perrin, C.; Andr{\'e}assian, V.; Anctil,
   rainfall--runoff model?: Part 2—Towards a simple and efficient potential
   evapotranspiration model for rainfall--runoff modelling.
 \newblock {\em Journal of hydrology} {\bf 2005}, {\em 303},~290--306.
+
+\bibitem[Jensen and Allen(2016)]{jensen2016evaporation}
+Jensen, M.E.; Allen, R.G.
+\newblock Evaporation, evapotranspiration, and irrigation water requirements.
+\newblock American Society of Civil Engineers,  2016.
+
+\bibitem[Penman(1963)]{penman1963vegetation}
+Penman, H.L.
+\newblock Vegetation and hydrology.
+\newblock {\em Soil Science} {\bf 1963}, {\em 96},~357.
+
+\bibitem[Ainsworth and Long(2005)]{ainsworth2005have}
+Ainsworth, E.A.; Long, S.P.
+\newblock What have we learned from 15 years of free-air CO2 enrichment (FACE)?
+  A meta-analytic review of the responses of photosynthesis, canopy properties
+  and plant production to rising CO2.
+\newblock {\em New phytologist} {\bf 2005}, {\em 165},~351--372.
+
+\bibitem[Yang \em{et~al.}(2019)Yang, Roderick, Zhang, McVicar, and
+  Donohue]{yang2019hydrologic}
+Yang, Y.; Roderick, M.L.; Zhang, S.; McVicar, T.R.; Donohue, R.J.
+\newblock Hydrologic implications of vegetation response to elevated CO 2 in
+  climate projections.
+\newblock {\em Nature Climate Change} {\bf 2019}, {\em 9},~44.
+
+\bibitem[Kruijt \em{et~al.}(2008)Kruijt, Witte, Jacobs, and
+  Kroon]{kruijt2008effects}
+Kruijt, B.; Witte, J.P.M.; Jacobs, C.M.; Kroon, T.
+\newblock Effects of rising atmospheric CO2 on evapotranspiration and soil
+  moisture: A practical approach for the Netherlands.
+\newblock {\em Journal of Hydrology} {\bf 2008}, {\em 349},~257--267.
 
 \end{thebibliography}
