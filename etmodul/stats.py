@@ -15,7 +15,6 @@ def rmse(observed, simulated):
     return rmse
 
 def MBE(obs,sim):
-    from math import sqrt
     n = np.count_nonzero(~np.isnan(obs))
     mbe = (np.nansum((sim-obs)/n))
     return mbe
@@ -32,20 +31,12 @@ def nanp (obs, sim):
     Ens = 1-(np.nansum(np.power(nad,2))/(np.nansum(np.power(pod,2))))
     return Ens
 
-def R2 (obs, sim):
-    from math import sqrt
-    
-    sim[np.isnan(obs)] = np.nan
-    obs[np.isnan(sim)] = np.nan
-
-    obsmean = obs-np.nanmean(obs)
-    simmean = sim-np.nanmean(sim)
-    
-    
-    R2 = 1-(np.power((np.nansum(obsmean*simmean)),2))/(np.nansum(np.power(obsmean,2))*np.nansum(np.power(simmean,2)))
-
-    return R2
-
+def R2 (observed, simulated):
+    sim, obs = np.array(simulated), np.array(observed)
+    mean_obs = np.nanmean(obs)
+    squared_error = np.sum((sim - obs) * (sim - obs))
+    squared_error_mean = np.sum((sim - mean_obs) * (sim - mean_obs))
+    return 1 - (squared_error/squared_error_mean)
 
 def nash(observed, simulated):
     sim, obs = np.array(simulated), np.array(observed)
@@ -53,3 +44,9 @@ def nash(observed, simulated):
     num = np.nansum((obs-sim) ** 2)
     denom = np.nansum((obs-mean_obs)**2)
     return 1 - (num/denom)
+
+def t_stats(observed, simulated):
+    n = np.count_nonzero(~np.isnan(observed))
+    mbe1 = (np.nansum((simulated - observed) / n))
+    rmse1 = rmse(observed, simulated)
+    return (((n-1)*(mbe1**2))/(rmse1**2 - mbe1**2))**(0.5)
