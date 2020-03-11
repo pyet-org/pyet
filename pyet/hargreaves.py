@@ -1,5 +1,5 @@
-import numpy as np
-import pandas as pd
+from numpy import tan, sqrt, cos, sin, pi, arccos
+from pandas import to_numeric
 
 
 def hargreaves(tmax, tmin, lat):
@@ -23,7 +23,7 @@ def hargreaves(tmax, tmin, lat):
     ta = (tmax + tmin) / 2
     lambd = lambda_calc(ta)
     ra = ra_calc(ta.index, lat)
-    return 0.0023 * ra * (ta + 17.8) * np.sqrt(tmax - tmin) / lambd
+    return 0.0023 * ra * (ta + 17.8) * sqrt(tmax - tmin) / lambd
 
 
 def lambda_calc(temperature):
@@ -46,8 +46,8 @@ def ra_calc(meteoindex, lat):
     omega = sunset_angle(lat, sol_dec)
     gsc = 0.082 * 24 * 60
     # gsc = 1360
-    return gsc / 3.141592654 * dr * (omega * np.sin(sol_dec) * np.sin(lat) +
-                                     np.cos(sol_dec) * np.cos(lat) * np.sin(
+    return gsc / 3.141592654 * dr * (omega * sin(sol_dec) * sin(lat) +
+                                     cos(sol_dec) * cos(lat) * sin(
                 omega))
 
 
@@ -56,11 +56,11 @@ def relative_distance(j):
     Relative distance Earth - Sun
     From FAO (1990), ANNEX V, eq. 21
     """
-    return 1 + 0.033 * np.cos(2 * np.pi / 365 * j)
+    return 1 + 0.033 * cos(2 * pi / 365 * j)
 
 
 def day_of_year(meteoindex):
-    return pd.to_numeric(meteoindex.strftime('%j'))
+    return to_numeric(meteoindex.strftime('%j'))
 
 
 def sunset_angle(lat, sol_dec):
@@ -68,7 +68,7 @@ def sunset_angle(lat, sol_dec):
     Sunset hour angle [rad] (omega)
     From FAO (1990), ANNEX V, eq. 20
     """
-    return np.arccos(-np.tan(lat) * np.tan(sol_dec))
+    return arccos(-tan(lat) * tan(sol_dec))
 
 
 def solar_declination(j):
@@ -76,4 +76,4 @@ def solar_declination(j):
     Solar declination [rad] (sol_dec)
     From FAO (1990), ANNEX V, eq. 22
     """
-    return 0.4093 * np.sin(2 * np.pi / 365 * j - 1.39)
+    return 0.4093 * sin(2 * pi / 365 * j - 1.39)

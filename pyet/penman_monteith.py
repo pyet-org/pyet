@@ -1,5 +1,5 @@
-import numpy as np
-import pandas as pd
+from numpy import tan, log, sqrt, cos, pi, sin, exp, arccos
+from pandas import to_numeric
 
 
 def pm_hydrus(wind, elevation, latitude, rs=None, tmax=None, tmin=None,
@@ -102,8 +102,8 @@ def calc_ra(wind=None, croph=None, method=1, ):
     if method == 1:
         return 208 / wind
     elif method == 2:
-        return (np.log((2 - 0.667 * croph) / (0.123 * croph))) * \
-               (np.log((2 - 0.667 * croph) / (0.0123 * croph))) / \
+        return (log((2 - 0.667 * croph) / (0.123 * croph))) * \
+               (log((2 - 0.667 * croph) / (0.0123 * croph))) / \
                (0.41 ** 2) / wind
 
 
@@ -221,11 +221,11 @@ def relative_distance(j):
     Relative distance Earth - Sun
     From FAO (1990), ANNEX V, eq. 21
     """
-    return 1 + 0.033 * np.cos(2 * np.pi / 365 * j)
+    return 1 + 0.033 * cos(2 * pi / 365 * j)
 
 
 def day_of_year(meteoindex):
-    return pd.to_numeric(meteoindex.strftime('%j'))
+    return to_numeric(meteoindex.strftime('%j'))
 
 
 def sunset_angle(lat, sol_dec):
@@ -233,7 +233,7 @@ def sunset_angle(lat, sol_dec):
     Sunset hour angle [rad] (omega)
     From FAO (1990), ANNEX V, eq. 20
     """
-    return np.arccos(-np.tan(lat) * np.tan(sol_dec))
+    return arccos(-tan(lat) * tan(sol_dec))
 
 
 def solar_declination(j):
@@ -241,7 +241,7 @@ def solar_declination(j):
     Solar declination [rad] (sol_dec)
     From FAO (1990), ANNEX V, eq. 22
     """
-    return 0.4093 * np.sin(2 * np.pi / 365 * j - 1.39)
+    return 0.4093 * sin(2 * pi / 365 * j - 1.39)
 
 
 def lambda_calc(temperature):
@@ -287,7 +287,7 @@ def ea_calc(temperature):
     Saturation Vapour Pressure  (ea)
     From FAO (1990), ANNEX V, eq. 10
     """
-    return 0.6108 * np.exp((17.27 * temperature) / (temperature + 237.3))
+    return 0.6108 * exp((17.27 * temperature) / (temperature + 237.3))
 
 
 def emissivity(ed, al=0.34, bl=-0.14):
@@ -295,7 +295,7 @@ def emissivity(ed, al=0.34, bl=-0.14):
     Net Emissivity
     From FAO (1990), ANNEX V, eq. 60
     """
-    return al + bl * np.sqrt(ed)
+    return al + bl * sqrt(ed)
 
 
 def calc_rns(rs=None, meteoindex=None, lat=None, alpha=0.23):
@@ -332,5 +332,5 @@ def ra_calc(meteoindex, lat):
     omega = sunset_angle(lat, sol_dec)
     gsc = 0.082 * 24 * 60
     # gsc = 1360
-    return gsc / np.pi * dr * (omega * np.sin(sol_dec) * np.sin(lat) +
-                               np.cos(sol_dec) * np.cos(lat) * np.sin(omega))
+    return gsc / pi * dr * (omega * sin(sol_dec) * sin(lat) +
+                            cos(sol_dec) * cos(lat) * sin(omega))
