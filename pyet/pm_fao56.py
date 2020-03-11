@@ -1,13 +1,13 @@
-from numpy import tan, log, sqrt, cos, pi, sin, exp, arccos
-from pandas import to_numeric
+import numpy as np
+import pandas as pd
 
 
-def pm_fao1990(wind, elevation, latitude, rs=None, tmax=None, tmin=None,
-               rhmax=None, rhmin=None, rh=None, croph=None):
-    """Returns evapotranspiration calculated with the FAO Penman-Monteith
-    (Monteith, 1965; FAO, 1990) method.
+def pm_fao56(wind, elevation, latitude, rs=None, tmax=None, tmin=None,
+             rhmax=None, rhmin=None, rh=None):
+    """Returns evapotranspiration calculated with the FAO-56 Penman-Monteith
+    (Monteith, 1965; Allen et al, 1998) method.
 
-    Based on equation 30 (FAO, 1990).
+    Based on equation 6 in Allen et al (1998).
 
     Parameters
     ----------
@@ -29,15 +29,13 @@ def pm_fao1990(wind, elevation, latitude, rs=None, tmax=None, tmin=None,
         mainimum daily relative humidity [%]
     rh: pandas.Series
         mean daily relative humidity [%]
-    croph: float/int/pandas.series
-        crop height [m]
     Returns
     -------
         pandas.Series containing the calculated evapotranspiration
     Examples
     --------
-    >>> pm_fao1990 = et.pm_fao1990(wind, elevation, latitude, rs=solar, \
-                                   tmax=tmax, tmin=tmin, rh=rh, croph=0.6)
+    >>> pm_fao56 = et.pm_fao56(wind, elevation, latitude, rs=solar, \
+                               tmax=tmax, tmin=tmin, rh=rh, croph=0.6)
     """
     ta = (tmax + tmin) / 2
     lambd = lambda_calc(ta)
@@ -46,38 +44,31 @@ def pm_fao1990(wind, elevation, latitude, rs=None, tmax=None, tmin=None,
     eamax = ea_calc(tmax)
     eamin = ea_calc(tmin)
     dlt = vpc_calc(ta, ea_calc(ta))
-    ra = calc_ra(wind, croph, method=2)
-    lai = lai_calc(croph=croph)
-    rc = rc_calc(lai=lai, method=2)
-    gamma1 = gamma1_calc(gamma)  # * (1 + rc / raa)
+
+    gamma1 = gamma * (1 + 0.34 * wind)
+
     ea = (eamax + eamin) / 2
     ed = ed_calc(tmax, tmin, rh=rh)
-
-    gm_dl = gamma / (dlt + gamma1)
-    AeroTCff = 0.622 * 3.486 * 86400. / ra / 1.01
-
-    etaero = gm_dl * AeroTCff / (ta + 273.) * (ea - ed)
-
-    dl_dl = dlt / (dlt + gamma1)
-    s_flux = 0
-
     rns = calc_rns(rs=rs)  # in #  [MJ/m2/d]
     rnl = calc_rnl(rs, ed, latitude, tmax=tmax, tmin=tmin, rhmax=rhmax,
                    rhmin=rhmin, rh=rh)  # in #  [MJ/m2/d]
-    rn = rns - rnl
 
-    radterm = dl_dl * (rn - s_flux) / lambd
-    pm = (etaero + radterm) * (
-            1. - 7.37e-6 * (ta - 4.) ** 2 + 3.79e-8 * (ta - 4.) ** 3)
-    return pm
+    rn = rns - rnl
+    s_flux = 0
+
+    den = (dlt + gamma1)
+    num1 = (0.408 * dlt * (rn - s_flux) / den)
+    num2 = (gamma * (ea - ed) * 900 / (ta - 273) * wind)
+    pet = (num1 + num2)
+    return pet
 
 
 def calc_ra(wind=None, croph=None, method=1, ):
     if method == 1:
         return 208 / wind
     elif method == 2:
-        return (log((2 - 0.667 * croph) / (0.123 * croph))) * \
-               (log((2 - 0.667 * croph) / (0.0123 * croph))) / \
+        return (np.log((2 - 0.667 * croph) / (0.123 * croph))) * \
+               (np.log((2 - 0.667 * croph) / (0.0123 * croph))) / \
                (0.41 ** 2) / wind
 
 
@@ -197,11 +188,11 @@ def relative_distance(j):
     Relative distance Earth - Sun
     From FAO (1990), ANNEX V, eq. 21
     """
-    return 1 + 0.033 * cos(2 * pi / 365 * j)
+    return 1 + 0.033 * np.cos(2 * np.pi / 365 * j)
 
 
 def day_of_year(meteoindex):
-    return to_numeric(meteoindex.strftime('%j'))
+    return pd.to_numeric(meteoindex.strftime('%j'))
 
 
 def sunset_angle(lat, sol_dec):
@@ -209,7 +200,7 @@ def sunset_angle(lat, sol_dec):
     Sunset hour angle [rad] (omega)
     From FAO (1990), ANNEX V, eq. 20
     """
-    return arccos(-tan(lat) * tan(sol_dec))
+    return np.arccos(-np.tan(lat) * np.tan(sol_dec))
 
 
 def solar_declination(j):
@@ -217,7 +208,7 @@ def solar_declination(j):
     Solar declination [rad] (sol_dec)
     From FAO (1990), ANNEX V, eq. 22
     """
-    return 0.4093 * sin(2 * pi / 365 * j - 1.39)
+    return 0.4093 * np.sin(2 * np.pi / 365 * j - 1.39)
 
 
 def lambda_calc(temperature):
@@ -263,7 +254,7 @@ def ea_calc(temperature):
     Saturation Vapour Pressure  (ea)
     From FAO (1990), ANNEX V, eq. 10
     """
-    return 0.6108 * exp((17.27 * temperature) / (temperature + 237.3))
+    return 0.6108 * np.exp((17.27 * temperature) / (temperature + 237.3))
 
 
 def emissivity(ed, al=0.34, bl=-0.14):
@@ -271,7 +262,7 @@ def emissivity(ed, al=0.34, bl=-0.14):
     Net Emissivity
     From FAO (1990), ANNEX V, eq. 60
     """
-    return al + bl * sqrt(ed)
+    return al + bl * np.sqrt(ed)
 
 
 def calc_rns(rs=None, meteoindex=None, lat=None, alpha=0.23):
@@ -308,5 +299,5 @@ def ra_calc(meteoindex, lat):
     omega = sunset_angle(lat, sol_dec)
     gsc = 0.082 * 24 * 60
     # gsc = 1360
-    return gsc / pi * dr * (omega * sin(sol_dec) * sin(lat) +
-                            cos(sol_dec) * cos(lat) * sin(omega))
+    return gsc / np.pi * dr * (omega * np.sin(sol_dec) * np.sin(lat) +
+                               np.cos(sol_dec) * np.cos(lat) * np.sin(omega))
