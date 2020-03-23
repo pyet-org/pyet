@@ -1,9 +1,9 @@
-from numpy import tan, log, sqrt, cos, pi, sin, exp, arccos
+import numpy as np
 from pandas import to_numeric
 
 
-def pm_fao1990(wind, elevation, latitude, rs=None, tmax=None, tmin=None,
-               rhmax=None, rhmin=None, rh=None, croph=None):
+def pm_fao1990(wind, elevation, latitude, solar=None, tmax=None, tmin=None,
+               rh=None, croph=None):
     """Returns evapotranspiration calculated with the FAO Penman-Monteith
     (Monteith, 1965; FAO, 1990) method.
 
@@ -17,16 +17,12 @@ def pm_fao1990(wind, elevation, latitude, rs=None, tmax=None, tmin=None,
         the site elevation [m]
     latitude: float/int
         the site latitude [rad]
-    rs: pandas.Series
+    solar: pandas.Series
         incoming measured solar radiation [MJ m-2 d-1]
     tmax: pandas.Series
         maximum day temperature [°C]
     tmin: pandas.Series
         minimum day temperature [°C]
-    rhmax: pandas.Series
-        maximum daily relative humidity [%]
-    rhmin: pandas.Series
-        mainimum daily relative humidity [%]
     rh: pandas.Series
         mean daily relative humidity [%]
     croph: float/int/pandas.series
@@ -36,7 +32,7 @@ def pm_fao1990(wind, elevation, latitude, rs=None, tmax=None, tmin=None,
         pandas.Series containing the calculated evapotranspiration
     Examples
     --------
-    >>> pm_fao1990 = et.pm_fao1990(wind, elevation, latitude, rs=solar, \
+    >>> pm_fao1990_et = pm_fao1990(wind, elevation, latitude, solar=solar, \
                                    tmax=tmax, tmin=tmin, rh=rh, croph=0.6)
     """
     ta = (tmax + tmin) / 2
@@ -47,28 +43,25 @@ def pm_fao1990(wind, elevation, latitude, rs=None, tmax=None, tmin=None,
     eamin = ea_calc(tmin)
     dlt = vpc_calc(ta, ea_calc(ta))
     ra = calc_ra(wind, croph, method=2)
-    lai = lai_calc(croph=croph)
-    rc = rc_calc(lai=lai, method=2)
-    gamma1 = gamma1_calc(gamma)  # * (1 + rc / raa)
+    gamma1 = gamma1_calc(gamma) * (1 + 60 / ra)
     ea = (eamax + eamin) / 2
     ed = ed_calc(tmax, tmin, rh=rh)
 
     gm_dl = gamma / (dlt + gamma1)
-    AeroTCff = 0.622 * 3.486 * 86400. / ra / 1.01
+    aerotcff = 0.622 * 3.486 * 86400. / ra / 1.01
 
-    etaero = gm_dl * AeroTCff / (ta + 273.) * (ea - ed)
+    etaero = gm_dl * aerotcff / (ta + 273.) * (ea - ed)
 
     dl_dl = dlt / (dlt + gamma1)
     s_flux = 0
 
-    rns = calc_rns(rs=rs)  # in #  [MJ/m2/d]
-    rnl = calc_rnl(rs, ed, latitude, tmax=tmax, tmin=tmin, rhmax=rhmax,
-                   rhmin=rhmin, rh=rh)  # in #  [MJ/m2/d]
+    rns = calc_rns(solar=solar)  # in #  [MJ/m2/d]
+    rnl = calc_rnl(solar, ed, latitude, tmax=tmax, tmin=tmin)  # in [MJ/m2/d]
     rn = rns - rnl
 
     radterm = dl_dl * (rn - s_flux) / lambd
-    pm = (etaero + radterm) * (
-            1. - 7.37e-6 * (ta - 4.) ** 2 + 3.79e-8 * (ta - 4.) ** 3)
+    pm = (etaero + radterm) * \
+         (1. - 7.37e-6 * (ta - 4.) ** 2 + 3.79e-8 * (ta - 4.) ** 3)
     return pm
 
 
@@ -76,8 +69,8 @@ def calc_ra(wind=None, croph=None, method=1, ):
     if method == 1:
         return 208 / wind
     elif method == 2:
-        return (log((2 - 0.667 * croph) / (0.123 * croph))) * \
-               (log((2 - 0.667 * croph) / (0.0123 * croph))) / \
+        return (np.log((2 - 0.667 * croph) / (0.123 * croph))) * \
+               (np.log((2 - 0.667 * croph) / (0.0123 * croph))) / \
                (0.41 ** 2) / wind
 
 
@@ -98,60 +91,30 @@ def gamma1_calc(gamma, method=1):
         return gamma
 
 
-def rn_calc(rs, ed, lat, tmax=None, tmin=None, rhmax=None,
-            rhmin=None, rh=None):
-    """
-    Saturation Vapour Pressure  (ea)
-    From FAO (1990), ANNEX V, eq. 50
-    """
-    rns = calc_rns(rs)
-    rnl = calc_rnl(rs, ed, lat, tmax=tmax, tmin=tmin, rhmax=rhmax,
-                   rhmin=rhmin, rh=rh)
-    return rns - rnl
-
-
-def calc_rnl1(rs, ed, lat, tmax=None, tmin=None, rhmax=None, rhmin=None,
-              rh=None):
+def calc_rnl(solar, ed, lat, tmax=None, tmin=None):
     """
     Net Shortwave Radiation Rns
     From FAO (1990), ANNEX V, eq. 56
+    Parameters
+    ----------
+    solar: Series
+        incoming measured solar radiation [MJ m-2 d-1]
+    ed: Series
+        Actual Vapour Pressure (ed).
+    lat: float/int
+        the site latitude [rad]
+    tmax: Series
+        maximum day temperature [°C]
+    tmin: Series
+        minimum day temperature [°C]
+    Returns
+    -------
+        Series containing the calculated net outgoing radiation
     """
     steff = 4.9 * 10 ** (-9)  # MJm-2K-4d-1
 
-    rso_0 = calc_rns(rs=rs_calc(rs.index, lat), alpha=0)
-    ta = (tmax + tmin) / 2
-    # sunshine_hours =
-    # j = day_of_year(meteoindex)
-    # sol_dec = solar_declination(j)
-    # omega = sunset_angle(lat, sol_dec)
-    # max_daylight = 24 * omega / np.pi
-    # c_factor = cloudiness_factor(sunshine_hours, max_daylight)
-    rso = rs_calc(rs.index, lat)
-    c_factor = cloudiness_factor1(rs, rso)
-    emiss = emissivity(ed)
-
-    t_factor = ((tmax + 273.2) ** 4 + (tmin + 273) ** 4) / 2
-    return steff * emiss * c_factor * (ta + 273) ** 4
-
-
-def calc_rnl(rs, ed, lat, tmax=None, tmin=None, rhmax=None, rhmin=None,
-             rh=None):
-    """
-    Net Shortwave Radiation Rns
-    From FAO (1990), ANNEX V, eq. 56
-    """
-    steff = 4.9 * 10 ** (-9)  # MJm-2K-4d-1
-
-    rso_0 = calc_rns(rs=rs_calc(rs.index, lat), alpha=0)
-
-    # sunshine_hours =
-    # j = day_of_year(meteoindex)
-    # sol_dec = solar_declination(j)
-    # omega = sunset_angle(lat, sol_dec)
-    # max_daylight = 24 * omega / np.pi
-    # c_factor = cloudiness_factor(sunshine_hours, max_daylight)
-    rso = rs_calc(rs.index, lat)
-    c_factor = cloudiness_factor1(rs, rso)
+    rso = rs_calc(solar.index, lat)
+    c_factor = cloudiness_factor1(solar, rso)
     emiss = emissivity(ed)
 
     t_factor = ((tmax + 273.2) ** 4 + (tmin + 273.2) ** 4) / 2
@@ -160,7 +123,7 @@ def calc_rnl(rs, ed, lat, tmax=None, tmin=None, rhmax=None, rhmin=None,
 
 def ed_calc(tmax, tmin, rhmax=None, rhmin=None, rh=None, ta=None):
     """
-    Actual Vapour Pressure (ed)
+    Actual Vapour Pressure (ed).
     From FAO (1990), ANNEX V, eq. 11
     """
     eamax = ea_calc(tmax)
@@ -197,7 +160,7 @@ def relative_distance(j):
     Relative distance Earth - Sun
     From FAO (1990), ANNEX V, eq. 21
     """
-    return 1 + 0.033 * cos(2 * pi / 365 * j)
+    return 1 + 0.033 * np.cos(2 * np.pi / 365 * j)
 
 
 def day_of_year(meteoindex):
@@ -209,7 +172,7 @@ def sunset_angle(lat, sol_dec):
     Sunset hour angle [rad] (omega)
     From FAO (1990), ANNEX V, eq. 20
     """
-    return arccos(-tan(lat) * tan(sol_dec))
+    return np.arccos(-np.tan(lat) * np.tan(sol_dec))
 
 
 def solar_declination(j):
@@ -217,7 +180,7 @@ def solar_declination(j):
     Solar declination [rad] (sol_dec)
     From FAO (1990), ANNEX V, eq. 22
     """
-    return 0.4093 * sin(2 * pi / 365 * j - 1.39)
+    return 0.4093 * np.sin(2 * np.pi / 365 * j - 1.39)
 
 
 def lambda_calc(temperature):
@@ -254,8 +217,8 @@ def vpc_calc1(tmax, tmin):
     """
     eamax = ea_calc(tmax)
     eamin = ea_calc(tmin)
-    return 2049 * eamax / (tmax + 237.3) ** 2 + \
-           2049 * eamin / (tmin + 237.3) ** 2
+    return (2049 * eamax / (tmax + 237.3) ** 2) + \
+           (2049 * eamin / (tmin + 237.3) ** 2)
 
 
 def ea_calc(temperature):
@@ -263,7 +226,7 @@ def ea_calc(temperature):
     Saturation Vapour Pressure  (ea)
     From FAO (1990), ANNEX V, eq. 10
     """
-    return 0.6108 * exp((17.27 * temperature) / (temperature + 237.3))
+    return 0.6108 * np.exp((17.27 * temperature) / (temperature + 237.3))
 
 
 def emissivity(ed, al=0.34, bl=-0.14):
@@ -271,16 +234,16 @@ def emissivity(ed, al=0.34, bl=-0.14):
     Net Emissivity
     From FAO (1990), ANNEX V, eq. 60
     """
-    return al + bl * sqrt(ed)
+    return al + bl * np.sqrt(ed)
 
 
-def calc_rns(rs=None, meteoindex=None, lat=None, alpha=0.23):
+def calc_rns(solar=None, meteoindex=None, lat=None, alpha=0.23):
     """
     Net Shortwave Radiation Rns
     From FAO (1990), ANNEX V, eq. 51
     """
-    if rs is not None:
-        return (1 - alpha) * rs
+    if solar is not None:
+        return (1 - alpha) * solar
     else:
         return (1 - alpha) * rs_calc(meteoindex, lat)
 
@@ -308,5 +271,5 @@ def ra_calc(meteoindex, lat):
     omega = sunset_angle(lat, sol_dec)
     gsc = 0.082 * 24 * 60
     # gsc = 1360
-    return gsc / pi * dr * (omega * sin(sol_dec) * sin(lat) +
-                            cos(sol_dec) * cos(lat) * sin(omega))
+    return gsc / np.pi * dr * (omega * np.sin(sol_dec) * np.sin(lat) +
+                               np.cos(sol_dec) * np.cos(lat) * np.sin(omega))

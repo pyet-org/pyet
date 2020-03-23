@@ -4,15 +4,15 @@ import numpy as np
 def mk(tmax, tmin, rs, elevation, f=1):
     """Returns evapotranspiration calculated with the Makkink (1957) method.
 
-    Based on equation 6 in Allen et al (1998).
+    Based on Jensen and Haise (2013).
 
     Parameters
     ----------
-    tmax: pandas.Series
+    tmax: Series
         maximum day temperature [°C]
-    tmin: pandas.Series
+    tmin: Series
         minimum day temperature [°C]
-    rs: pandas.Series
+    rs: Series
         incoming measured solar radiation [MJ m-2 d-1]
     elevation: float/int
         the site elevation [m]
@@ -20,51 +20,86 @@ def mk(tmax, tmin, rs, elevation, f=1):
         crop coefficient [-]
     Returns
     -------
-        pandas.Series containing the calculated evapotranspiration
+        Series containing the calculated evapotranspiration
     Examples
     --------
-    >>> mak = et.mk(tmax, tmin, rs, elevation)
+    >>> mak = mk(tmax, tmin, rs, elevation)
     """
     ta = (tmax + tmin) / 2
-    lambd = lambda_calc(ta)
     pressure = press_calc(elevation)
-    gamma = psy_calc(pressure, lambd)
-    dlt = vpc_calc(ta, ea_calc(ta))
+    gamma = psy_calc(pressure)
+    dlt = vpc_calc(ta)
 
-    return f * 1 / lambd * 0.61 * rs * dlt / (dlt + gamma) - 0.12
-
-
-def ea_calc(temperature):
-    """
-    Saturation Vapour Pressure  (ea)
-    From FAO (1990), ANNEX V, eq. 10
-    """
-    return 0.6108 * np.exp((17.27 * temperature) / (temperature + 237.3))
-
-
-def vpc_calc(temperature, ea):
-    """
-    From FAO (1990), ANNEX V, eq. 3
-    """
-    return 4098 * ea / (temperature + 237.3) ** 2
+    return f / 2.45 * 0.61 * rs * dlt / (dlt + gamma) - 0.12
 
 
 def press_calc(elevation):
     """
-    From FAO (1990), ANNEX V, eq. 6
+    Atmospheric pressure.
+
+    Based on equation 7 in Allen et al (1998).
+    Parameters
+    ----------
+    elevation: int/real
+        elevation above sea level [m].
+    Returns
+    -------
+        int/real of atmospheric pressure [kPa].
+
     """
-    return 101.3 * ((293. - 0.0065 * elevation) / 293.) ** 5.253
+    return 101.3 * ((293. - 0.0065 * elevation) / 293.) ** 5.26
 
 
-def lambda_calc(temperature):
+def psy_calc(pressure):
     """
-    From FAO (1990), ANNEX V, eq. 1
+    Psychrometric constant [kPa degC-1].
+
+    Based on equation 8 in Allen et al (1998).
+    Parameters
+    ----------
+    pressure: int/real
+        atmospheric pressure [kPa].
+    Returns
+    -------
+        pandas.series of Psychrometric constant [kPa degC-1].
+
     """
-    return 2.501 - 0.002361 * temperature
+    return 0.000665 * pressure
 
 
-def psy_calc(pressure, lambd):
+def vpc_calc(temperature):
     """
-    From FAO (1990), ANNEX V, eq. 4
+    Slope of saturation vapour pressure curve at air Temperature.
+
+    Based on equation 13. in Allen et al 1998.
+    The slope of the vapour pressure curve is in the FAO-56 method calculated
+    using mean air temperature
+    Parameters
+    ----------
+    temperature: Series
+        mean day temperature [degC]
+    Returns
+    -------
+        Series of Saturation vapour pressure [kPa degC-1]
+
     """
-    return 0.0016286 * pressure / lambd
+    ea = e0_calc(temperature)
+    return 4098 * ea / (temperature + 237.3) ** 2
+
+
+def e0_calc(temperature):
+    """
+    saturation vapour pressure at the air temperature T.
+
+    Based on equations 11 in ALLen et al (1998).
+    Parameters
+    ----------Saturation Vapour Pressure  (es) from air temperature
+    temperature: Series
+         temperature [degC]
+    Returns
+    -------
+        pandas.Series of saturation vapour pressure at the air temperature
+        T [kPa]
+
+    """
+    return 0.6108 * np.exp((17.27 * temperature) / (temperature + 237.3))
