@@ -13,4 +13,4 @@ install:
   - pip install codecov
 
 script:
-  - coverage run --source=pyeto setup.py test
+  - coverage run --source=pyet setup.py test
