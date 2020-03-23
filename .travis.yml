@@ -5,4 +5,4 @@ python:
 install:
   - pip install -r requirements.txt
 script:
-- coverage run --source=pyeto setup.py test
+- coverage run --source=pyet setup.py test
