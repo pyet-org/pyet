@@ -1,3 +1,7 @@
+\begin{equation}
+\int_{-\infty}^\infty f(x) \delta(x - x_0) dx = f(x_0)
+\end{equation}
+
 References
 ==========
 
