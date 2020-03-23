@@ -1,5 +1,6 @@
 from .hamon import hamon
 from .pm_fao1990 import pm_fao1990
+from .pm1965 import pm1965
 from .hargreaves import hargreaves
 from .hamon import hamon
 from .jensen_haise import jh

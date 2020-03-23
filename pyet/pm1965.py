@@ -2,17 +2,14 @@ import numpy as np
 import pandas as pd
 
 
-def pm_fao56(wind, elevation, latitude, solar=None, net=None, sflux=0,
-             tmax=None, tmin=None, rhmax=None, rhmin=None, rh=None, n=None,
-             nn=None, rso=None):
-    """Returns reference evapotranspiration using the FAO-56 Penman-Monteith
-    equation (Monteith, 1965; Allen et al, 1998).
-
-    Based on equation 6 in Allen et al (1998).
-
+def pm1965(wind, elevation, latitude, solar=None, net=None, sflux=0, tmax=None,
+           tmin=None, rhmax=None, rhmin=None, rh=None, n=None, nn=None,
+           rso=None):
+    """Returns evapotranspiration calculated with the FAO Penman-Monteith
+    (Monteith, 1965; FAO, 1990) method.
     Parameters
     ----------
-    wind: Series
+    wind: pandas.Series
         mean day wind speed [m/s]
     elevation: float/int
         the site elevation [m]
@@ -45,29 +42,67 @@ def pm_fao56(wind, elevation, latitude, solar=None, net=None, sflux=0,
         pandas.Series containing the calculated evapotranspiration
     Examples
     --------
-    >>> pm_fao56_et = pm_fao56(wind, elevation, latitude, solar=solar,
-                               tmax=tmax, tmin=tmin, rh=rh)
+    >>> pm1965 = pm1965(wind, elevation, latitude, rs=solar, tmax=tmax, \
+                                tmin=tmin, rh=rh)
     """
     ta = (tmax + tmin) / 2
+    lambd = lambda_calc(ta)
     pressure = press_calc(elevation)
     gamma = psy_calc(pressure)
     dlt = vpc_calc(ta)
+    cp = 1.01  # [Jkg-1°C-1]
+    rho_a = calc_rhoa(pressure, ta)
+    ra = calc_ra(wind, method=1)
+    rc = rc_calc(method=1)
+    gamma1 = gamma * (1 + rc / ra)
 
-    gamma1 = (gamma * (1 + 0.34 * wind))
-
-    ea = ea_calc(tmax, tmin, rhmax=rhmax, rhmin=rhmin, rh=rh)
+    ea = ea_calc(tmax=tmax, tmin=tmin, rhmax=rhmax, rhmin=rhmin, rh=rh)
     es = es_calc(tmax, tmin)
     if net is None:
-        rns = shortwave_r(solar=solar, n=n, nn=nn)  # in #  [MJ/m2/d]
+        rns = shortwave_r(solar=solar, n=n, nn=nn)
         rnl = longwave_r(solar=solar, tmax=tmax, tmin=tmin, rhmax=rhmax,
                          rhmin=rhmin, rh=rh, rso=rso, elevation=elevation,
-                         lat=latitude, ea=ea)  # in #  [MJ/m2/d]
+                         lat=latitude, ea=ea)
         net = rns - rnl
 
-    den = (dlt + gamma1)
-    num1 = (0.408 * dlt * (net - sflux))
-    num2 = (gamma * (es - ea) * 900 * wind / (ta + 273))
-    return (num1 + num2) / den
+    den = (lambd * (dlt + gamma1))
+    num1 = (dlt * (net - sflux) / den)
+    num2 = (gamma * (es - ea) * rho_a * cp / den)
+    pet = (num1 + num2)
+    return pet
+
+
+def calc_rhoa(pressure, ta):
+    r = 287  # [Jkg-1K-1] universal gas constant for dry air
+    return pressure / (1.01 * (ta + 273) * r)
+
+
+def calc_ra(wind=None, croph=None, method=1):
+    if method == 1:
+        return 208 / wind
+    elif method == 2:
+        return (np.log((2 - 0.667 * croph) / (0.123 * croph))) * \
+               (np.log((2 - 0.667 * croph) / (0.0123 * croph))) / \
+               (0.41 ** 2) / wind
+
+
+def lai_calc(method=1, croph=None):
+    if method == 1:
+        return 0.24 * croph
+
+
+def rc_calc(lai=None, method=1):
+    if method == 1:
+        return 70
+    elif method == 2:
+        return 200 / lai
+
+
+def lambda_calc(temperature):
+    """
+    From FAO (1990), ANNEX V, eq. 1
+    """
+    return 2.501 - 0.002361 * temperature
 
 
 def vpc_calc(temperature):
