@@ -9,6 +9,7 @@ setup(
     author='Matevz Vremec, Raoul Collenteur',
     author_email='matevz.vremec@uni-graz.at, raoul.collenteur@uni-graz.at',
     description='pyet',
+    test_suite='tests',
     install_requires=['numpy>=1.15', 'matplotlib>=2.0', 'pandas>=0.24',
                       'scipy>=1.1'],
 )
