@@ -13,5 +13,4 @@ install:
   - pip install codecov
 
 script:
-  - cd pyet/tests
   - coverage run --source=pyeto setup.py test
