@@ -14,4 +14,4 @@ install:
 
 script:
   - cd pyet/tests
-  - coverage run tests.py
+  - coverage run --source=pyeto setup.py test
