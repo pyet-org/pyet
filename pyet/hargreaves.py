@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 
+pi=3.141592654
 
 def hargreaves(tmax, tmin, lat):
     """Returns evapotranspiration calculated with the Hargreaves and
@@ -44,10 +45,9 @@ def extraterrestrial_r(meteoindex, lat):
     sol_dec = solar_declination(j)
 
     omega = sunset_angle(lat, sol_dec)
-    gsc = 0.082  # solar constant [ MJ m-2 min-1]
-    return gsc * 24 * 60 / np.pi * dr * (
-                omega * np.sin(sol_dec) * np.sin(lat) +
-                np.cos(sol_dec) * np.cos(lat) * np.sin(omega))
+    xx = np.sin(sol_dec) * np.sin(lat)
+    yy = np.cos(sol_dec) * np.cos(lat)
+    return 118.08 / pi * dr * (omega * xx + yy * np.sin(omega))
 
 
 def day_of_year(meteoindex):
@@ -80,7 +80,7 @@ def relative_distance(j):
     -------
         array.py specifyng day of year.
     """
-    return 1 + 0.033 * np.cos(2 * np.pi / 365 * j)
+    return 1 + 0.033 * np.cos(2 * pi / 365 * j)
 
 
 def sunset_angle(sol_dec, lat):
@@ -116,4 +116,4 @@ def solar_declination(j):
         array.py of solar declination [rad].
 
     """
-    return 0.4093 * np.sin(2 * np.pi / 365 * j - 1.39)
+    return 0.4093 * np.sin(2 * pi / 365 * j - 1.39)

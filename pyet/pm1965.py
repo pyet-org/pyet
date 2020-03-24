@@ -4,7 +4,7 @@ import pandas as pd
 
 def pm1965(wind, elevation, latitude, solar=None, net=None, sflux=0, tmax=None,
            tmin=None, rhmax=None, rhmin=None, rh=None, n=None, nn=None,
-           rso=None):
+           rso=None, lai=None, rc=1, ra=1):
     """Returns evapotranspiration calculated with the FAO Penman-Monteith
     (Monteith, 1965; FAO, 1990) method.
     Parameters
@@ -37,6 +37,14 @@ def pm1965(wind, elevation, latitude, solar=None, net=None, sflux=0, tmax=None,
         maximum possible duration of sunshine or daylight hours [hour]
     rso: Series/float
         clear-sky solar radiation [MJ m-2 day-1]
+    lai: Series/float
+        measured leaf area index [-]
+    rc: int, optional
+        1 => rc = 70
+        2 => rc = rl/LAI; rl = 200
+    ra: int, optional
+        1 => ra = 208/wind
+        2 => ra is calculated based on equation 36 in FAO (1990), ANNEX V.
     Returns
     -------
         pandas.Series containing the calculated evapotranspiration
@@ -52,9 +60,9 @@ def pm1965(wind, elevation, latitude, solar=None, net=None, sflux=0, tmax=None,
     dlt = vpc_calc(ta)
     cp = 1.01  # [Jkg-1°C-1]
     rho_a = calc_rhoa(pressure, ta)
-    ra = calc_ra(wind, method=1)
-    rc = rc_calc(method=1)
-    gamma1 = gamma * (1 + rc / ra)
+    r_a = calc_ra(wind, method=ra)
+    r_c = rc_calc(method=rc, lai=lai)
+    gamma1 = gamma * (1 + r_c / r_a)
 
     ea = ea_calc(tmax=tmax, tmin=tmin, rhmax=rhmax, rhmin=rhmin, rh=rh)
     es = es_calc(tmax, tmin)
@@ -67,9 +75,8 @@ def pm1965(wind, elevation, latitude, solar=None, net=None, sflux=0, tmax=None,
 
     den = (lambd * (dlt + gamma1))
     num1 = (dlt * (net - sflux) / den)
-    num2 = (gamma * (es - ea) * rho_a * cp / den)
-    pet = (num1 + num2)
-    return pet
+    num2 = (rho_a * cp * 86400 * (es - ea) / r_a / den)
+    return num1 + num2
 
 
 def calc_rhoa(pressure, ta):
@@ -91,11 +98,11 @@ def lai_calc(method=1, croph=None):
         return 0.24 * croph
 
 
-def rc_calc(lai=None, method=1):
+def rc_calc(lai=None, method=1, rl=200):
     if method == 1:
         return 70
     elif method == 2:
-        return 200 / lai
+        return rl / lai
 
 
 def lambda_calc(temperature):
@@ -397,7 +404,7 @@ def shortwave_r(solar=None, meteoindex=None, lat=None, alpha=0.23, n=None,
     Parameters
     ----------
     meteoindex: pandas.Series.index
-    rs: Series
+    solar: Series
         incoming measured solar radiation [MJ m-2 d-1]
     lat: float/int
         the site latitude [rad]

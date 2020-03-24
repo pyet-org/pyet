@@ -362,7 +362,7 @@ def shortwave_r(solar=None, meteoindex=None, lat=None, alpha=0.23, n=None,
     Parameters
     ----------
     meteoindex: pandas.Series.index
-    rs: Series
+    solar: Series
         incoming measured solar radiation [MJ m-2 d-1]
     lat: float/int
         the site latitude [rad]
