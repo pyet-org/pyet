@@ -1,4 +1,4 @@
-import numpy as np
+from numpy import sqrt
 
 from .utils import extraterrestrial_r
 
@@ -23,4 +23,4 @@ def hargreaves(tmax, tmin, lat):
     """
     ta = (tmax + tmin) / 2
     ra = extraterrestrial_r(tmax.index, lat)
-    return 0.408 * 0.0023 * ra * (ta + 17.8) * np.sqrt(tmax - tmin)
+    return 0.408 * 0.0023 * ra * (ta + 17.8) * sqrt(tmax - tmin)

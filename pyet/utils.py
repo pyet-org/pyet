@@ -1,4 +1,4 @@
-import numpy as np
+from numpy import tan, cos, pi, sin, arccos
 from pandas import to_numeric
 
 
@@ -26,7 +26,7 @@ def daylight_hours(meteoindex, lat):
     j = day_of_year(meteoindex)
     sol_dec = solar_declination(j)
     sangle = sunset_angle(sol_dec, lat)
-    return round(24 / np.pi * sangle, 1)
+    return round(24 / pi * sangle, 1)
 
 
 def sunset_angle(sol_dec, lat):
@@ -45,7 +45,7 @@ def sunset_angle(sol_dec, lat):
         pandas.Series of sunset hour angle [rad].
 
     """
-    return np.arccos(-np.tan(lat) * np.tan(sol_dec))
+    return arccos(-tan(lat) * tan(sol_dec))
 
 
 def solar_declination(j):
@@ -62,7 +62,7 @@ def solar_declination(j):
         array.py of solar declination [rad].
 
     """
-    return 0.4093 * np.sin(2 * np.pi / 365 * j - 1.39)
+    return 0.4093 * sin(2 * pi / 365 * j - 1.39)
 
 
 def relative_distance(j):
@@ -79,7 +79,7 @@ def relative_distance(j):
     -------
         array.py specifyng day of year.
     """
-    return 1 + 0.033 * np.cos(2 * np.pi / 365 * j)
+    return 1 + 0.033 * cos(2 * pi / 365 * j)
 
 
 def extraterrestrial_r(meteoindex, lat):
@@ -102,6 +102,6 @@ def extraterrestrial_r(meteoindex, lat):
     sol_dec = solar_declination(j)
 
     omega = sunset_angle(lat, sol_dec)
-    xx = np.sin(sol_dec) * np.sin(lat)
-    yy = np.cos(sol_dec) * np.cos(lat)
-    return 118.08 / np.pi * dr * (omega * xx + yy * np.sin(omega))
+    xx = sin(sol_dec) * sin(lat)
+    yy = cos(sol_dec) * cos(lat)
+    return 118.08 / pi * dr * (omega * xx + yy * sin(omega))

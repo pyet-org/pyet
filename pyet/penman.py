@@ -1,4 +1,4 @@
-import numpy as np
+from numpy import sqrt, log, cos, pi, sin, exp
 
 from .utils import extraterrestrial_r, daylight_hours, solar_declination, \
     day_of_year, relative_distance, sunset_angle
@@ -141,10 +141,10 @@ def pm_fao56(wind, elevation, latitude, solar=None, net=None, sflux=0,
     ea = ea_calc(tmax, tmin, rhmax=rhmax, rhmin=rhmin, rh=rh)
     es = es_calc(tmax, tmin)
     if net is None:
-        rns = shortwave_r(solar=solar, n=n, nn=nn)  # in #  [MJ/m2/d]
+        rns = shortwave_r(solar=solar, n=n, nn=nn)  # in [MJ/m2/d]
         rnl = longwave_r(solar=solar, tmax=tmax, tmin=tmin, rhmax=rhmax,
                          rhmin=rhmin, rh=rh, rso=rso, elevation=elevation,
-                         lat=latitude, ea=ea)  # in #  [MJ/m2/d]
+                         lat=latitude, ea=ea)  # in [MJ/m2/d]
         net = rns - rnl
 
     den = (dlt + gamma1)
@@ -295,7 +295,7 @@ def pm_fao1990(wind, elevation, latitude, solar=None, tmax=None, tmin=None,
 
     dl_dl = dlt / (dlt + gamma1)
     # rad term
-    rns = calc_rns(solar=solar)  # in #  [MJ/m2/d]
+    rns = calc_rns(solar=solar)  # in [MJ/m2/d]
 
     rso = rs_calc(solar.index, latitude)  # radiation of clear sky
     cloudf = cloudiness_factor(solar, rso)
@@ -367,10 +367,10 @@ def priestley_taylor(wind, elevation, latitude, solar=None, net=None,
 
     ea = ea_calc(tmax, tmin, rhmax=rhmax, rhmin=rhmin, rh=rh)
     if net is None:
-        rns = shortwave_r(solar=solar, n=n, nn=nn)  # in #  [MJ/m2/d]
+        rns = shortwave_r(solar=solar, n=n, nn=nn)  # in [MJ/m2/d]
         rnl = longwave_r(solar=solar, tmax=tmax, tmin=tmin, rhmax=rhmax,
                          rhmin=rhmin, rh=rh, rso=rso, elevation=elevation,
-                         lat=latitude, ea=ea)  # in #  [MJ/m2/d]
+                         lat=latitude, ea=ea)  # in [MJ/m2/d]
         net = rns - rnl
 
     return (alpha * dlt * net) / (lambd * (dlt + gamma))
@@ -382,11 +382,11 @@ def makkink(tmax, tmin, rs, elevation, f=1):
 
     Parameters
     ----------
-    tmax: Series
+    tmax: pandas.Series
         maximum day temperature [°C]
-    tmin: Series
+    tmin: pandas.Series
         minimum day temperature [°C]
-    rs: Series
+    rs: pandas.Series
         incoming measured solar radiation [MJ m-2 d-1]
     elevation: float/int
         the site elevation [m]
@@ -417,16 +417,14 @@ def vpc_calc(temperature=None, tmin=None, tmax=None, method=0):
     """
     Slope of saturation vapour pressure curve at air Temperature.
 
-    Based on equation 13. in Allen et al 1998.
-    The slope of the vapour pressure curve is in the FAO-56 method calculated
-    using mean air temperature
     Parameters
     ----------
     temperature: Series
-        mean day temperature [degC]
+        mean day temperature [degC].
+
     Returns
     -------
-        Series of Saturation vapour pressure [kPa degC-1]
+        Series of Saturation vapour pressure [kPa degC-1].
 
     Notes
     -----
@@ -463,7 +461,7 @@ def e0_calc(temperature):
         T [kPa]
 
     """
-    return 0.6108 * np.exp((17.27 * temperature) / (temperature + 237.3))
+    return 0.6108 * exp((17.27 * temperature) / (temperature + 237.3))
 
 
 def es_calc(tmax, tmin):
@@ -630,7 +628,7 @@ def longwave_r(solar, tmax=None, tmin=None, rhmax=None, rhmin=None,
     if ea is None:
         ea = ea_calc(tmin=tmin, tmax=tmax, rhmin=rhmin, rhmax=rhmax, rh=rh)
     tmp1 = steff * ((tmax + 273.2) ** 4 + (tmin + 273.2) ** 4) / 2
-    tmp2 = 0.34 - 0.14 * np.sqrt(ea)
+    tmp2 = 0.34 - 0.14 * sqrt(ea)
     tmp3 = 1.35 * solar_rat - 0.35
     return tmp1 * tmp2 * tmp3
 
@@ -706,8 +704,8 @@ def calc_ra(wind=None, croph=None, method=1):
     if method == 1:
         return 208 / wind
     elif method == 2:
-        return (np.log((2 - 0.667 * croph) / (0.123 * croph))) * \
-               (np.log((2 - 0.667 * croph) / (0.0123 * croph))) / \
+        return (log((2 - 0.667 * croph) / (0.123 * croph))) * \
+               (log((2 - 0.667 * croph) / (0.0123 * croph))) / \
                (0.41 ** 2) / wind
 
 
@@ -716,7 +714,6 @@ def cloudiness_factor(rs, rso, ac=1.35, bc=-0.35):
     Cloudiness factor f
     From FAO (1990), ANNEX V, eq. 57
     """
-
     return ac * rs / rso + bc
 
 
@@ -751,8 +748,8 @@ def ra_calc(meteoindex, lat):
     omega = sunset_angle(lat, sol_dec)
     gsc = 0.082 * 24 * 60  # =118.08
     # gsc = 1360
-    return gsc / np.pi * dr * (omega * np.sin(sol_dec) * np.sin(lat) +
-                               np.cos(sol_dec) * np.cos(lat) * np.sin(omega))
+    return gsc / pi * dr * (omega * sin(sol_dec) * sin(lat) +
+                            cos(sol_dec) * cos(lat) * sin(omega))
 
 
 def ed_calc(tmax, tmin, rh):
@@ -778,24 +775,20 @@ def calc_rns(solar=None, meteoindex=None, lat=None, alpha=0.23):
 
 def calc_rnl(tmax, tmin, ea, cloudf, longa=0.34, longb=-0.139):
     """
-    Net Longwave Radiation Rnl
-    From FAO (1990), ANNEX V, eq. 56
+    Net Longwave Radiation Rnl from FAO (1990), ANNEX V, eq. 56
+
     Parameters
     ----------
-    solar: Series
-        incoming measured solar radiation [MJ m-2 d-1]
-    ed: Series
-        Actual Vapour Pressure (ed).
-    lat: float/int
-        the site latitude [rad]
     tmax: Series
         maximum day temperature [°C]
     tmin: Series
         minimum day temperature [°C]
+
     Returns
     -------
-        Series containing the calculated net outgoing radiation
+        pandas.Series containing the calculated net outgoing radiation.
+
     """
     sigma = 0.00000000245 * ((tmax + 273.16) ** 4 + (tmin + 273.16) ** 4)
-    emiss = longa + longb * round(np.sqrt(ea), 8)
+    emiss = longa + longb * round(sqrt(ea), 8)
     return sigma * cloudf * emiss

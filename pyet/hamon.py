@@ -1,4 +1,4 @@
-import numpy as np
+from numpy import pi, exp
 
 from .utils import day_of_year, sunset_angle, solar_declination
 
@@ -20,6 +20,6 @@ def hamon(temperature, latitude):
     sol_dec = solar_declination(j)
     omega = sunset_angle(latitude, sol_dec)
 
-    dl = 24 / np.pi * omega  # maximum possible daylight length
+    dl = 24 / pi * omega  # maximum possible daylight length
 
-    return (dl / 12) ** 2 * np.exp(temperature / 16)
+    return (dl / 12) ** 2 * exp(temperature / 16)
