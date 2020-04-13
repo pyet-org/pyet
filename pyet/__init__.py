@@ -1,28 +1,7 @@
 from .hamon import hamon
-from .pm_fao1990 import pm_fao1990
-from .pm1965 import pm1965
 from .hargreaves import hargreaves
-from .hamon import hamon
-from .jensen_haise import jh
-from .makkink import mk
-from .penman import penman
-from .priestley_taylor import pt
-from .pm_fao56 import (
-    pm_fao56,
-    vpc_calc,
-    e0_calc,
-    es_calc,
-    ea_calc,
-    rso_calc,
-    relative_distance,
-    sunset_angle,
-    solar_declination,
-    extraterrestrial_r,
-    psy_calc,
-    press_calc,
-    longwave_r,
-    shortwave_r,
-    in_solar_r,
-    day_of_year,
-    daylight_hours
-)
+from .jensen_haise import jensen_haise
+from .penman import penman, pm_1965, pm_fao56, pm_fao1990, priestley_taylor, \
+    makkink, press_calc, psy_calc, e0_calc, es_calc, ea_calc
+from .utils import sunset_angle, day_of_year, daylight_hours, \
+    relative_distance, extraterrestrial_r, solar_declination

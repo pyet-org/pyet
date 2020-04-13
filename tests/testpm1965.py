@@ -18,7 +18,7 @@ class TestFAO56(unittest.TestCase):
         nn = 16.1
         elevation = 100
         latitude = 50.80 * np.pi / 180
-        pm_1965 = round(et.pm1965(wind, elevation, latitude, solar=rs,
-                                  tmax=tmax, tmin=tmin, rhmax=rhmax,
-                                  rhmin=rhmin, n=n, nn=nn), 1)
+        pm_1965 = round(et.pm_1965(wind, elevation, latitude, solar=rs,
+                                   tmax=tmax, tmin=tmin, rhmax=rhmax,
+                                   rhmin=rhmin, n=n, nn=nn), 1)
         self.assertAlmostEqual(pm_1965.values, 3.9, 1)

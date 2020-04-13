@@ -1,4 +1,4 @@
-def jh(tmax, tmin, solar, cr=0.025, tx=-3):
+def jensen_haise(tmax, tmin, solar, cr=0.025, tx=-3):
     """Returns evapotranspiration calculated with the Jensen and Haise (1963)
     method.
 
@@ -21,7 +21,7 @@ def jh(tmax, tmin, solar, cr=0.025, tx=-3):
         pandas.Series containing the calculated evapotranspiration
     Examples
     --------
-    >>> jh_et = jh(tmax, tmin, solar)
+    >>> jh_et = jensen_haise(tmax, tmin, solar)
     """
     ta = (tmax + tmin) / 2
     lambd = lambda_calc(ta)
