@@ -5,8 +5,8 @@ import pandas as pd
 import pyet as et
 
 
-class TestFAO56(unittest.TestCase):
-    def test_et_fao56(self):
+class TestASCE(unittest.TestCase):
+    def test_et_asce(self):
         # Based on Example 18, p. 74 FAO.
         wind = pd.Series([2.078], index=pd.DatetimeIndex(["2015-07-06"]))
         tmax = pd.Series([21.5], index=pd.DatetimeIndex(["2015-07-06"]))
@@ -18,7 +18,7 @@ class TestFAO56(unittest.TestCase):
         nn = 16.1
         elevation = 100
         latitude = 50.80 * np.pi / 180
-        pm_1965 = round(et.pm_1965(wind, elevation, latitude, solar=rs,
+        pm_asce = round(et.pm_asce(wind, elevation, latitude, solar=rs,
                                    tmax=tmax, tmin=tmin, rhmax=rhmax,
                                    rhmin=rhmin, n=n, nn=nn), 1)
-        self.assertAlmostEqual(pm_1965.values, 3.9, 1)
+        self.assertAlmostEqual(pm_asce.values, 3.9, 1)

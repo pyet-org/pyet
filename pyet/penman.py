@@ -1,4 +1,4 @@
-from numpy import sqrt, log, cos, pi, sin, exp
+from numpy import sqrt, log, cos, pi, sin, exp, log
 
 from .utils import extraterrestrial_r, daylight_hours, solar_declination, \
     day_of_year, relative_distance, sunset_angle
@@ -58,7 +58,7 @@ def penman(wind, elevation, latitude, solar=None, net=None, sflux=0, tmax=None,
 
     """
     ta = (tmax + tmin) / 2
-    pressure = press_calc(elevation)
+    pressure = press_calc(elevation, ta)
     gamma = psy_calc(pressure)
     dlt = vpc_calc(ta)
     lambd = lambda_calc(ta)
@@ -132,7 +132,7 @@ def pm_fao56(wind, elevation, latitude, solar=None, net=None, sflux=0,
 
     """
     ta = (tmax + tmin) / 2
-    pressure = press_calc(elevation)
+    pressure = press_calc(elevation, ta)
     gamma = psy_calc(pressure)
     dlt = vpc_calc(ta)
 
@@ -153,9 +153,9 @@ def pm_fao56(wind, elevation, latitude, solar=None, net=None, sflux=0,
     return (num1 + num2) / den
 
 
-def pm_1965(wind, elevation, latitude, solar=None, net=None, sflux=0,
+def pm_asce(wind, elevation, latitude, solar=None, net=None, sflux=0,
             tmax=None, tmin=None, rhmax=None, rhmin=None, rh=None, n=None,
-            nn=None, rso=None, lai=None, rc=1, ra=1):
+            nn=None, rso=None, lai=None, rs=1, ra=1):
     """
     Returns evapotranspiration calculated with the FAO Penman-Monteith
     (Monteith, 1965; FAO, 1990) method.
@@ -192,9 +192,9 @@ def pm_1965(wind, elevation, latitude, solar=None, net=None, sflux=0,
         clear-sky solar radiation [MJ m-2 day-1]
     lai: pandas.Series/float, optional
         measured leaf area index [-]
-    rc: int, optional
-        1 => rc = 70
-        2 => rc = rl/LAI; rl = 200
+    rs: int, optional
+        1 => rs = 70
+        2 => rs = rl/LAI; rl = 200
     ra: int, optional
         1 => ra = 208/wind
         2 => ra is calculated based on equation 36 in FAO (1990), ANNEX V.
@@ -205,33 +205,33 @@ def pm_1965(wind, elevation, latitude, solar=None, net=None, sflux=0,
 
     Examples
     --------
-    >>> pm1965 = pm_1965(wind, elevation, latitude, rs=solar, tmax=tmax,
+    >>> pm1965 = pm_asce(wind, elevation, latitude, rs=solar, tmax=tmax,
     >>>                  tmin=tmin, rh=rh)
 
     """
     ta = (tmax + tmin) / 2
     lambd = lambda_calc(ta)
-    pressure = press_calc(elevation)
+    pressure = press_calc(elevation, ta)
     gamma = psy_calc(pressure)
     dlt = vpc_calc(ta)
-    cp = 1.01  # [Jkg-1°C-1]
-    rho_a = calc_rhoa(pressure, ta)
-    r_a = calc_ra(wind, method=ra)
-    r_c = rc_calc(method=rc, lai=lai)
-    gamma1 = gamma * (1 + r_c / r_a)
+    cp = 1.01
+    r_a = aero_r(wind, method=ra)
+    r_s = surface_r(method=rs, lai=lai)
+    gamma1 = gamma * (1 + r_s / r_a)
 
     ea = ea_calc(tmax=tmax, tmin=tmin, rhmax=rhmax, rhmin=rhmin, rh=rh)
     es = es_calc(tmax, tmin)
+    rho_a = calc_rhoa(pressure, ta, ea)
     if net is None:
         rns = shortwave_r(solar=solar, n=n, nn=nn)
         rnl = longwave_r(solar=solar, tmax=tmax, tmin=tmin, rhmax=rhmax,
                          rhmin=rhmin, rh=rh, rso=rso, elevation=elevation,
                          lat=latitude, ea=ea)
         net = rns - rnl
-
+    kmin = 86400
     den = (lambd * (dlt + gamma1))
     num1 = (dlt * (net - sflux) / den)
-    num2 = (rho_a * cp * 86400 * (es - ea) / r_a / den)
+    num2 = (rho_a * cp * kmin * (es - ea) / r_a / den)
     return num1 + num2
 
 
@@ -275,13 +275,13 @@ def pm_fao1990(wind, elevation, latitude, solar=None, tmax=None, tmin=None,
     # aeroterm
     ta = (round(tmax, 8) + round(tmin, 8)) / 2
     lambd = round(lambda_calc(ta), 8)
-    pressure = press_calc(elevation, power=5.253)
+    pressure = press_calc(elevation, ta)
     gamma = psy_calc(pressure=pressure, lambd=lambd)
     eamax = e0_calc(tmax)
     eamin = e0_calc(tmin)
     dlt = vpc_calc(tmin=tmin, tmax=tmax, method=1)
 
-    aerdyn = calc_ra(croph=croph, method=2)
+    aerdyn = aero_r(croph=croph, method=2)
     raa = aerdyn / wind
 
     gamma1 = gamma * (1 + 60. / raa)
@@ -361,7 +361,7 @@ def priestley_taylor(wind, elevation, latitude, solar=None, net=None,
     """
     ta = (tmax + tmin) / 2
     lambd = lambda_calc(ta)
-    pressure = press_calc(elevation=elevation, power=5.26)
+    pressure = press_calc(elevation, ta)
     gamma = psy_calc(pressure=pressure, lambd=None)
     dlt = vpc_calc(temperature=ta, method=0)
 
@@ -403,7 +403,7 @@ def makkink(tmax, tmin, rs, elevation, f=1):
 
     """
     ta = (tmax + tmin) / 2
-    pressure = press_calc(elevation=elevation, power=5.26)
+    pressure = press_calc(elevation, ta)
     gamma = psy_calc(pressure=pressure, lambd=None)
     dlt = vpc_calc(temperature=ta, method=0)
 
@@ -436,14 +436,17 @@ def vpc_calc(temperature=None, tmin=None, tmax=None, method=0):
         From FAO (1990), ANNEX V, eq. 3
 
     """
-    if method is 0:
+    if method == 0:
         ea = e0_calc(temperature)
         return 4098 * ea / (temperature + 237.3) ** 2
-    else:
+    elif method == 1:
         eamax = e0_calc(tmax)
         eamin = e0_calc(tmin)
         return round((2049. * eamax / (tmax + 237.3) ** 2) +
                      (2049. * eamin / (tmin + 237.3) ** 2), 8)
+    elif method == 2:
+        return 2503 * exp((17.27 * temperature) / (temperature + 237.3)) / (
+                temperature + 237.3) ** 2
 
 
 def e0_calc(temperature):
@@ -571,7 +574,7 @@ def psy_calc(pressure, lambd=None):
         return 0.0016286 * pressure / lambd
 
 
-def press_calc(elevation, power=5.26):
+def press_calc(elevation, temperature):
     """
     Atmospheric pressure.
 
@@ -585,7 +588,8 @@ def press_calc(elevation, power=5.26):
         int/real of atmospheric pressure [kPa].
 
     """
-    return 101.3 * ((293. - 0.0065 * elevation) / 293.) ** power
+    return 101.3 * (((273.16 + temperature) - 0.0065 * elevation) /
+                    (273.16 + temperature)) ** (9.807 / (0.0065 * 287))
 
 
 def longwave_r(solar, tmax=None, tmin=None, rhmax=None, rhmin=None,
@@ -681,32 +685,59 @@ def lai_calc(method=1, croph=None):
         return 0.24 * croph
 
 
-def rc_calc(lai=None, method=1):
+def surface_r(lai=None, method=1, laieff=0):
     if method == 1:
         return 70
     elif method == 2:
-        return 200 / lai
+        lai_eff = calc_laieff(lai=lai, method=laieff)
+        return 200 / lai_eff
+
+
+def calc_laieff(lai=None, method=0):
+    if method == 0:
+        return 0.5 * lai
 
 
 def lambda_calc(temperature):
     """
-    From FAO (1990), ANNEX V, eq. 1
+    From ASCE (2001), eq. B.7
     """
     return 2.501 - 0.002361 * temperature
 
 
-def calc_rhoa(pressure, ta):
-    r = 287  # [Jkg-1K-1] universal gas constant for dry air
-    return pressure / (1.01 * (ta + 273) * r)
+def calc_rhoa(pressure, ta, ea):
+    tkv = (273.16 + ta) * (1 - 0.378 * ea / pressure) ** (-1)
+    return 3.486 * pressure / tkv
 
 
-def calc_ra(wind=None, croph=None, method=1):
+def aero_r(wind, croph=None, zw=2, zh=2, method=1):
+    """
+    The aerodynamic resistance, applied for neutral stability conditions
+     from ASCE (2001), eq. B.2
+
+    Parameters
+    ----------
+    wind: Series
+         wind speed at height z [m/s]
+    zw: float
+        height of wind measurements [m]
+    zh: float
+         height of humidity and or air temperature measurements [m]
+
+    Returns
+    -------
+        pandas.Series containing the calculated aerodynamic resistance.
+
+    """
     if method == 1:
         return 208 / wind
     elif method == 2:
-        return (log((2 - 0.667 * croph) / (0.123 * croph))) * \
-               (log((2 - 0.667 * croph) / (0.0123 * croph))) / \
-               (0.41 ** 2) / wind
+        d = 0.667 * croph
+        zom = 0.123 * croph
+        zoh = 0.0123 * croph
+        return (log((zw - d) / zom)) * \
+               (log((zh - d) / zoh) /
+                (0.41 ** 2) / wind)
 
 
 def cloudiness_factor(rs, rso, ac=1.35, bc=-0.35):
@@ -715,14 +746,6 @@ def cloudiness_factor(rs, rso, ac=1.35, bc=-0.35):
     From FAO (1990), ANNEX V, eq. 57
     """
     return ac * rs / rso + bc
-
-
-# def cloudiness_factor(sunshine_hours, max_daylight, al=0.9, bl=0.1):
-#    """
-#    Cloudiness factor f
-#    From FAO (1990), ANNEX V, eq. 57
-#    """
-#    return al * sunshine_hours / max_daylight + bl
 
 
 def rs_calc(meteoindex, lat, a_s=0.25, b_s=0.5):

@@ -8,15 +8,31 @@ import pyet as et
 class TestFAO56(unittest.TestCase):
     def test_press_calc(self):
         # Based on Example 2 and 4, p. 32 FAO.
-        p1 = et.press_calc(1800)
-        p2 = et.press_calc(1200)
+        p1 = et.press_calc(1800, 20)
+        p2 = et.press_calc(1200, 20)
         self.assertAlmostEqual(p1, 81.8, 1)
         self.assertAlmostEqual(p2, 87.9, 1)
+        # Basen on Table C-2 in ASCE(2001).
+        p3 = et.press_calc(1462.4, 20)
+        self.assertAlmostEqual(p3, 85.17, 1)
+
+    def test_vpc(self):
+        # Based on ASCE Table C-3
+        ta = np.array([21.65, 22.9, 23.7, 22.8, 24.3,
+                       26.0, 26.1, 26.4, 23.9, 24.2])
+        vpc1 = et.vpc_calc(ta, method=2).round(3).tolist()
+        vpcr = np.array([0.1585, 0.1692, 0.1762, 0.1684, 0.1820,
+                         0.199, 0.1996, 0.2027, 0.1781, 0.1809]).round(
+            3).tolist()
+        self.assertAlmostEqual(vpc1, vpcr, 1)
 
     def test_psy_calc(self):
         # Based on Example 2, p. 32 FAO.
         psy = et.psy_calc(81.8)
         self.assertAlmostEqual(psy, 0.054, 1)
+        # Basen on Table C-2 in ASCE(2001).
+        psy1 = et.psy_calc(85.17)
+        self.assertAlmostEqual(psy1, 0.0566, 1)
 
     def test_e0_calc(self):
         # Based on Example 3 and 4, p. 36 FAO.
@@ -61,6 +77,12 @@ class TestFAO56(unittest.TestCase):
         # Based on Example 8, p. 47 FAO.
         doy = et.day_of_year(pd.to_datetime("2015-09-03"))
         self.assertAlmostEqual(doy, 246, 1)
+        # Based on ASCD Table C-3
+        dindex = pd.date_range("2020-07-01", "2020-07-10")
+        doy1 = et.day_of_year(dindex).tolist()
+        doyr = [183, 184, 185, 186, 187,
+                188, 189, 190, 191, 192]
+        self.assertEqual(doy1, doyr, 1)
 
     def test_extraterrestrial_r(self):
         # Based on Example 8, p. 47 FAO.
@@ -75,7 +97,7 @@ class TestFAO56(unittest.TestCase):
     def test_longwave_r(self):
         # Based on Example 10, p. 50 FAO.
         rs = pd.Series([14.5], index=pd.DatetimeIndex(["2015-05-15"]))
-        rnl = round(et.longwave_r(rs,  tmax=25.1, tmin=19, ea=2.1, rso=18.8),
+        rnl = round(et.longwave_r(rs, tmax=25.1, tmin=19, ea=2.1, rso=18.8),
                     1)
         self.assertAlmostEqual(rnl.values, 3.5, 1)
 
