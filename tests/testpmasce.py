@@ -8,12 +8,13 @@ import pyet as et
 class TestASCE(unittest.TestCase):
     def test_et_asce(self):
         # Based on Example 18, p. 74 FAO.
-        wind = pd.Series([2.078], index=pd.DatetimeIndex(["2015-07-06"]))
-        tmax = pd.Series([21.5], index=pd.DatetimeIndex(["2015-07-06"]))
-        tmin = pd.Series([12.3], index=pd.DatetimeIndex(["2015-07-06"]))
-        rhmax = pd.Series([84], index=pd.DatetimeIndex(["2015-07-06"]))
-        rhmin = pd.Series([63], index=pd.DatetimeIndex(["2015-07-06"]))
-        rs = pd.Series([22.07], index=pd.DatetimeIndex(["2015-07-06"]))
+        dindex = pd.DatetimeIndex(["2015-07-06"])
+        wind = pd.Series([2.078], index=dindex)
+        tmax = pd.Series([21.5], index=dindex)
+        tmin = pd.Series([12.3], index=dindex)
+        rhmax = pd.Series([84], index=dindex)
+        rhmin = pd.Series([63], index=dindex)
+        rs = pd.Series([22.07], index=dindex)
         n = 9.25
         nn = 16.1
         elevation = 100

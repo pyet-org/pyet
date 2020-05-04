@@ -1,4 +1,4 @@
-from numpy import sqrt, log, cos, pi, sin, exp, log
+from numpy import sqrt, log, cos, pi, sin, exp
 
 from .utils import extraterrestrial_r, daylight_hours, solar_declination, \
     day_of_year, relative_distance, sunset_angle
@@ -63,7 +63,7 @@ def penman(wind, elevation, latitude, solar=None, net=None, sflux=0, tmax=None,
     dlt = vpc_calc(ta)
     lambd = lambda_calc(ta)
 
-    ea = ea_calc(tmax, tmin, rhmax=rhmax, rhmin=rhmin, rh=rh)
+    ea = ea_calc(tmax, tmin, rhmax, rhmin, rh)
     es = es_calc(tmax, tmin)
     if net is None:
         rns = shortwave_r(solar=solar, n=n, nn=nn)  # in #  [MJ/m2/d]
@@ -214,7 +214,7 @@ def pm_asce(wind, elevation, latitude, solar=None, net=None, sflux=0,
     pressure = press_calc(elevation, ta)
     gamma = psy_calc(pressure)
     dlt = vpc_calc(ta)
-    cp = 1.01
+    cp = 1.013 * 10 ** (-3)
     r_a = aero_r(wind, method=ra)
     r_s = surface_r(method=rs, lai=lai)
     gamma1 = gamma * (1 + r_s / r_a)
