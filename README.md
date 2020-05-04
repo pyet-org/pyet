@@ -1,5 +1,5 @@
 # PyEt
-[![Build Status](https://travis-ci.com/mvremec/PyEt.svg?token=N7unDpFGa2qMypmqG9Dq&branch=master)](https://travis-ci.org/mvremec/PyEt)
+[![Build Status](https://travis-ci.org/phydrus/PyEt.svg?branch=master)](https://travis-ci.org/github/phydrus/PyEt)
 
 PyEt is an open source python package for calculating both reference and potential evapotranspiration(ET).
 
