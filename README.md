@@ -1,7 +1,10 @@
 # PyEt
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/7ed73a2e80784ccf90317c1af8c0cc17)](https://app.codacy.com/gh/phydrus/PyEt?utm_source=github.com&utm_medium=referral&utm_content=phydrus/PyEt&utm_campaign=Badge_Grade_Dashboard)
+
+<a href="http://www.gnu.org/licenses/gpl-3.0.txt"><img src=https://img.shields.io/github/license/phydrus/pyet> </a>
 [![Build Status](https://travis-ci.org/phydrus/PyEt.svg?branch=master)](https://travis-ci.org/github/phydrus/PyEt)
 <a href="https://pypi.python.org/pypi/pyet"> <img src=https://img.shields.io/pypi/v/pyet.svg> </a>
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/7ed73a2e80784ccf90317c1af8c0cc17)](https://app.codacy.com/gh/phydrus/PyEt?utm_source=github.com&utm_medium=referral&utm_content=phydrus/PyEt&utm_campaign=Badge_Grade_Dashboard)
+
 
 PyEt is an open source python package for calculating both reference and potential evapotranspiration(ET).
 
