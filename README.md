@@ -1,4 +1,5 @@
 # PyEt
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/7ed73a2e80784ccf90317c1af8c0cc17)](https://app.codacy.com/gh/phydrus/PyEt?utm_source=github.com&utm_medium=referral&utm_content=phydrus/PyEt&utm_campaign=Badge_Grade_Dashboard)
 [![Build Status](https://travis-ci.org/phydrus/PyEt.svg?branch=master)](https://travis-ci.org/github/phydrus/PyEt)
 <a href="https://pypi.python.org/pypi/pyet"> <img src=https://img.shields.io/pypi/v/pyet.svg> </a>
 
