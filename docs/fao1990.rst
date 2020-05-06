@@ -1,6 +1,0 @@
-References
-==========
-
-Food and Agriculture Organization of the United Nations, Expert consultation on revision of FAO
-methodologies for crop water requirements, ANNEX V, FAO Penman-Monteith Formula,
-Rome Italy, 1990.
