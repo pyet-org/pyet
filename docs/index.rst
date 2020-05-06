@@ -1,10 +1,12 @@
-Introduction
+PyEt
 ============
-PyEt is an open source python package for estimating evapotranspiration(ET) 
-using time series data. This enables the user to estimate evapotranspiration 
-and calibrate the models with just a few lines of python code.  
+*PyEt* is an open source Python package for estimating reference and potential 
+evapotranspiration (ET) using time series data. This enables the user to 
+estimate evapotranspiration and calibrate the models with just a few lines of 
+python code.  
 
 In the current version, PyEt supports the next methods to calculate ET:
+
 * Penman-Monteith (Monteith, 1965; FAO, 1990; ASCE, 2005)
 * FAO-56 Penman-Monteith (Monteith, 1965; Allen et al, 1998)
 * Penman (1948)
@@ -17,4 +19,8 @@ In the current version, PyEt supports the next methods to calculate ET:
 
 .. toctree::
    :maxdepth: 2
+   
+   getting-started
+   methods
+   references
    
