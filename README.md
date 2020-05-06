@@ -9,7 +9,7 @@
 
 PyEt is an open source python package for calculating both reference and potential evapotranspiration(ET).
 
-In the current state, 8 methods for calculating ET are implemented:
+In the current state, 9 methods for calculating ET are implemented:
 * FAO Penman-Monteith (Monteith, 1965; FAO, 1990)
 * FAO-56 Penman-Monteith (Monteith, 1965; Allen et al, 1998)
 * Penman (1948)
@@ -18,12 +18,13 @@ In the current state, 8 methods for calculating ET are implemented:
 * Priestley and Taylor (1972)
 * Jensen and Haise (1963)
 * Makkink (1957)
+* Corrected Penman-Monteith by Schymanski (2007)
 
 ## Examples and Documentation
 Examples of using PyEt can be found in the examples folders.
 
 ## Installation
 
-To install in developer mode, use the following syntax:
+To install PyEt, use the following syntax:
 
-`>>> pip install -e .`
+`>>> pip install pyet

@@ -157,8 +157,8 @@ def pm_asce(wind, elevation, latitude, solar=None, net=None, sflux=0,
             tmax=None, tmin=None, rhmax=None, rhmin=None, rh=None, n=None,
             nn=None, rso=None, lai=None, rs=1, ra=1):
     """
-    Returns evapotranspiration calculated with the FAO Penman-Monteith
-    (Monteith, 1965; FAO, 1990) method.
+    Returns evapotranspiration calculated with the ASCE Penman-Monteith
+    (Monteith, 1965; ASCE, 2005) method.
 
     Parameters
     ----------
@@ -205,7 +205,7 @@ def pm_asce(wind, elevation, latitude, solar=None, net=None, sflux=0,
 
     Examples
     --------
-    >>> pm1965 = pm_asce(wind, elevation, latitude, rs=solar, tmax=tmax,
+    >>> pmasce = pm_asce(wind, elevation, latitude, rs=solar, tmax=tmax,
     >>>                  tmin=tmin, rh=rh)
 
     """
@@ -232,6 +232,88 @@ def pm_asce(wind, elevation, latitude, solar=None, net=None, sflux=0,
     den = (lambd * (dlt + gamma1))
     num1 = (dlt * (net - sflux) / den)
     num2 = (rho_a * cp * kmin * (es - ea) / r_a / den)
+    return num1 + num2
+
+
+def pm_corrected(wind, elevation, latitude, solar=None, net=None, sflux=0,
+                 tmax=None, tmin=None, rhmax=None, rhmin=None, rh=None, n=None,
+                 nn=None, rso=None, lai=None, rs=1, ra=1, a_s=1, a_sh=1):
+    """
+    Returns evapotranspiration calculated with the corrected Penman-Monteith
+    equation from Schymanski (Schymanski, 2017).
+
+    Parameters
+    ----------
+    wind: pandas.Series
+        mean day wind speed [m/s]
+    elevation: float/int
+        the site elevation [m]
+    latitude: float/int
+        the site latitude [rad]
+    solar: pandas.Series, optional
+        incoming measured solar radiation [MJ m-2 d-1]
+    net: pandas.Series, optional
+        net radiation [MJ m-2 d-1]
+    sflux: Series/float/int, optional
+        soil heat flux [MJ m-2 d-1]
+    tmax: pandas.Series, optional
+        maximum day temperature [°C]
+    tmin: pandas.Series, optional
+        minimum day temperature [°C]
+    rhmax: pandas.Series, optional
+        maximum daily relative humidity [%]
+    rhmin: pandas.Series, optional
+        minimum daily relative humidity [%]
+    rh: pandas.Series, optional
+        mean daily relative humidity [%]
+    n: pandas.Series/float, optional
+        actual duration of sunshine [hour]
+    nn: pandas.Series/float, optional
+        maximum possible duration of sunshine or daylight hours [hour]
+    rso: pandas.Series/float, optional
+        clear-sky solar radiation [MJ m-2 day-1]
+    lai: pandas.Series/float, optional
+        measured leaf area index [-]
+    rs: int, optional
+        1 => rs = 70
+        2 => rs = rl/LAI; rl = 200
+    ra: int, optional
+        1 => ra = 208/wind
+        2 => ra is calculated based on equation 36 in FAO (1990), ANNEX V.
+    a_s: int, optional
+        Fraction of one-sided leaf area covered by stomata (1 if stomata are 1
+        on one side only, 2 if they are on both sides)
+    a_sh: int, optional
+        Fraction of projected area exchanging sensible heat with the air (2)
+
+    Returns
+    -------
+        pandas.Series containing the calculated evapotranspiration
+
+    """
+    ta = (tmax + tmin) / 2
+    lambd = lambda_calc(ta)
+    pressure = press_calc(elevation, ta)
+    gamma = psy_calc(pressure)
+    dlt = vpc_calc(ta)
+    cp = 1.013 * 10 ** (-3)
+    r_a = aero_r(wind, method=ra)
+    r_s = surface_r(method=rs, lai=lai)
+    gamma1 = gamma * a_sh / a_s * (1 + r_s / r_a)
+
+    ea = ea_calc(tmax=tmax, tmin=tmin, rhmax=rhmax, rhmin=rhmin, rh=rh)
+    es = es_calc(tmax, tmin)
+    rho_a = calc_rhoa(pressure, ta, ea)
+    if net is None:
+        rns = shortwave_r(solar=solar, n=n, nn=nn)
+        rnl = longwave_r(solar=solar, tmax=tmax, tmin=tmin, rhmax=rhmax,
+                         rhmin=rhmin, rh=rh, rso=rso, elevation=elevation,
+                         lat=latitude, ea=ea)
+        net = rns - rnl * a_sh
+    kmin = 86400
+    den = (lambd * (dlt + gamma1))
+    num1 = (dlt * (net - sflux) / den)
+    num2 = (rho_a * cp * kmin * (es - ea) * ash / r_a / den)
     return num1 + num2
 
 

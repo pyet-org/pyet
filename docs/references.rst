@@ -41,3 +41,6 @@ References
 | Priestley, C. H. B., & Taylor, R. J. (1972). On the assessment of surface 
 |    heat flux and evaporation  using large-scale parameters. Monthly weather 
 |    review, 100(2), 81-92.
+| Schymanski, S. J., & Or, D. (2017). Leaf-scale experiments reveal an important
+|    omission in the Penman-Monteith equation. Hydrology and Earth System 
+|    Sciences, 21(2), 685-706.
