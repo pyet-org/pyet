@@ -10,8 +10,6 @@ In the current version, PyEt supports the next methods to calculate ET:
 
 ----------------------
 .. toctree::
-   :maxdepth: 2
-   
    methods
    references
    
