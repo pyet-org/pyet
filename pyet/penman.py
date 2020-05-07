@@ -239,8 +239,8 @@ def pm_corrected(wind, elevation, latitude, solar=None, net=None, sflux=0,
                  tmax=None, tmin=None, rhmax=None, rhmin=None, rh=None, n=None,
                  nn=None, rso=None, lai=None, rs=1, ra=1, a_s=1, a_sh=1):
     """
-    Returns evapotranspiration calculated with the corrected Penman-Monteith
-    equation from Schymanski (Schymanski, 2017).
+    Returns evapotranspiration calculated with the upscaled corrected
+    Penman-Monteith equation from Schymanski (Schymanski, 2017).
 
     Parameters
     ----------

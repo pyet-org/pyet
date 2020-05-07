@@ -18,7 +18,7 @@ In the current state, 9 methods for calculating ET are implemented:
 * Priestley and Taylor (1972)
 * Jensen and Haise (1963)
 * Makkink (1957)
-* Corrected Penman-Monteith by Schymanski (2017)
+* Upscaled corrected Penman-Monteith by Schymanski (2017)
 
 ## Examples and Documentation
 Examples of using PyEt can be found in the examples folders.
