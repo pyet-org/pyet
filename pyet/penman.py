@@ -155,7 +155,7 @@ def pm_fao56(wind, elevation, latitude, solar=None, net=None, sflux=0,
 
 def pm_asce(wind, elevation, latitude, solar=None, net=None, sflux=0,
             tmax=None, tmin=None, rhmax=None, rhmin=None, rh=None, n=None,
-            nn=None, rso=None, lai=None, rs=1, ra=1):
+            nn=None, rso=None, lai=None, croph=None, rs=1, ra=1, rl=100):
     """
     Returns evapotranspiration calculated with the ASCE Penman-Monteith
     (Monteith, 1965; ASCE, 2005) method.
@@ -192,6 +192,8 @@ def pm_asce(wind, elevation, latitude, solar=None, net=None, sflux=0,
         clear-sky solar radiation [MJ m-2 day-1]
     lai: pandas.Series/float, optional
         measured leaf area index [-]
+    croph: float/int/pandas.series, optional
+        crop height [m]
     rs: int, optional
         1 => rs = 70
         2 => rs = rl/LAI; rl = 200
@@ -215,8 +217,8 @@ def pm_asce(wind, elevation, latitude, solar=None, net=None, sflux=0,
     gamma = psy_calc(pressure)
     dlt = vpc_calc(ta)
     cp = 1.013 * 10 ** (-3)
-    r_a = aero_r(wind, method=ra)
-    r_s = surface_r(method=rs, lai=lai)
+    r_a = aero_r(wind, method=ra, croph=croph)
+    r_s = surface_r(method=rs, lai=lai, rl=rl)
     gamma1 = gamma * (1 + r_s / r_a)
 
     ea = ea_calc(tmax=tmax, tmin=tmin, rhmax=rhmax, rhmin=rhmin, rh=rh)
@@ -237,7 +239,8 @@ def pm_asce(wind, elevation, latitude, solar=None, net=None, sflux=0,
 
 def pm_corrected(wind, elevation, latitude, solar=None, net=None, sflux=0,
                  tmax=None, tmin=None, rhmax=None, rhmin=None, rh=None, n=None,
-                 nn=None, rso=None, lai=None, rs=1, ra=1, a_s=1, a_sh=1):
+                 nn=None, rso=None, lai=None, croph=None, rs=1, ra=1, a_s=1,
+                 a_sh=1, rl=100):
     """
     Returns evapotranspiration calculated with the upscaled corrected
     Penman-Monteith equation from Schymanski (Schymanski, 2017).
@@ -274,6 +277,8 @@ def pm_corrected(wind, elevation, latitude, solar=None, net=None, sflux=0,
         clear-sky solar radiation [MJ m-2 day-1]
     lai: pandas.Series/float, optional
         measured leaf area index [-]
+    croph: float/int/pandas.series, optional
+        crop height [m]
     rs: int, optional
         1 => rs = 70
         2 => rs = rl/LAI; rl = 200
@@ -297,8 +302,8 @@ def pm_corrected(wind, elevation, latitude, solar=None, net=None, sflux=0,
     gamma = psy_calc(pressure)
     dlt = vpc_calc(ta)
     cp = 1.013 * 10 ** (-3)
-    r_a = aero_r(wind, method=ra)
-    r_s = surface_r(method=rs, lai=lai)
+    r_a = aero_r(wind, method=ra, croph=croph)
+    r_s = surface_r(method=rs, lai=lai, rl=rl)
     gamma1 = gamma * a_sh / a_s * (1 + r_s / r_a)
 
     ea = ea_calc(tmax=tmax, tmin=tmin, rhmax=rhmax, rhmin=rhmin, rh=rh)
@@ -313,7 +318,7 @@ def pm_corrected(wind, elevation, latitude, solar=None, net=None, sflux=0,
     kmin = 86400
     den = (lambd * (dlt + gamma1))
     num1 = (dlt * (net - sflux) / den)
-    num2 = (rho_a * cp * kmin * (es - ea) * ash / r_a / den)
+    num2 = (rho_a * cp * kmin * (es - ea) * a_sh / r_a / den)
     return num1 + num2
 
 
@@ -767,12 +772,12 @@ def lai_calc(method=1, croph=None):
         return 0.24 * croph
 
 
-def surface_r(lai=None, method=1, laieff=0):
+def surface_r(lai=None, method=1, laieff=0, rl=100):
     if method == 1:
         return 70
     elif method == 2:
         lai_eff = calc_laieff(lai=lai, method=laieff)
-        return 200 / lai_eff
+        return rl / lai_eff
 
 
 def calc_laieff(lai=None, method=0):
