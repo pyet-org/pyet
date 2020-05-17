@@ -7,7 +7,7 @@
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/7ed73a2e80784ccf90317c1af8c0cc17)](https://app.codacy.com/gh/phydrus/PyEt?utm_source=github.com&utm_medium=referral&utm_content=phydrus/PyEt&utm_campaign=Badge_Grade_Dashboard)
 
 
-PyEt is an open source python package for calculating both reference and potential evapotranspiration(ET).
+PyEt is an open source python package for calculating reference and potential evapotranspiration(ET).
 
 In the current state, 9 methods for calculating ET are implemented:
 * FAO Penman-Monteith (Monteith, 1965; FAO, 1990)
@@ -21,10 +21,17 @@ In the current state, 9 methods for calculating ET are implemented:
 * Upscaled corrected Penman-Monteith by Schymanski (2017)
 
 ## Examples and Documentation
+After defining the input data, evapotranspiration is estimated using only one line of python code:
+
+`>>> pyet.et.pm_fao56(wind, elevation, latitude, solar=solar, tmax=tmax, tmin=tmin, rh=rh)`
+ 
 Examples of using PyEt can be found in the examples folders.
 
 ## Installation
 
 To install PyEt, use the following syntax:
 
-`>>> pip install pyet
+`>>> pip install pyet`
+
+## Citing
+To be added...

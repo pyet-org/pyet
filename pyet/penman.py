@@ -1,4 +1,4 @@
-from numpy import sqrt, log, cos, pi, sin, exp
+from numpy import sqrt, log, cos, pi, sin, exp, maximum
 
 from .utils import extraterrestrial_r, daylight_hours, solar_declination, \
     day_of_year, relative_distance, sunset_angle
@@ -323,7 +323,7 @@ def pm_corrected(wind, elevation, latitude, solar=None, net=None, sflux=0,
 
 
 def pm_fao1990(wind, elevation, latitude, solar=None, tmax=None, tmin=None,
-               rh=None, croph=None):
+               rh=None, croph=None, ra=2, rs=60, n=None, nn=None):
     """
     Returns evapotranspiration calculated with the FAO Penman-Monteith
     (Monteith, 1965; FAO, 1990) method.
@@ -360,40 +360,38 @@ def pm_fao1990(wind, elevation, latitude, solar=None, tmax=None, tmin=None,
 
     """
     # aeroterm
-    ta = (round(tmax, 8) + round(tmin, 8)) / 2
-    lambd = round(lambda_calc(ta), 8)
+    ta = (tmax + tmin) / 2.
+    lambd = lambda_calc(ta)
     pressure = press_calc(elevation, ta)
     gamma = psy_calc(pressure=pressure, lambd=lambd)
     eamax = e0_calc(tmax)
     eamin = e0_calc(tmin)
+
+    raa = aero_r(wind, method=ra, croph=croph)
+    eadew = ed_calc(tmax, tmin, rh)  # OK
+    aerodyn = raa * wind
+    aerotcff = 0.622 * 3.486 * 86400. / aerodyn / 1.01
+    lai = croph * 24
+    rs = 200/lai
+    gamma1 = gamma * (1 + rs / raa)
     dlt = vpc_calc(tmin=tmin, tmax=tmax, method=1)
 
-    aerdyn = aero_r(croph=croph, method=2)
-    raa = aerdyn / wind
-
-    gamma1 = gamma * (1 + 60. / raa)
-    eamean = (eamax + eamin) / 2
-    eadew = ed_calc(tmax, tmin, rh)
-
     gm_dl = gamma / (dlt + gamma1)
-    aerotcff = 0.622 * 3.486 * 86400. / aerdyn / 1.01
-
+    eamean = (eamax + eamin) / 2
     etaero = gm_dl * aerotcff / (ta + 273.) * wind * (eamean - eadew)
 
-    dl_dl = dlt / (dlt + gamma1)
+
+    dl_dl = dlt / (dlt + gamma)
     # rad term
-    rns = calc_rns(solar=solar)  # in [MJ/m2/d]
+    rso = rs_calc(solar.index, latitude)  # OK
+    rns = shortwave_r(solar=solar, n=n, nn=nn)
+    rnl = longwave_r(solar, tmax=tmax, tmin=tmin, rh=rh, rso=rso,
+                     elevation=elevation, lat=latitude, ea=eadew)
+    net = rns - rnl
 
-    rso = rs_calc(solar.index, latitude)  # radiation of clear sky
-    cloudf = cloudiness_factor(solar, rso)
-    rnl = calc_rnl(tmax, tmin, eadew, cloudf)  # in [MJ/m2/d]
-    # rnl = calc_rnl(ta, ta, (e0_calc(ta)*rh/100), cloudf)  # in [MJ/m2/d]
-    rn = rns - rnl
-
-    radterm = dl_dl * (rn - 0) / lambd
-    pm = (etaero + radterm) * \
-         (1. - 7.37e-6 * (ta - 4.) ** 2 + 3.79e-8 * (ta - 4.) ** 3)
-    return rnl, rns, radterm, etaero, pm
+    radterm = dl_dl * (net) / lambd
+    pm = (etaero + radterm)
+    return pm, radterm, etaero, rnl, rns
 
 
 def priestley_taylor(wind, elevation, latitude, solar=None, net=None,
@@ -498,6 +496,51 @@ def makkink(tmax, tmin, rs, elevation, f=1):
 
 
 ##% Utility functions (TODO: Make private?)
+
+
+def longwave_r(solar, tmax=None, tmin=None, rhmax=None, rhmin=None,
+               rh=None, rso=None, elevation=None, lat=None, ea=None):
+    """
+    Net outgoing longwave radiation.
+
+    Based on equation 39 in Allen et al (1998).
+    Parameters
+    ----------
+    solar: Series
+        incoming measured solar radiation [MJ m-2 d-1]
+    elevation: float/int
+        the site elevation [m]
+    lat: float/int
+        the site latitude [rad]
+    tmax: Series
+        maximum day temperature [°C]
+    tmin: Series
+        minimum day temperature [°C]
+    rhmax: Series
+        maximum daily relative humidity [%]
+    rhmin: Series
+        mainimum daily relative humidity [%]
+    rh: Series
+        mean daily relative humidity [%]
+    rso: Series/float
+        clear-sky solar radiation [MJ m-2 day-1]
+    ea: Series
+        actual vapour pressure.
+    Returns
+    -------
+        pandas.Series containing the calculated net outgoing radiation
+    """
+    steff = 4.903 * 10 ** (-9)  # MJm-2K-4d-1
+    if rso is None:
+        ra = extraterrestrial_r(solar.index, lat)
+        rso = rso_calc(ra, elevation)
+    solar_rat = solar / rso
+    if ea is None:
+        ea = ea_calc(tmin=tmin, tmax=tmax, rhmin=rhmin, rhmax=rhmax, rh=rh)
+    tmp1 = steff * ((tmax + 273.2) ** 4 + (tmin + 273.2) ** 4) / 2
+    tmp2 = 0.34 - 0.139 * sqrt(ea)  # OK
+    tmp3 = 1.35 * solar_rat - 0.35  # OK
+    return tmp1 * tmp2 * tmp3
 
 
 def vpc_calc(temperature=None, tmin=None, tmax=None, method=0):
@@ -622,8 +665,6 @@ def rso_calc(ra, elevation):
     ----------
     ra: Series
         extraterrestrial radiation [MJ m-2 day-1]
-    elevation: float/int
-        the site elevation [m]
     Returns
     -------
         Series of clear-sky solar radiation [MJ m-2 day-1]
@@ -677,51 +718,6 @@ def press_calc(elevation, temperature):
     """
     return 101.3 * (((273.16 + temperature) - 0.0065 * elevation) /
                     (273.16 + temperature)) ** (9.807 / (0.0065 * 287))
-
-
-def longwave_r(solar, tmax=None, tmin=None, rhmax=None, rhmin=None,
-               rh=None, rso=None, elevation=None, lat=None, ea=None):
-    """
-    Net outgoing longwave radiation.
-
-    Based on equation 39 in Allen et al (1998).
-    Parameters
-    ----------
-    solar: Series
-        incoming measured solar radiation [MJ m-2 d-1]
-    elevation: float/int
-        the site elevation [m]
-    lat: float/int
-        the site latitude [rad]
-    tmax: Series
-        maximum day temperature [°C]
-    tmin: Series
-        minimum day temperature [°C]
-    rhmax: Series
-        maximum daily relative humidity [%]
-    rhmin: Series
-        mainimum daily relative humidity [%]
-    rh: Series
-        mean daily relative humidity [%]
-    rso: Series/float
-        clear-sky solar radiation [MJ m-2 day-1]
-    ea: Series
-        actual vapour pressure.
-    Returns
-    -------
-        pandas.Series containing the calculated net outgoing radiation
-    """
-    steff = 4.903 * 10 ** (-9)  # MJm-2K-4d-1
-    if rso is None:
-        ra = extraterrestrial_r(solar.index, lat)
-        rso = rso_calc(ra, elevation)
-    solar_rat = solar / rso
-    if ea is None:
-        ea = ea_calc(tmin=tmin, tmax=tmax, rhmin=rhmin, rhmax=rhmax, rh=rh)
-    tmp1 = steff * ((tmax + 273.2) ** 4 + (tmin + 273.2) ** 4) / 2
-    tmp2 = 0.34 - 0.14 * sqrt(ea)
-    tmp3 = 1.35 * solar_rat - 0.35
-    return tmp1 * tmp2 * tmp3
 
 
 def shortwave_r(solar=None, meteoindex=None, lat=None, alpha=0.23, n=None,
@@ -840,26 +836,9 @@ def rs_calc(meteoindex, lat, a_s=0.25, b_s=0.5):
     Nncoming solar radiation rs
     From FAO (1990), ANNEX V, eq. 52
     """
-    ra = ra_calc(meteoindex, lat)
+    ra = extraterrestrial_r(meteoindex, lat)
     nn = 1
     return (a_s + b_s * nn) * ra
-
-
-def ra_calc(meteoindex, lat):
-    """
-    Extraterrestrial Radiation (Ra)
-    From FAO (1990), ANNEX V, eq. 18
-    """
-
-    j = day_of_year(meteoindex)
-    dr = relative_distance(j)
-    sol_dec = solar_declination(j)
-
-    omega = sunset_angle(lat, sol_dec)
-    gsc = 0.082 * 24 * 60  # =118.08
-    # gsc = 1360
-    return gsc / pi * dr * (omega * sin(sol_dec) * sin(lat) +
-                            cos(sol_dec) * cos(lat) * sin(omega))
 
 
 def ed_calc(tmax, tmin, rh):
