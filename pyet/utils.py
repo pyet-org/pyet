@@ -48,6 +48,39 @@ def sunset_angle(sol_dec, lat):
     return arccos(-tan(sol_dec) * tan(lat))
 
 
+def sunset_angle_hour(meteoindex, lz, lm, lat, sol_dec):
+    """
+    Sunset hour angle from latitude and solar declination [rad].
+
+    Based on equations 25 in ALLen et al (1998).
+    Parameters
+    ----------
+    sol_dec: pandas.Series
+        solar declination [rad]
+    lat: float/int
+        the site latitude [rad]
+    Returns
+    -------
+        pandas.Series of sunset hour angle [rad].
+
+    """
+    j=day_of_year(meteoindex)
+    b = 2*pi*(j-81)/364
+    sc = 0.1645*sin(2*b) - 0.1255*cos(b) - 0.025*sin(b)
+    t = meteoindex.hour + 0.5
+    sol_t = t+0.06667*(lz-lm)+sc-12
+    omega = pi/12
+    omega1 = omega-pi/24
+    omega2 = omega+pi/24
+    omegas = arccos(-tan(lat)*tan(sol_dec))
+    omega1 = clip(omega1,-omegas, omegas)
+    omega2 = clip(omega2,-omegas, omegas)
+    omega1 = maximum(omega1,omega1, )
+    omega1 = clip(omega1, -100000000, omega2)
+
+    return omega2, omega1
+
+
 def solar_declination(j):
     """
     Solar declination [rad] from day of year [rad].
@@ -105,3 +138,32 @@ def extraterrestrial_r(meteoindex, lat):
     xx = sin(sol_dec) * sin(lat)
     yy = cos(sol_dec) * cos(lat)
     return 118.08 / 3.141592654 * dr * (omega * xx + yy * sin(omega))
+
+
+def extraterrestrial_r_hour(meteoindex, lat, lz=0, lm=0):
+    """
+    Returns Extraterrestrial Radiation (Ra).
+
+    Based on equation 21 in Allen et al (1998).
+    Parameters
+    ----------
+    meteoindex: Series.index
+    lat: float/int
+        the site latitude [rad]
+    Returns
+    -------
+        Series of solar declination [rad].
+
+    """
+    j = day_of_year(meteoindex)
+    dr = relative_distance(j)
+    sol_dec = solar_declination(j)
+
+    omega2, omega1 = sunset_angle_hour(meteoindex, lz=lz, lm=lm,
+                                       lat=lat, sol_dec=sol_dec)
+    xx = sin(sol_dec) * sin(lat)
+    yy = cos(sol_dec) * cos(lat)
+    gsc = 4.92
+    return 12 / pi * gsc * dr * \
+           ((omega2-omega1) * xx + yy *
+            (sin(omega2)-sin(omega1)))

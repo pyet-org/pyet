@@ -1,7 +1,7 @@
-from numpy import sqrt, log, cos, pi, sin, exp, maximum
+from numpy import sqrt, log, cos, pi, sin, exp, maximum, clip
 
 from .utils import extraterrestrial_r, daylight_hours, solar_declination, \
-    day_of_year, relative_distance, sunset_angle
+    day_of_year, relative_distance, sunset_angle, extraterrestrial_r_hour
 
 
 def penman(wind, elevation, latitude, solar=None, net=None, sflux=0, tmax=None,
@@ -237,10 +237,11 @@ def pm_asce(wind, elevation, latitude, solar=None, net=None, sflux=0,
     return num1 + num2
 
 
-def pm_corrected(wind, elevation, latitude, solar=None, net=None, sflux=0,
+def pm_corrected(wind, elevation, latitude, solar=None, net=None, sflux=0, tmean=None,
                  tmax=None, tmin=None, rhmax=None, rhmin=None, rh=None, n=None,
-                 nn=None, rso=None, lai=None, croph=None, rs=1, ra=1, a_s=1,
-                 a_sh=1, rl=100):
+                 nn=None, rso=None, lai=None, croph=None, r_s=None, rs=1, ra=1, a_s=1,
+                 a_sh=1, rl=100, a=1.35, b=-0.35, co2=300, srs=0.0009, laieff=0, flai=1,
+                 freq="D"):
     """
     Returns evapotranspiration calculated with the upscaled corrected
     Penman-Monteith equation from Schymanski (Schymanski, 2017).
@@ -296,26 +297,33 @@ def pm_corrected(wind, elevation, latitude, solar=None, net=None, sflux=0,
         pandas.Series containing the calculated evapotranspiration
 
     """
-    ta = (tmax + tmin) / 2
-    lambd = lambda_calc(ta)
-    pressure = press_calc(elevation, ta)
+    if "D" in freq:
+        tmean = (tmax + tmin) / 2
+        es = es_calc(tmax, tmin)
+    else:
+        es = e0_calc(tmean)
+    lambd = lambda_calc(tmean)
+    pressure = press_calc(elevation, tmean)
     gamma = psy_calc(pressure)
-    dlt = vpc_calc(ta)
+    dlt = vpc_calc(tmean)
     cp = 1.013 * 10 ** (-3)
     r_a = aero_r(wind, method=ra, croph=croph)
-    r_s = surface_r(method=rs, lai=lai, rl=rl)
-    gamma1 = gamma * a_sh / a_s * (1 + r_s / r_a)
-
     ea = ea_calc(tmax=tmax, tmin=tmin, rhmax=rhmax, rhmin=rhmin, rh=rh)
-    es = es_calc(tmax, tmin)
-    rho_a = calc_rhoa(pressure, ta, ea)
+    rho_a = calc_rhoa(pressure, tmean, ea)
     if net is None:
         rns = shortwave_r(solar=solar, n=n, nn=nn)
         rnl = longwave_r(solar=solar, tmax=tmax, tmin=tmin, rhmax=rhmax,
                          rhmin=rhmin, rh=rh, rso=rso, elevation=elevation,
-                         lat=latitude, ea=ea)
+                         lat=latitude, ea=ea, a=a, b=b, freq=freq)
         net = rns - rnl * a_sh
     kmin = 86400
+    if "H" in freq:
+        kmin = 3600
+    if r_s is None:
+        r_s = surface_r(method=rs, lai=lai, rl=rl, co2=co2, srs=srs, laieff=laieff, 
+                        flai=flai)
+
+    gamma1 = gamma * a_sh / a_s * (1 + r_s / r_a)
     den = (lambd * (dlt + gamma1))
     num1 = (dlt * (net - sflux) / den)
     num2 = (rho_a * cp * kmin * (es - ea) * a_sh / r_a / den)
@@ -499,7 +507,8 @@ def makkink(tmax, tmin, rs, elevation, f=1):
 
 
 def longwave_r(solar, tmax=None, tmin=None, rhmax=None, rhmin=None,
-               rh=None, rso=None, elevation=None, lat=None, ea=None):
+               rh=None, rso=None, elevation=None, lat=None, ea=None,
+               a=1.35, b=-0.35, freq="D"):
     """
     Net outgoing longwave radiation.
 
@@ -530,16 +539,27 @@ def longwave_r(solar, tmax=None, tmin=None, rhmax=None, rhmin=None,
     -------
         pandas.Series containing the calculated net outgoing radiation
     """
-    steff = 4.903 * 10 ** (-9)  # MJm-2K-4d-1
-    if rso is None:
-        ra = extraterrestrial_r(solar.index, lat)
-        rso = rso_calc(ra, elevation)
-    solar_rat = solar / rso
     if ea is None:
         ea = ea_calc(tmin=tmin, tmax=tmax, rhmin=rhmin, rhmax=rhmax, rh=rh)
-    tmp1 = steff * ((tmax + 273.2) ** 4 + (tmin + 273.2) ** 4) / 2
+    if "H" in freq:
+        steff = 2.042 * 10 ** (-10)  # MJm-2K-4h-1
+        if rso is None:
+            ra = extraterrestrial_r_hour(solar.index, lat)
+            rso = rso_calc(ra, elevation)
+        solar_rat = solar / rso
+        solar_rat = clip(solar_rat, 0.3, 1)
+        tmp1 = steff * (ta + 273.2) ** 4
+    else:
+        steff = 4.903 * 10 ** (-9)  # MJm-2K-4d-1
+        if rso is None:
+            ra = extraterrestrial_r(solar.index, lat)
+            rso = rso_calc(ra, elevation)
+        solar_rat = clip(solar / rso, 0.3, 1)
+        tmp1 = steff * ((tmax + 273.2) ** 4 + (tmin + 273.2) ** 4) / 2
+
     tmp2 = 0.34 - 0.139 * sqrt(ea)  # OK
-    tmp3 = 1.35 * solar_rat - 0.35  # OK
+    tmp2 = clip(tmp2, 0.05, 1)
+    tmp3 = a * solar_rat + b  # OK
     return tmp1 * tmp2 * tmp3
 
 
@@ -768,17 +788,36 @@ def lai_calc(method=1, croph=None):
         return 0.24 * croph
 
 
-def surface_r(lai=None, method=1, laieff=0, rl=100):
+def surface_r(lai=None, method=1, laieff=0, rl=100, co2=300, srs=0.0009, flai=1):
     if method == 1:
         return 70
     elif method == 2:
         lai_eff = calc_laieff(lai=lai, method=laieff)
         return rl / lai_eff
-
+    elif method == 3:
+        lai_eff = calc_laieff(lai=lai, method=laieff)
+        fco2 = (1 + srs * (co2 - 300))
+        return rl / lai_eff * fco2
+    elif method == 4:
+        lai_eff = calc_laieff(lai=lai, method=laieff)
+        flai1 = lai_eff/lai_eff.max() * flai
+        fco2 = (1 + srs * (co2 - 300))
+        return rl / lai_eff * fco2 * flai1
 
 def calc_laieff(lai=None, method=0):
     if method == 0:
         return 0.5 * lai
+    if method == 1:
+        return lai/(0.3*lai+1.2)
+    if method == 2:
+        laie = lai.copy()
+        laie[(lai>2)&(lai<4)] = 2
+        laie[lai>4] = 0.5 * lai
+        return laie
+    if method == 3:
+        laie = lai.copy()
+        laie[lai>4] = 4
+        return laie*0.5
 
 
 def lambda_calc(temperature):
