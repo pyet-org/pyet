@@ -10,6 +10,5 @@ setup(
     author_email='matevz.vremec@uni-graz.at, raoul.collenteur@uni-graz.at',
     description='pyet',
     test_suite='tests',
-    install_requires=['numpy>=1.15', 'matplotlib>=3.0', 'pandas>=1.0',
-                      'scipy>=1.1'],
+    install_requires=['matplotlib>=3.0', 'pandas>=1.0'],
 )
