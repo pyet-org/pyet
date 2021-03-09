@@ -1,16 +1,12 @@
-from numpy import sqrt, log, cos, pi, sin, exp, maximum, clip
+from numpy import sqrt, log, exp, clip
 
-from .utils import extraterrestrial_r, daylight_hours, solar_declination, \
-    day_of_year, relative_distance, sunset_angle, extraterrestrial_r_hour
+from .utils import extraterrestrial_r, daylight_hours, extraterrestrial_r_hour
 
 
-def penman(wind, elevation, latitude, solar=None, net=None, sflux=0, tmax=None,
+def penman(wind, elevation, lat, solar=None, net=None, sflux=0, tmax=None,
            tmin=None, rhmax=None, rhmin=None, rh=None, n=None, nn=None,
            rso=None, a=2.6, b=0.536):
-    """
-    Returns evapotranspiration calculated with the Penman (1948) method.
-
-    Based on equation 6 in Allen et al (1998).
+    """Evapotranspiration calculated with the Penman (1948) method.
 
     Parameters
     ----------
@@ -18,7 +14,7 @@ def penman(wind, elevation, latitude, solar=None, net=None, sflux=0, tmax=None,
         mean day wind speed [m/s]
     elevation: float/int
         the site elevation [m]
-    latitude: float/int
+    lat: float/int
         the site latitude [rad]
     solar: pandas.Series, optional
         incoming measured solar radiation [MJ m-2 d-1]
@@ -49,27 +45,33 @@ def penman(wind, elevation, latitude, solar=None, net=None, sflux=0, tmax=None,
 
     Returns
     -------
-        pandas.Series containing the calculated evapotranspiration
+    pandas.Series
+        Series containing the calculated evapotranspiration
 
     Examples
     --------
-    >>> penman_et = penman(wind, elevation, latitude, solar=solar, tmax=tmax,
+    >>> penman_et = penman(wind, elevation, lat, solar=solar, tmax=tmax,
     >>>                    tmin=tmin, rh=rh)
+
+    Notes
+    -----
+    Based on equation 6 in Allen et al (1998).
 
     """
     ta = (tmax + tmin) / 2
-    pressure = press_calc(elevation, ta)
-    gamma = psy_calc(pressure)
-    dlt = vpc_calc(ta)
-    lambd = lambda_calc(ta)
+    pressure = press_calc(elevation=elevation, temperature=ta)
+    gamma = psy_calc(pressure=pressure)
+    dlt = vpc_calc(temperature=ta)
+    lambd = lambda_calc(temperature=ta)
 
-    ea = ea_calc(tmax, tmin, rhmax, rhmin, rh)
-    es = es_calc(tmax, tmin)
+    ea = ea_calc(tmax=tmax, tmin=tmin, rhmax=rhmax, rhmin=rhmin, rh=rh)
+    es = es_calc(tmax=tmax, tmin=tmin)
+
     if net is None:
         rns = shortwave_r(solar=solar, n=n, nn=nn)  # in #  [MJ/m2/d]
         rnl = longwave_r(solar=solar, tmax=tmax, tmin=tmin, rhmax=rhmax,
                          rhmin=rhmin, rh=rh, rso=rso, elevation=elevation,
-                         lat=latitude, ea=ea)  # in #  [MJ/m2/d]
+                         lat=lat, ea=ea)  # in #  [MJ/m2/d]
         net = rns - rnl
 
     w = a * (1 + b * wind)
@@ -81,14 +83,11 @@ def penman(wind, elevation, latitude, solar=None, net=None, sflux=0, tmax=None,
     return pet
 
 
-def pm_fao56(wind, elevation, latitude, solar=None, net=None, sflux=0,
-             tmax=None, tmin=None, rhmax=None, rhmin=None, rh=None, n=None,
-             nn=None, rso=None):
-    """
-    Returns reference evapotranspiration using the FAO-56 Penman-Monteith
+def pm_fao56(wind, elevation, lat, solar=None, net=None, sflux=0, tmax=None,
+             tmin=None, rhmax=None, rhmin=None, rh=None, n=None, nn=None,
+             rso=None):
+    """Reference evapotranspiration using the FAO-56 Penman-Monteith
     equation (Monteith, 1965; Allen et al, 1998).
-
-    Based on equation 6 in Allen et al (1998).
 
     Parameters
     ----------
@@ -96,7 +95,7 @@ def pm_fao56(wind, elevation, latitude, solar=None, net=None, sflux=0,
         mean day wind speed [m/s]
     elevation: float/int
         the site elevation [m]
-    latitude: float/int
+    lat: float/int
         the site latitude [rad]
     solar: pandas.Series, optional
         incoming measured solar radiation [MJ m-2 d-1]
@@ -127,24 +126,28 @@ def pm_fao56(wind, elevation, latitude, solar=None, net=None, sflux=0,
 
     Examples
     --------
-    >>> pm_fao56_et = pm_fao56(wind, elevation, latitude, solar=solar,
+    >>> pm_fao56_et = pm_fao56(wind, elevation, lat, solar=solar,
     >>>                        tmax=tmax, tmin=tmin, rh=rh)
+
+    Notes
+    -----
+    Based on equation 6 in Allen et al (1998).
 
     """
     ta = (tmax + tmin) / 2
-    pressure = press_calc(elevation, ta)
-    gamma = psy_calc(pressure)
-    dlt = vpc_calc(ta)
+    pressure = press_calc(elevation=elevation, temperature=ta)
+    gamma = psy_calc(pressure=pressure)
+    dlt = vpc_calc(temperature=ta)
 
     gamma1 = (gamma * (1 + 0.34 * wind))
 
-    ea = ea_calc(tmax, tmin, rhmax=rhmax, rhmin=rhmin, rh=rh)
-    es = es_calc(tmax, tmin)
+    ea = ea_calc(tmax=tmax, tmin=tmin, rhmax=rhmax, rhmin=rhmin, rh=rh)
+    es = es_calc(tmax=tmax, tmin=tmin)
     if net is None:
         rns = shortwave_r(solar=solar, n=n, nn=nn)  # in [MJ/m2/d]
         rnl = longwave_r(solar=solar, tmax=tmax, tmin=tmin, rhmax=rhmax,
                          rhmin=rhmin, rh=rh, rso=rso, elevation=elevation,
-                         lat=latitude, ea=ea)  # in [MJ/m2/d]
+                         lat=lat, ea=ea)  # in [MJ/m2/d]
         net = rns - rnl
 
     den = (dlt + gamma1)
@@ -153,9 +156,9 @@ def pm_fao56(wind, elevation, latitude, solar=None, net=None, sflux=0,
     return (num1 + num2) / den
 
 
-def pm_asce(wind, elevation, latitude, solar=None, net=None, sflux=0,
-            tmax=None, tmin=None, rhmax=None, rhmin=None, rh=None, n=None,
-            nn=None, rso=None, lai=None, croph=None, rs=1, ra=1, rl=100):
+def pm_asce(wind, elevation, lat, solar=None, net=None, sflux=0, tmax=None,
+            tmin=None, rhmax=None, rhmin=None, rh=None, n=None, nn=None,
+            rso=None, lai=None, croph=None, rs=1, ra=1, rl=100):
     """
     Returns evapotranspiration calculated with the ASCE Penman-Monteith
     (Monteith, 1965; ASCE, 2005) method.
@@ -166,7 +169,7 @@ def pm_asce(wind, elevation, latitude, solar=None, net=None, sflux=0,
         mean day wind speed [m/s]
     elevation: float/int
         the site elevation [m]
-    latitude: float/int
+    lat: float/int
         the site latitude [rad]
     solar: pandas.Series, optional
         incoming measured solar radiation [MJ m-2 d-1]
@@ -207,7 +210,7 @@ def pm_asce(wind, elevation, latitude, solar=None, net=None, sflux=0,
 
     Examples
     --------
-    >>> pmasce = pm_asce(wind, elevation, latitude, rs=solar, tmax=tmax,
+    >>> pmasce = pm_asce(wind, elevation, lat, rs=solar, tmax=tmax,
     >>>                  tmin=tmin, rh=rh)
 
     """
@@ -228,7 +231,7 @@ def pm_asce(wind, elevation, latitude, solar=None, net=None, sflux=0,
         rns = shortwave_r(solar=solar, n=n, nn=nn)
         rnl = longwave_r(solar=solar, tmax=tmax, tmin=tmin, rhmax=rhmax,
                          rhmin=rhmin, rh=rh, rso=rso, elevation=elevation,
-                         lat=latitude, ea=ea)
+                         lat=lat, ea=ea)
         net = rns - rnl
     kmin = 86400
     den = (lambd * (dlt + gamma1))
@@ -237,28 +240,27 @@ def pm_asce(wind, elevation, latitude, solar=None, net=None, sflux=0,
     return num1 + num2
 
 
-def pm_corrected(wind, elevation, latitude, solar=None, net=None, sflux=0, tmean=None,
-                 tmax=None, tmin=None, rhmax=None, rhmin=None, rh=None, n=None,
-                 nn=None, rso=None, lai=None, croph=None, r_s=None, rs=1, ra=1, a_s=1,
-                 a_sh=1, rl=100, a=1.35, b=-0.35, co2=300, srs=0.0009, laieff=0, flai=1,
-                 freq="D"):
-    """
-    Returns evapotranspiration calculated with the upscaled corrected
+def pm_corrected(wind, elevation, lat, solar=None, net=None, sflux=0,
+                 tmean=None, tmax=None, tmin=None, rhmax=None, rhmin=None,
+                 rh=None, n=None, nn=None, rso=None, lai=None, croph=None,
+                 r_s=None, rs=1, ra=1, a_s=1, a_sh=1, rl=100, a=1.35, b=-0.35,
+                 co2=300, srs=0.0009, laieff=0, flai=1, freq="D"):
+    """Evapotranspiration calculated with the upscaled corrected
     Penman-Monteith equation from Schymanski (Schymanski, 2017).
 
     Parameters
     ----------
     wind: pandas.Series
         mean day wind speed [m/s]
-    elevation: float/int
+    elevation: float
         the site elevation [m]
-    latitude: float/int
+    lat: float
         the site latitude [rad]
     solar: pandas.Series, optional
         incoming measured solar radiation [MJ m-2 d-1]
     net: pandas.Series, optional
         net radiation [MJ m-2 d-1]
-    sflux: Series/float/int, optional
+    sflux: Series/float, optional
         soil heat flux [MJ m-2 d-1]
     tmax: pandas.Series, optional
         maximum day temperature [°C]
@@ -291,38 +293,46 @@ def pm_corrected(wind, elevation, latitude, solar=None, net=None, sflux=0, tmean
         on one side only, 2 if they are on both sides)
     a_sh: int, optional
         Fraction of projected area exchanging sensible heat with the air (2)
+    a: float/int, optional
+        wind coefficient [-]
+    b: float/int, optional
+        wind coefficient [-]
 
     Returns
     -------
-        pandas.Series containing the calculated evapotranspiration
+    pandas.Series
+        Series containing the calculated evapotranspiration.
 
     """
     if "D" in freq:
         tmean = (tmax + tmin) / 2
-        es = es_calc(tmax, tmin)
+        es = es_calc(tmax=tmax, tmin=tmin)
     else:
-        es = e0_calc(tmean)
-    lambd = lambda_calc(tmean)
-    pressure = press_calc(elevation, tmean)
-    gamma = psy_calc(pressure)
-    dlt = vpc_calc(tmean)
-    cp = 1.013 * 10 ** (-3)
+        es = e0_calc(temperature=tmean)
+    lambd = lambda_calc(temperature=tmean)
+    pressure = press_calc(elevation=elevation, temperature=tmean)
+    gamma = psy_calc(pressure=pressure)
+    dlt = vpc_calc(temperature=tmean)
     r_a = aero_r(wind, method=ra, croph=croph)
     ea = ea_calc(tmax=tmax, tmin=tmin, rhmax=rhmax, rhmin=rhmin, rh=rh)
-    rho_a = calc_rhoa(pressure, tmean, ea)
+    rho_a = calc_rhoa(pressure=pressure, ta=tmean, ea=ea)
+
     if net is None:
         rns = shortwave_r(solar=solar, n=n, nn=nn)
         rnl = longwave_r(solar=solar, tmax=tmax, tmin=tmin, rhmax=rhmax,
                          rhmin=rhmin, rh=rh, rso=rso, elevation=elevation,
-                         lat=latitude, ea=ea, a=a, b=b, freq=freq)
+                         lat=lat, ea=ea, a=a, b=b, freq=freq)
         net = rns - rnl * a_sh
-    kmin = 86400
-    if "H" in freq:
-        kmin = 3600
-    if r_s is None:
-        r_s = surface_r(method=rs, lai=lai, rl=rl, co2=co2, srs=srs, laieff=laieff, 
-                        flai=flai)
 
+    kmin = 86400
+    if freq == "H":
+        kmin /= 24
+
+    if r_s is None:
+        r_s = surface_r(method=rs, lai=lai, rl=rl, co2=co2, srs=srs,
+                        laieff=laieff, flai=flai)
+
+    cp = 1.013 * 10 ** (-3)
     gamma1 = gamma * a_sh / a_s * (1 + r_s / r_a)
     den = (lambd * (dlt + gamma1))
     num1 = (dlt * (net - sflux) / den)
@@ -330,13 +340,10 @@ def pm_corrected(wind, elevation, latitude, solar=None, net=None, sflux=0, tmean
     return num1 + num2
 
 
-def pm_fao1990(wind, elevation, latitude, solar=None, tmax=None, tmin=None,
-               rh=None, croph=None, ra=2, rs=60, n=None, nn=None):
-    """
-    Returns evapotranspiration calculated with the FAO Penman-Monteith
+def pm_fao1990(wind, elevation, lat, solar=None, tmax=None, tmin=None,
+               rh=None, croph=None, ra=2, n=None, nn=None):
+    """Evapotranspiration calculated with the FAO Penman-Monteith
     (Monteith, 1965; FAO, 1990) method.
-
-    Based on equation 30 (FAO, 1990).
 
     Parameters
     ----------
@@ -344,7 +351,7 @@ def pm_fao1990(wind, elevation, latitude, solar=None, tmax=None, tmin=None,
         mean day wind speed [m/s]
     elevation: float/int
         the site elevation [m]
-    latitude: float/int
+    lat: float/int
         the site latitude [rad]
     solar: pandas.Series, optional
         incoming measured solar radiation [MJ m-2 d-1]
@@ -359,28 +366,33 @@ def pm_fao1990(wind, elevation, latitude, solar=None, tmax=None, tmin=None,
 
     Returns
     -------
-        pandas.Series containing the calculated evapotranspiration
+    pandas.Series
+        Series containing the calculated evapotranspiration
 
     Examples
     --------
-    >>> pm_fao1990_et = pm_fao1990(wind, elevation, latitude, solar=solar,
+    >>> pm_fao1990_et = pm_fao1990(wind, elevation, lat, solar=solar,
     >>>                            tmax=tmax, tmin=tmin, rh=rh, croph=0.6)
+
+    Notes
+    -----
+    Based on equation 30 (FAO, 1990).
 
     """
     # aeroterm
     ta = (tmax + tmin) / 2.
-    lambd = lambda_calc(ta)
-    pressure = press_calc(elevation, ta)
+    lambd = lambda_calc(temperature=ta)
+    pressure = press_calc(elevation=elevation, temperature=ta)
     gamma = psy_calc(pressure=pressure, lambd=lambd)
-    eamax = e0_calc(tmax)
-    eamin = e0_calc(tmin)
+    eamax = e0_calc(temperature=tmax)
+    eamin = e0_calc(temperature=tmin)
 
     raa = aero_r(wind, method=ra, croph=croph)
-    eadew = ed_calc(tmax, tmin, rh)  # OK
+    eadew = ed_calc(tmax=tmax, tmin=tmin, rh=rh)  # OK
     aerodyn = raa * wind
     aerotcff = 0.622 * 3.486 * 86400. / aerodyn / 1.01
     lai = croph * 24
-    rs = 200/lai
+    rs = 200 / lai
     gamma1 = gamma * (1 + rs / raa)
     dlt = vpc_calc(tmin=tmin, tmax=tmax, method=1)
 
@@ -388,13 +400,12 @@ def pm_fao1990(wind, elevation, latitude, solar=None, tmax=None, tmin=None,
     eamean = (eamax + eamin) / 2
     etaero = gm_dl * aerotcff / (ta + 273.) * wind * (eamean - eadew)
 
-
     dl_dl = dlt / (dlt + gamma)
     # rad term
-    rso = rs_calc(solar.index, latitude)  # OK
+    rso = rs_calc(tindex=solar.index, lat=lat)  # OK
     rns = shortwave_r(solar=solar, n=n, nn=nn)
     rnl = longwave_r(solar, tmax=tmax, tmin=tmin, rh=rh, rso=rso,
-                     elevation=elevation, lat=latitude, ea=eadew)
+                     elevation=elevation, lat=lat, ea=eadew)
     net = rns - rnl
 
     radterm = dl_dl * (net) / lambd
@@ -402,14 +413,10 @@ def pm_fao1990(wind, elevation, latitude, solar=None, tmax=None, tmin=None,
     return pm, radterm, etaero, rnl, rns
 
 
-def priestley_taylor(wind, elevation, latitude, solar=None, net=None,
-                     tmax=None, tmin=None, rhmax=None, rhmin=None, rh=None,
-                     rso=None, n=None, nn=None, alpha=1.26):
-    """
-    Returns evapotranspiration calculated with the Penman-Monteith
-    (FAO,1990) method.
-
-    Based on equation 6 in Allen et al (1998).
+def priestley_taylor(wind, elevation, lat, solar=None, net=None, tmax=None,
+                     tmin=None, rhmax=None, rhmin=None, rh=None, rso=None,
+                     n=None, nn=None, alpha=1.26):
+    """Evapotranspiration calculated with Penman-Monteith (FAO, 1990) method.
 
     Parameters
     ----------
@@ -417,7 +424,7 @@ def priestley_taylor(wind, elevation, latitude, solar=None, net=None,
         mean day wind speed [m/s]
     elevation: float/int
         the site elevation [m]
-    latitude: float/int
+    lat: float/int
         the site latitude [rad]
     solar: pandas.Series
         incoming measured solar radiation [MJ m-2 d-1]
@@ -448,30 +455,34 @@ def priestley_taylor(wind, elevation, latitude, solar=None, net=None,
 
     Examples
     --------
-    >>> pm = priestley_taylor(wind, elevation, latitude, solar=solar,
+    >>> pm = priestley_taylor(wind, elevation, lat, solar=solar,
     >>>                       tmax=tmax, tmin=tmin, rh=rh, croph=0.6)
+
+    Notes
+    -----
+    Based on equation 6 in Allen et al (1998).
 
     """
     ta = (tmax + tmin) / 2
-    lambd = lambda_calc(ta)
-    pressure = press_calc(elevation, ta)
+    lambd = lambda_calc(temperature=ta)
+    pressure = press_calc(elevation=elevation, temperature=ta)
     gamma = psy_calc(pressure=pressure, lambd=None)
     dlt = vpc_calc(temperature=ta, method=0)
 
     ea = ea_calc(tmax, tmin, rhmax=rhmax, rhmin=rhmin, rh=rh)
+
     if net is None:
         rns = shortwave_r(solar=solar, n=n, nn=nn)  # in [MJ/m2/d]
         rnl = longwave_r(solar=solar, tmax=tmax, tmin=tmin, rhmax=rhmax,
                          rhmin=rhmin, rh=rh, rso=rso, elevation=elevation,
-                         lat=latitude, ea=ea)  # in [MJ/m2/d]
+                         lat=lat, ea=ea)  # in [MJ/m2/d]
         net = rns - rnl
 
     return (alpha * dlt * net) / (lambd * (dlt + gamma))
 
 
 def makkink(tmax, tmin, rs, elevation, f=1):
-    """
-    Returns evapotranspiration calculated with the Makkink (1957) method.
+    """Evapotranspiration calculated with the Makkink (1957) method.
 
     Parameters
     ----------
@@ -481,9 +492,9 @@ def makkink(tmax, tmin, rs, elevation, f=1):
         minimum day temperature [°C]
     rs: pandas.Series
         incoming measured solar radiation [MJ m-2 d-1]
-    elevation: float/int
+    elevation: float
         the site elevation [m]
-    f: float/int, optional
+    f: float, optional
         crop coefficient [-]
 
     Returns
@@ -508,17 +519,15 @@ def makkink(tmax, tmin, rs, elevation, f=1):
 
 def longwave_r(solar, tmax=None, tmin=None, rhmax=None, rhmin=None,
                rh=None, rso=None, elevation=None, lat=None, ea=None,
-               a=1.35, b=-0.35, freq="D"):
-    """
-    Net outgoing longwave radiation.
+               a=1.35, b=-0.35, freq="D", ta=None):
+    """Net outgoing longwave radiation.
 
-    Based on equation 39 in Allen et al (1998).
     Parameters
     ----------
     solar: Series
         incoming measured solar radiation [MJ m-2 d-1]
-    elevation: float/int
-        the site elevation [m]
+    elevation: float
+        the site elevation above sea level [m]
     lat: float/int
         the site latitude [rad]
     tmax: Series
@@ -535,25 +544,31 @@ def longwave_r(solar, tmax=None, tmin=None, rhmax=None, rhmin=None,
         clear-sky solar radiation [MJ m-2 day-1]
     ea: Series
         actual vapour pressure.
+
     Returns
     -------
         pandas.Series containing the calculated net outgoing radiation
+
+    Notes
+    -----
+    Based on equation 39 in Allen et al (1998).
+
     """
     if ea is None:
         ea = ea_calc(tmin=tmin, tmax=tmax, rhmin=rhmin, rhmax=rhmax, rh=rh)
-    if "H" in freq:
+
+    if freq == "H":
         steff = 2.042 * 10 ** (-10)  # MJm-2K-4h-1
         if rso is None:
-            ra = extraterrestrial_r_hour(solar.index, lat)
-            rso = rso_calc(ra, elevation)
-        solar_rat = solar / rso
-        solar_rat = clip(solar_rat, 0.3, 1)
+            ra = extraterrestrial_r_hour(tindex=solar.index, lat=lat)
+            rso = rso_calc(ra=ra, elevation=elevation)
+        solar_rat = clip(solar / rso, 0.3, 1)
         tmp1 = steff * (ta + 273.2) ** 4
     else:
         steff = 4.903 * 10 ** (-9)  # MJm-2K-4d-1
         if rso is None:
-            ra = extraterrestrial_r(solar.index, lat)
-            rso = rso_calc(ra, elevation)
+            ra = extraterrestrial_r(tindex=solar.index, lat=lat)
+            rso = rso_calc(ra=ra, elevation=elevation)
         solar_rat = clip(solar / rso, 0.3, 1)
         tmp1 = steff * ((tmax + 273.2) ** 4 + (tmin + 273.2) ** 4) / 2
 
@@ -685,6 +700,9 @@ def rso_calc(ra, elevation):
     ----------
     ra: Series
         extraterrestrial radiation [MJ m-2 day-1]
+    elevation: float
+        the site elevation above sea level [m]
+
     Returns
     -------
         Series of clear-sky solar radiation [MJ m-2 day-1]
@@ -694,8 +712,7 @@ def rso_calc(ra, elevation):
 
 
 def psy_calc(pressure, lambd=None):
-    """
-    Psychrometric constant [kPa degC-1].
+    """Psychrometric constant [kPa degC-1].
 
     Parameters
     ----------
@@ -723,14 +740,14 @@ def psy_calc(pressure, lambd=None):
 
 
 def press_calc(elevation, temperature):
-    """
-    Atmospheric pressure.
+    """Atmospheric pressure. Based on equation 7 in Allen et al (1998).
 
-    Based on equation 7 in Allen et al (1998).
     Parameters
     ----------
     elevation: int/real
         elevation above sea level [m].
+    temperature
+
     Returns
     -------
         int/real of atmospheric pressure [kPa].
@@ -740,16 +757,15 @@ def press_calc(elevation, temperature):
                     (273.16 + temperature)) ** (9.807 / (0.0065 * 287))
 
 
-def shortwave_r(solar=None, meteoindex=None, lat=None, alpha=0.23, n=None,
+def shortwave_r(solar=None, tindex=None, lat=None, alpha=0.23, n=None,
                 nn=None):
-    """
-    Net solar or shortwave radiation.
+    """Net solar or shortwave radiation.
 
     Based on equation 38 in Allen et al (1998).
 
     Parameters
     ----------
-    meteoindex: pandas.Series.index
+    tindex: pandas.Series.index
     solar: Series
         incoming measured solar radiation [MJ m-2 d-1]
     lat: float/int
@@ -769,17 +785,15 @@ def shortwave_r(solar=None, meteoindex=None, lat=None, alpha=0.23, n=None,
     if solar is not None:
         return (1 - alpha) * solar
     else:
-        return (1 - alpha) * in_solar_r(meteoindex, lat, n=n, nn=nn)
+        return (1 - alpha) * in_solar_r(tindex, lat, n=n, nn=nn)
 
 
-def in_solar_r(meteoindex, lat, a_s=0.25, b_s=0.5, n=None, nn=None):
+def in_solar_r(tindex, lat, a_s=0.25, b_s=0.5, n=None, nn=None):
+    """Incoming solar radiation. Based on eq. 35 from FAO56.
     """
-    Incoming solar radiation.
-    Based on eq. 35 from FAO56.
-    """
-    ra = extraterrestrial_r(meteoindex, lat)
+    ra = extraterrestrial_r(tindex, lat)
     if n is None:
-        n = daylight_hours(meteoindex, lat)
+        n = daylight_hours(tindex, lat)
     return (a_s + b_s * n / nn) * ra
 
 
@@ -788,7 +802,8 @@ def lai_calc(method=1, croph=None):
         return 0.24 * croph
 
 
-def surface_r(lai=None, method=1, laieff=0, rl=100, co2=300, srs=0.0009, flai=1):
+def surface_r(lai=None, method=1, laieff=0, rl=100, co2=300, srs=0.0009,
+              flai=1):
     if method == 1:
         return 70
     elif method == 2:
@@ -800,24 +815,25 @@ def surface_r(lai=None, method=1, laieff=0, rl=100, co2=300, srs=0.0009, flai=1)
         return rl / lai_eff * fco2
     elif method == 4:
         lai_eff = calc_laieff(lai=lai, method=laieff)
-        flai1 = lai_eff/lai_eff.max() * flai
+        flai1 = lai_eff / lai_eff.max() * flai
         fco2 = (1 + srs * (co2 - 300))
         return rl / lai_eff * fco2 * flai1
+
 
 def calc_laieff(lai=None, method=0):
     if method == 0:
         return 0.5 * lai
     if method == 1:
-        return lai/(0.3*lai+1.2)
+        return lai / (0.3 * lai + 1.2)
     if method == 2:
         laie = lai.copy()
-        laie[(lai>2)&(lai<4)] = 2
-        laie[lai>4] = 0.5 * lai
+        laie[(lai > 2) & (lai < 4)] = 2
+        laie[lai > 4] = 0.5 * lai
         return laie
     if method == 3:
         laie = lai.copy()
-        laie[lai>4] = 4
-        return laie*0.5
+        laie[lai > 4] = 4
+        return laie * 0.5
 
 
 def lambda_calc(temperature):
@@ -833,8 +849,7 @@ def calc_rhoa(pressure, ta, ea):
 
 
 def aero_r(wind, croph=None, zw=2, zh=2, method=1):
-    """
-    The aerodynamic resistance, applied for neutral stability conditions
+    """The aerodynamic resistance, applied for neutral stability conditions
      from ASCE (2001), eq. B.2
 
     Parameters
@@ -870,12 +885,12 @@ def cloudiness_factor(rs, rso, ac=1.35, bc=-0.35):
     return ac * rs / rso + bc
 
 
-def rs_calc(meteoindex, lat, a_s=0.25, b_s=0.5):
+def rs_calc(tindex, lat, a_s=0.25, b_s=0.5):
     """
     Nncoming solar radiation rs
     From FAO (1990), ANNEX V, eq. 52
     """
-    ra = extraterrestrial_r(meteoindex, lat)
+    ra = extraterrestrial_r(tindex, lat)
     nn = 1
     return (a_s + b_s * nn) * ra
 
@@ -890,7 +905,7 @@ def ed_calc(tmax, tmin, rh):
     return rh / (50. / eamin + 50. / eamax)
 
 
-def calc_rns(solar=None, meteoindex=None, lat=None, alpha=0.23):
+def calc_rns(solar=None, tindex=None, lat=None, alpha=0.23):
     """
     Net Shortwave Radiation Rns
     From FAO (1990), ANNEX V, eq. 51
@@ -898,7 +913,7 @@ def calc_rns(solar=None, meteoindex=None, lat=None, alpha=0.23):
     if solar is not None:
         return (1 - alpha) * solar
     else:
-        return (1 - alpha) * rs_calc(meteoindex, lat)
+        return (1 - alpha) * rs_calc(tindex, lat)
 
 
 def calc_rnl(tmax, tmin, ea, cloudf, longa=0.34, longb=-0.139):

@@ -23,7 +23,7 @@ In the current state, 9 methods for calculating ET are implemented:
 ## Examples and Documentation
 After defining the input data, evapotranspiration is estimated using only one line of python code:
 
-`>>> pyet.et.pm_fao56(wind, elevation, latitude, solar=solar, tmax=tmax, tmin=tmin, rh=rh)`
+`>>> pyet.pm_fao56(wind, elevation, latitude, solar=solar, tmax=tmax, tmin=tmin, rh=rh)`
  
 Examples of using PyEt can be found in the examples folders.
 
