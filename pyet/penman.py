@@ -304,7 +304,7 @@ def pm_corrected(wind, elevation, lat, solar=None, net=None, sflux=0,
         Series containing the calculated evapotranspiration.
 
     """
-    if "D" in freq:
+    if freq == "D":
         tmean = (tmax + tmin) / 2
         es = es_calc(tmax=tmax, tmin=tmin)
     else:
@@ -332,7 +332,7 @@ def pm_corrected(wind, elevation, lat, solar=None, net=None, sflux=0,
         r_s = surface_r(method=rs, lai=lai, rl=rl, co2=co2, srs=srs,
                         laieff=laieff, flai=flai)
 
-    cp = 1.013 * 10 ** (-3)
+    cp = 1.013 * 10 ** -3
     gamma1 = gamma * a_sh / a_s * (1 + r_s / r_a)
     den = (lambd * (dlt + gamma1))
     num1 = (dlt * (net - sflux) / den)
@@ -797,11 +797,6 @@ def in_solar_r(tindex, lat, a_s=0.25, b_s=0.5, n=None, nn=None):
     return (a_s + b_s * n / nn) * ra
 
 
-def lai_calc(method=1, croph=None):
-    if method == 1:
-        return 0.24 * croph
-
-
 def surface_r(lai=None, method=1, laieff=0, rl=100, co2=300, srs=0.0009,
               flai=1):
     if method == 1:
@@ -854,16 +849,20 @@ def aero_r(wind, croph=None, zw=2, zh=2, method=1):
 
     Parameters
     ----------
-    wind: Series
+    wind: pandas.Series
          wind speed at height z [m/s]
-    zw: float
+    croph: float, optional
+        DESCRIBE
+    zw: float, optional
         height of wind measurements [m]
-    zh: float
+    zh: float, optional
          height of humidity and or air temperature measurements [m]
+    method: 1 or 2, optionall
 
     Returns
     -------
-        pandas.Series containing the calculated aerodynamic resistance.
+    pandas.Series
+        Series containing the calculated aerodynamic resistance.
 
     """
     if method == 1:
@@ -878,17 +877,13 @@ def aero_r(wind, croph=None, zw=2, zh=2, method=1):
 
 
 def cloudiness_factor(rs, rso, ac=1.35, bc=-0.35):
-    """
-    Cloudiness factor f
-    From FAO (1990), ANNEX V, eq. 57
+    """Cloudiness factor f. From FAO (1990), ANNEX V, eq. 57
     """
     return ac * rs / rso + bc
 
 
 def rs_calc(tindex, lat, a_s=0.25, b_s=0.5):
-    """
-    Nncoming solar radiation rs
-    From FAO (1990), ANNEX V, eq. 52
+    """Incoming solar radiation rs. From FAO (1990), ANNEX V, eq. 52
     """
     ra = extraterrestrial_r(tindex, lat)
     nn = 1
@@ -917,8 +912,7 @@ def calc_rns(solar=None, tindex=None, lat=None, alpha=0.23):
 
 
 def calc_rnl(tmax, tmin, ea, cloudf, longa=0.34, longb=-0.139):
-    """
-    Net Longwave Radiation Rnl from FAO (1990), ANNEX V, eq. 56
+    """Net Longwave Radiation Rnl from FAO (1990), ANNEX V, eq. 56
 
     Parameters
     ----------
