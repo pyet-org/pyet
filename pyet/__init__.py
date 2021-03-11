@@ -1,8 +1,9 @@
 from .hamon import hamon
 from .hargreaves import hargreaves
 from .jensen_haise import jensen_haise
-from .penman import penman, pm_asce, pm_fao56, pm_fao1990, pm_corrected, \
-    priestley_taylor, makkink, press_calc, psy_calc, e0_calc, es_calc, \
-    ea_calc, longwave_r, vpc_calc, calc_rhoa, lambda_calc
+from .penman import penman, pm_fao56, pm, priestley_taylor, makkink, calc_psy,\
+    calc_vpc, calc_lambda, calc_press,  calc_rho, calc_e0, calc_es, calc_ea, \
+    calc_rad_long, calc_rad_short, calc_rad_sol_in, calc_rso, calc_res_surf, \
+    calc_laieff, calc_res_aero
 from .utils import sunset_angle, day_of_year, daylight_hours, \
     relative_distance, extraterrestrial_r, solar_declination

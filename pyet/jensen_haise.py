@@ -1,39 +1,42 @@
-def jensen_haise(tmax, tmin, solar, cr=0.025, tx=-3.0):
-    """Evapotranspiration calculated with the Jensen and Haise (1963) method.
+from .penman import calc_lambda
+
+
+def jensen_haise(tmean, Rs, cr=0.025, tx=-3):
+    """Evaporation calculated accordinf to [jensen_haise_1963]_.
 
     Parameters
     ----------
-    tmax: pandas.Series
-        maximum day temperature [°C]
-    tmin: pandas.Series
-        minimum day temperature [°C]
-    solar: Series
-        incoming measured solar radiation [MJ m-2 d-1]
-    cr: float
+    tmean: pandas.Series, optional
+        average day temperature [°C]
+    Rs: pandas.Series, optional
+        incoming solar radiation [MJ m-2 d-1]
+    cr: float, optional
         temperature coefficient [-]
-    tx: float
+    tx: float, optional
         intercept of the temperature axis [°C]
 
     Returns
     -------
-    pandas.Series
-        Series containing the calculated evapotranspiration.
+    pandas.Series containing the calculated evaporation.
 
     Examples
     --------
-    >>> jh_et = jensen_haise(tmax, tmin, solar)
+    >>> jh_et = jensen_haise(tmean, Rs)
 
     Notes
     -----
-    Based on equation 6 in Allen et al (1998).
+        Based on equation (K-15) in [jensen_allen_2016]_.
+
+    .. math::
+    -----
+        E = \\frac{C_r(T-T_x)R_s}{\\lambda}
+
+    References
+    -----
+    .. [jensen_allen_2016] Task Committee on Revision of Manual 70. (2016).
+    Evaporation, evapotranspiration, and irrigation water requirements.
+    American Society of Civil Engineers.
 
     """
-    ta = (tmax + tmin) / 2
-    lambd = lambda_calc(temperature=ta)
-    return 1 / lambd * cr * (ta - tx) * solar
-
-
-def lambda_calc(temperature):
-    """From FAO (1990), ANNEX V, eq. 1
-    """
-    return 2.501 - 0.002361 * temperature
+    lambd = calc_lambda(tmean)
+    return Rs / lambd * cr * (tmean - tx)

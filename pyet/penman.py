@@ -2,26 +2,32 @@ from numpy import sqrt, log, exp, clip
 
 from .utils import extraterrestrial_r, daylight_hours, extraterrestrial_r_hour
 
+# Specific heat of air [MJ kg-1 °C-1]
+CP = 1.013 * 10 ** -3
+# Stefan Boltzmann constant - hourly [MJm-2K-4h-1]
+STEFAN_BOLTZMANN_HOUR = 2.042 * 10 ** -10
+# Stefan Boltzmann constant - daily [MJm-2K-4d-1]
+STEFAN_BOLTZMANN_DAY = 4.903 * 10 ** -9
 
-def penman(wind, elevation, lat, solar=None, net=None, sflux=0, tmax=None,
-           tmin=None, rhmax=None, rhmin=None, rh=None, n=None, nn=None,
-           rso=None, a=2.6, b=0.536):
-    """Evapotranspiration calculated with the Penman (1948) method.
+
+def penman(wind, Rs=None, Rn=None, G=0, tmean=None, tmax=None, tmin=None,
+           rhmax=None, rhmin=None, rh=None, pressure=None, elevation=None,
+           lat=None, n=None, nn=None, Rso=None, aw=2.6, bw=0.536, a=1.35,
+           b=-0.35):
+    """Evaporation calculated according to [penman_1948]_.
 
     Parameters
     ----------
     wind: pandas.Series
         mean day wind speed [m/s]
-    elevation: float/int
-        the site elevation [m]
-    lat: float/int
-        the site latitude [rad]
-    solar: pandas.Series, optional
+    Rs: pandas.Series, optional
         incoming measured solar radiation [MJ m-2 d-1]
-    net: pandas.Series, optional
+    Rn: pandas.Series, optional
         net radiation [MJ m-2 d-1]
-    sflux: pandas.Series/int, optional
+    G: pandas.Series/int, optional
         soil heat flux [MJ m-2 d-1]
+    tmean: pandas.Series, optional
+        average day temperature [°C]
     tmax: pandas.Series, optional
         maximum day temperature [°C]
     tmin: pandas.Series, optional
@@ -32,77 +38,96 @@ def penman(wind, elevation, lat, solar=None, net=None, sflux=0, tmax=None,
         mainimum daily relative humidity [%]
     rh: pandas.Series, optional
         mean daily relative humidity [%]
+    pressure: float, optional
+        atmospheric pressure [kPa]
+    elevation: float, optional
+        the site elevation [m]
+    lat: float, optional
+        the site latitude [rad]
     n: pandas.Series/float, optional
         actual duration of sunshine [hour]
     nn: pandas.Series/float, optional
         maximum possible duration of sunshine or daylight hours [hour]
-    rso: pandas.Series/float, optional
+    Rso: pandas.Series/float, optional
         clear-sky solar radiation [MJ m-2 day-1]
-    a: float/int, optional
+    aw: float, optional
         wind coefficient [-]
-    b: float/int, optional
+    bw: float, optional
         wind coefficient [-]
+    a: float, optional
+        empirical coefficient for Net Long-Wave radiation [-]
+    b: float, optional
+        empirical coefficient for Net Long-Wave radiation [-]
 
     Returns
     -------
-    pandas.Series
-        Series containing the calculated evapotranspiration
+    pandas.Series containing the calculated evaporation
 
     Examples
     --------
-    >>> penman_et = penman(wind, elevation, lat, solar=solar, tmax=tmax,
-    >>>                    tmin=tmin, rh=rh)
+    >>> et_penman = penman(wind, Rn=Rn, tmean=tmean, rh=rh)
 
-    Notes
+    .. math::
     -----
-    Based on equation 6 in Allen et al (1998).
+        E = \\frac{\\Delta (R_{n}-G)+ 6.43 \\gamma (a_w+b_w u_2)
+        (e_{s}-e_{a})}{\\lambda (\\Delta +\\gamma)}
+
+    References
+    -----
+    .. [penman_1948] Penman, H. L. (1948). Natural evaporation from open water,
+       bare soil and grass. Proceedings of the Royal Society of London. Series
+       A. Mathematical and Physical Sciences, 193, 120-145.
+    .. [valiantzas_2006] Valiantzas, J. D. (2006). Simplified versions for the
+       Penman evaporation equation using routine weather data. Journal of
+       Hydrology, 331(3-4), 690-702.
 
     """
-    ta = (tmax + tmin) / 2
-    pressure = press_calc(elevation=elevation, temperature=ta)
-    gamma = psy_calc(pressure=pressure)
-    dlt = vpc_calc(temperature=ta)
-    lambd = lambda_calc(temperature=ta)
+    if tmean is None:
+        tmean = (tmax + tmin) / 2
+    if pressure is None:
+        pressure = calc_press(elevation)
+    gamma = calc_psy(pressure)
+    dlt = calc_vpc(tmean)
+    lambd = calc_lambda(tmean)
 
-    ea = ea_calc(tmax=tmax, tmin=tmin, rhmax=rhmax, rhmin=rhmin, rh=rh)
-    es = es_calc(tmax=tmax, tmin=tmin)
+    ea = calc_ea(tmean=tmean, tmax=tmax, tmin=tmin, rhmax=rhmax, rhmin=rhmin,
+                 rh=rh)
+    es = calc_es(tmean=tmean, tmax=tmax, tmin=tmin)
 
-    if net is None:
-        rns = shortwave_r(solar=solar, n=n, nn=nn)  # in #  [MJ/m2/d]
-        rnl = longwave_r(solar=solar, tmax=tmax, tmin=tmin, rhmax=rhmax,
-                         rhmin=rhmin, rh=rh, rso=rso, elevation=elevation,
-                         lat=lat, ea=ea)  # in #  [MJ/m2/d]
-        net = rns - rnl
+    if Rn is None:
+        Rns = calc_rad_short(Rs=Rs, n=n, nn=nn)  # [MJ/m2/d]
+        Rnl = calc_rad_long(Rs=Rs, tmean=tmean, tmax=tmax, tmin=tmin,
+                            rhmax=rhmax, rhmin=rhmin, rh=rh,
+                            elevation=elevation, lat=lat, Rso=Rso, a=a, b=b,
+                            ea=ea)  # [MJ/m2/d]
+        Rn = Rns - Rnl
 
-    w = a * (1 + b * wind)
+    fu = aw * (1 + bw * wind)
 
     den = lambd * (dlt + gamma)
-    num1 = (dlt * (net - sflux) / den)
-    num2 = (gamma * (es - ea) * w / den)
+    num1 = (dlt * (Rn - G) / den)
+    num2 = (gamma * (es - ea) * fu / den)
     pet = (num1 + num2)
     return pet
 
 
-def pm_fao56(wind, elevation, lat, solar=None, net=None, sflux=0, tmax=None,
-             tmin=None, rhmax=None, rhmin=None, rh=None, n=None, nn=None,
-             rso=None):
-    """Reference evapotranspiration using the FAO-56 Penman-Monteith
-    equation (Monteith, 1965; Allen et al, 1998).
+def pm_fao56(wind, Rs=None, Rn=None, G=0, tmean=None, tmax=None, tmin=None,
+             rhmax=None, rhmin=None, rh=None, pressure=None, elevation=None,
+             lat=None, n=None, nn=None, Rso=None, a=1.35, b=-0.35):
+    """Evaporation calculated according to [allen_1998]_..
 
     Parameters
     ----------
-    wind: Series
+    wind: pandas.Series
         mean day wind speed [m/s]
-    elevation: float/int
-        the site elevation [m]
-    lat: float/int
-        the site latitude [rad]
-    solar: pandas.Series, optional
+    Rs: pandas.Series, optional
         incoming measured solar radiation [MJ m-2 d-1]
-    net: pandas.Series, optional
+    Rn: pandas.Series, optional
         net radiation [MJ m-2 d-1]
-    sflux: Series/float/int, optional
+    G: pandas.Series/int, optional
         soil heat flux [MJ m-2 d-1]
+    tmean: pandas.Series, optional
+        average day temperature [°C]
     tmax: pandas.Series, optional
         maximum day temperature [°C]
     tmin: pandas.Series, optional
@@ -113,70 +138,90 @@ def pm_fao56(wind, elevation, lat, solar=None, net=None, sflux=0, tmax=None,
         mainimum daily relative humidity [%]
     rh: pandas.Series, optional
         mean daily relative humidity [%]
-    n: Series/float, optional
+    pressure: float, optional
+        atmospheric pressure [kPa]
+    elevation: float, optional
+        the site elevation [m]
+    lat: float, optional
+        the site latitude [rad]
+    n: pandas.Series/float, optional
         actual duration of sunshine [hour]
-    nn: Series/float, optional
+    nn: pandas.Series/float, optional
         maximum possible duration of sunshine or daylight hours [hour]
-    rso: Series/float, optional
+    Rso: pandas.Series/float, optional
         clear-sky solar radiation [MJ m-2 day-1]
+    a: float, optional
+        empirical coefficient for Net Long-Wave radiation [-]
+    b: float, optional
+        empirical coefficient for Net Long-Wave radiation [-]
 
     Returns
     -------
-        pandas.Series containing the calculated evapotranspiration
+        pandas.Series containing the calculated evaporation
 
     Examples
     --------
-    >>> pm_fao56_et = pm_fao56(wind, elevation, lat, solar=solar,
-    >>>                        tmax=tmax, tmin=tmin, rh=rh)
+    >>> et_fao56 = pm_fao56(wind, Rn=Rn, tmean=tmean, rh=rh)
 
-    Notes
+    .. math::
     -----
-    Based on equation 6 in Allen et al (1998).
+        $E = \\frac{0.408 \\Delta (R_{n}-G)+ \\gamma \\frac{900}{T+273}
+        (e_{s}-e_{a})}{\\Delta +\\gamma(1+0.34u_2)}$
+
+    References
+    -----
+    .. [allen_1998] Allen, R. G., Pereira, L. S., Raes, D., & Smith, M. (1998).
+       Crop evapotranspiration-Guidelines for computing crop water
+       requirements-FAO Irrigation and drainage paper 56. Fao, Rome, 300.
+       (http://www.fao.org/3/x0490e/x0490e06.htm#TopOfPage)
 
     """
-    ta = (tmax + tmin) / 2
-    pressure = press_calc(elevation=elevation, temperature=ta)
-    gamma = psy_calc(pressure=pressure)
-    dlt = vpc_calc(temperature=ta)
+    if tmean is None:
+        tmean = (tmax + tmin) / 2
+    if pressure is None:
+        pressure = calc_press(elevation)
+    gamma = calc_psy(pressure)
+    dlt = calc_vpc(tmean)
 
     gamma1 = (gamma * (1 + 0.34 * wind))
 
-    ea = ea_calc(tmax=tmax, tmin=tmin, rhmax=rhmax, rhmin=rhmin, rh=rh)
-    es = es_calc(tmax=tmax, tmin=tmin)
-    if net is None:
-        rns = shortwave_r(solar=solar, n=n, nn=nn)  # in [MJ/m2/d]
-        rnl = longwave_r(solar=solar, tmax=tmax, tmin=tmin, rhmax=rhmax,
-                         rhmin=rhmin, rh=rh, rso=rso, elevation=elevation,
-                         lat=lat, ea=ea)  # in [MJ/m2/d]
-        net = rns - rnl
+    ea = calc_ea(tmean=tmean, tmax=tmax, tmin=tmin, rhmax=rhmax, rhmin=rhmin,
+                 rh=rh)
+    es = calc_es(tmean=tmean, tmax=tmax, tmin=tmin)
+
+    if Rn is None:
+        Rns = calc_rad_short(Rs=Rs, n=n, nn=nn)  # [MJ/m2/d]
+        Rnl = calc_rad_long(Rs=Rs, tmean=tmean, tmax=tmax, tmin=tmin,
+                            rhmax=rhmax, rhmin=rhmin, rh=rh,
+                            elevation=elevation, lat=lat, Rso=Rso, a=a, b=b,
+                            ea=ea)  # [MJ/m2/d]
+        Rn = Rns - Rnl
 
     den = (dlt + gamma1)
-    num1 = (0.408 * dlt * (net - sflux))
-    num2 = (gamma * (es - ea) * 900 * wind / (ta + 273))
+    num1 = (0.408 * dlt * (Rn - G))
+    num2 = (gamma * (es - ea) * 900 * wind / (tmean + 273))
     return (num1 + num2) / den
 
 
-def pm_asce(wind, elevation, lat, solar=None, net=None, sflux=0, tmax=None,
-            tmin=None, rhmax=None, rhmin=None, rh=None, n=None, nn=None,
-            rso=None, lai=None, croph=None, rs=1, ra=1, rl=100):
-    """
-    Returns evapotranspiration calculated with the ASCE Penman-Monteith
-    (Monteith, 1965; ASCE, 2005) method.
+def pm(wind, Rs=None, Rn=None, G=0, tmean=None, tmax=None, tmin=None,
+       rhmax=None, rhmin=None, rh=None, pressure=None, elevation=None,
+       lat=None, n=None, nn=None, Rso=None, a=1.35, b=-0.35, lai=None,
+       croph=None, rl=100, rs=70, ra_method=1, a_sh=1, a_s=1, lai_eff=1,
+       srs=0.0009, co2=300):
+    """Evaporation calculated according to [monteith_1965]_.
 
     Parameters
     ----------
     wind: pandas.Series
         mean day wind speed [m/s]
-    elevation: float/int
-        the site elevation [m]
-    lat: float/int
-        the site latitude [rad]
-    solar: pandas.Series, optional
+    Rs: pandas.Series, optional
         incoming measured solar radiation [MJ m-2 d-1]
-    net: pandas.Series, optional
+    Rn: pandas.Series, optional
         net radiation [MJ m-2 d-1]
-    sflux: Series/float/int, optional
+    G: pandas.Series/int, optional
         soil heat flux [MJ m-2 d-1]
+    tmean: pandas.Series, optional
+        average day temperature [°C]
     tmax: pandas.Series, optional
         maximum day temperature [°C]
     tmin: pandas.Series, optional
@@ -184,270 +229,161 @@ def pm_asce(wind, elevation, lat, solar=None, net=None, sflux=0, tmax=None,
     rhmax: pandas.Series, optional
         maximum daily relative humidity [%]
     rhmin: pandas.Series, optional
-        minimum daily relative humidity [%]
+        mainimum daily relative humidity [%]
     rh: pandas.Series, optional
         mean daily relative humidity [%]
-    n: pandas.Series/float, optional
-        actual duration of sunshine [hour]
-    nn: pandas.Series/float, optional
-        maximum possible duration of sunshine or daylight hours [hour]
-    rso: pandas.Series/float, optional
-        clear-sky solar radiation [MJ m-2 day-1]
-    lai: pandas.Series/float, optional
-        measured leaf area index [-]
-    croph: float/int/pandas.series, optional
-        crop height [m]
-    rs: int, optional
-        1 => rs = 70
-        2 => rs = rl/LAI; rl = 200
-    ra: int, optional
-        1 => ra = 208/wind
-        2 => ra is calculated based on equation 36 in FAO (1990), ANNEX V.
-
-    Returns
-    -------
-        pandas.Series containing the calculated evapotranspiration
-
-    Examples
-    --------
-    >>> pmasce = pm_asce(wind, elevation, lat, rs=solar, tmax=tmax,
-    >>>                  tmin=tmin, rh=rh)
-
-    """
-    ta = (tmax + tmin) / 2
-    lambd = lambda_calc(ta)
-    pressure = press_calc(elevation, ta)
-    gamma = psy_calc(pressure)
-    dlt = vpc_calc(ta)
-    cp = 1.013 * 10 ** (-3)
-    r_a = aero_r(wind, method=ra, croph=croph)
-    r_s = surface_r(method=rs, lai=lai, rl=rl)
-    gamma1 = gamma * (1 + r_s / r_a)
-
-    ea = ea_calc(tmax=tmax, tmin=tmin, rhmax=rhmax, rhmin=rhmin, rh=rh)
-    es = es_calc(tmax, tmin)
-    rho_a = calc_rhoa(pressure, ta, ea)
-    if net is None:
-        rns = shortwave_r(solar=solar, n=n, nn=nn)
-        rnl = longwave_r(solar=solar, tmax=tmax, tmin=tmin, rhmax=rhmax,
-                         rhmin=rhmin, rh=rh, rso=rso, elevation=elevation,
-                         lat=lat, ea=ea)
-        net = rns - rnl
-    kmin = 86400
-    den = (lambd * (dlt + gamma1))
-    num1 = (dlt * (net - sflux) / den)
-    num2 = (rho_a * cp * kmin * (es - ea) / r_a / den)
-    return num1 + num2
-
-
-def pm_corrected(wind, elevation, lat, solar=None, net=None, sflux=0,
-                 tmean=None, tmax=None, tmin=None, rhmax=None, rhmin=None,
-                 rh=None, n=None, nn=None, rso=None, lai=None, croph=None,
-                 r_s=None, rs=1, ra=1, a_s=1, a_sh=1, rl=100, a=1.35, b=-0.35,
-                 co2=300, srs=0.0009, laieff=0, flai=1, freq="D"):
-    """Evapotranspiration calculated with the upscaled corrected
-    Penman-Monteith equation from Schymanski (Schymanski, 2017).
-
-    Parameters
-    ----------
-    wind: pandas.Series
-        mean day wind speed [m/s]
-    elevation: float
+    pressure: float, optional
+        atmospheric pressure [kPa]
+    elevation: float, optional
         the site elevation [m]
-    lat: float
+    lat: float, optional
         the site latitude [rad]
-    solar: pandas.Series, optional
-        incoming measured solar radiation [MJ m-2 d-1]
-    net: pandas.Series, optional
-        net radiation [MJ m-2 d-1]
-    sflux: Series/float, optional
-        soil heat flux [MJ m-2 d-1]
-    tmax: pandas.Series, optional
-        maximum day temperature [°C]
-    tmin: pandas.Series, optional
-        minimum day temperature [°C]
-    rhmax: pandas.Series, optional
-        maximum daily relative humidity [%]
-    rhmin: pandas.Series, optional
-        minimum daily relative humidity [%]
-    rh: pandas.Series, optional
-        mean daily relative humidity [%]
     n: pandas.Series/float, optional
         actual duration of sunshine [hour]
     nn: pandas.Series/float, optional
         maximum possible duration of sunshine or daylight hours [hour]
-    rso: pandas.Series/float, optional
+    Rso: pandas.Series/float, optional
         clear-sky solar radiation [MJ m-2 day-1]
+    a: float, optional
+        empirical coefficient for Net Long-Wave radiation [-]
+    b: float, optional
+        empirical coefficient for Net Long-Wave radiation [-]
     lai: pandas.Series/float, optional
         measured leaf area index [-]
-    croph: float/int/pandas.series, optional
+    croph: pandas.series/float, optional
         crop height [m]
-    rs: int, optional
-        1 => rs = 70
-        2 => rs = rl/LAI; rl = 200
-    ra: int, optional
+    rl: pandas.series/float, optional
+        bulk stomatal resistance [s m-1]
+    rs: pandas.series/float, optional
+        bulk surface resistance [s m-1]
+    ra_method: float, optional
         1 => ra = 208/wind
         2 => ra is calculated based on equation 36 in FAO (1990), ANNEX V.
-    a_s: int, optional
+    a_s: float, optional
         Fraction of one-sided leaf area covered by stomata (1 if stomata are 1
         on one side only, 2 if they are on both sides)
-    a_sh: int, optional
+    a_sh: float, optional
         Fraction of projected area exchanging sensible heat with the air (2)
-    a: float/int, optional
-        wind coefficient [-]
-    b: float/int, optional
-        wind coefficient [-]
+    lai_eff: float, optional
+        1 => LAI_eff = 0.5 * LAI
+        2 => LAI_eff = lai / (0.3 * lai + 1.2)
+        3 => LAI_eff = 0.5 * LAI; (LAI>4=4)
+        4 => see [zhang_2008]_.
+    srs: float, optional
+        Relative sensitivity of rl to Δ[CO2]
+    co2: float
+        CO2 concentration [ppm]
 
     Returns
     -------
-    pandas.Series
-        Series containing the calculated evapotranspiration.
+        pandas.Series containing the calculated evaporation
+
+    .. math::
+    -----
+        $E = \\frac{\\Delta (R_{n}-G)+ \\rho_a c_p K_{min} \\frac{e_{s}-e_{a}}
+        {r_a}}{\\lambda(\\Delta +\\gamma(1+\\frac{r_s}{r_a}))}$
+
+    References
+    -----
+    .. [monteith_1965] Monteith, J. L. (1965). Evaporation and environment.
+       In Symposia of the society for experimental biology (Vol. 19, pp.
+       205-234). Cambridge University Press (CUP) Cambridge.
+    .. [allen_1998] Allen, R. G., Pereira, L. S., Raes, D., & Smith, M. (1998).
+       Crop evapotranspiration-Guidelines for computing crop water
+       requirements-FAO Irrigation and drainage paper 56. Fao, Rome, 300.
+       (http://www.fao.org/3/x0490e/x0490e06.htm#TopOfPage)
+    .. [zhang_2008] Zhang, B., Kang, S., Li, F., & Zhang, L. (2008). Comparison
+       of three evapotranspiration models to Bowen ratio-energy balance method
+       for a vineyard in an arid desert region of northwest China. Agricultural
+        and Forest Meteorology, 148(10), 1629-1640.
+    .. [schymanski_2016] Schymanski, S. J., & Or, D. (2017). Leaf-scale
+       experiments reveal an important omission in the Penman–Monteith
+       equation. Hydrology and Earth System Sciences, 21(2), 685-706.
+    .. [yang_2019] Yang, Y., Roderick, M. L., Zhang, S., McVicar, T. R., &
+       Donohue, R. J. (2019). Hydrologic implications of vegetation response to
+       elevated CO 2 in climate projections. Nature Climate Change, 9, 44-48.
 
     """
-    if freq == "D":
+    if tmean is None:
         tmean = (tmax + tmin) / 2
-        es = es_calc(tmax=tmax, tmin=tmin)
-    else:
-        es = e0_calc(temperature=tmean)
-    lambd = lambda_calc(temperature=tmean)
-    pressure = press_calc(elevation=elevation, temperature=tmean)
-    gamma = psy_calc(pressure=pressure)
-    dlt = vpc_calc(temperature=tmean)
-    r_a = aero_r(wind, method=ra, croph=croph)
-    ea = ea_calc(tmax=tmax, tmin=tmin, rhmax=rhmax, rhmin=rhmin, rh=rh)
-    rho_a = calc_rhoa(pressure=pressure, ta=tmean, ea=ea)
+    if pressure is None:
+        pressure = calc_press(elevation)
+    gamma = calc_psy(pressure)
+    dlt = calc_vpc(tmean)
+    lambd = calc_lambda(tmean)
 
-    if net is None:
-        rns = shortwave_r(solar=solar, n=n, nn=nn)
-        rnl = longwave_r(solar=solar, tmax=tmax, tmin=tmin, rhmax=rhmax,
-                         rhmin=rhmin, rh=rh, rso=rso, elevation=elevation,
-                         lat=lat, ea=ea, a=a, b=b, freq=freq)
-        net = rns - rnl * a_sh
+    ea = calc_ea(tmean=tmean, tmax=tmax, tmin=tmin, rhmax=rhmax, rhmin=rhmin,
+                 rh=rh)
+    es = calc_es(tmean=tmean, tmax=tmax, tmin=tmin)
 
-    kmin = 86400
-    if freq == "H":
-        kmin /= 24
+    res_a = calc_res_aero(wind, ra_method=ra_method, croph=croph)
+    res_s = calc_res_surf(lai=lai, rs=rs, rl=rl, lai_eff=lai_eff, srs=srs,
+                          co2=co2)
+    gamma1 = gamma * a_sh / a_s * (1 + res_s / res_a)
 
-    if r_s is None:
-        r_s = surface_r(method=rs, lai=lai, rl=rl, co2=co2, srs=srs,
-                        laieff=laieff, flai=flai)
+    if Rn is None:
+        Rns = calc_rad_short(Rs=Rs, n=n, nn=nn)  # [MJ/m2/d]
+        Rnl = calc_rad_long(Rs=Rs, tmean=tmean, tmax=tmax, tmin=tmin,
+                            rhmax=rhmax, rhmin=rhmin, rh=rh,
+                            elevation=elevation, lat=lat, Rso=Rso, a=a, b=b,
+                            ea=ea)  # [MJ/m2/d]
+        Rn = Rns - Rnl
 
-    cp = 1.013 * 10 ** -3
-    gamma1 = gamma * a_sh / a_s * (1 + r_s / r_a)
+    kmin = 86400  # unit conversion s d-1
+    rho_a = calc_rho(pressure, tmean, ea)
+
     den = (lambd * (dlt + gamma1))
-    num1 = (dlt * (net - sflux) / den)
-    num2 = (rho_a * cp * kmin * (es - ea) * a_sh / r_a / den)
+    num1 = (dlt * (Rn - G) / den)
+    num2 = (rho_a * CP * kmin * (es - ea) * a_sh / res_a / den)
     return num1 + num2
 
 
-def pm_fao1990(wind, elevation, lat, solar=None, tmax=None, tmin=None,
-               rh=None, croph=None, ra=2, n=None, nn=None):
-    """Evapotranspiration calculated with the FAO Penman-Monteith
-    (Monteith, 1965; FAO, 1990) method.
+def priestley_taylor(wind, Rs=None, Rn=None, G=0, tmean=None, tmax=None,
+                     tmin=None, rhmax=None, rhmin=None, rh=None, pressure=None,
+                     elevation=None, lat=None, n=None, nn=None, Rso=None,
+                     a=1.35, b=-0.35, alpha=1.26):
+    """Evaporation calculated according to [priestley_and_taylor_1965]_.
 
     Parameters
     ----------
     wind: pandas.Series
         mean day wind speed [m/s]
-    elevation: float/int
-        the site elevation [m]
-    lat: float/int
-        the site latitude [rad]
-    solar: pandas.Series, optional
+    Rs: pandas.Series, optional
         incoming measured solar radiation [MJ m-2 d-1]
+    Rn: pandas.Series, optional
+        net radiation [MJ m-2 d-1]
+    G: pandas.Series/int, optional
+        soil heat flux [MJ m-2 d-1]
+    tmean: pandas.Series, optional
+        average day temperature [°C]
     tmax: pandas.Series, optional
         maximum day temperature [°C]
     tmin: pandas.Series, optional
         minimum day temperature [°C]
+    rhmax: pandas.Series, optional
+        maximum daily relative humidity [%]
+    rhmin: pandas.Series, optional
+        mainimum daily relative humidity [%]
     rh: pandas.Series, optional
         mean daily relative humidity [%]
-    croph: float/int/pandas.series, optional
-        crop height [m]
-
-    Returns
-    -------
-    pandas.Series
-        Series containing the calculated evapotranspiration
-
-    Examples
-    --------
-    >>> pm_fao1990_et = pm_fao1990(wind, elevation, lat, solar=solar,
-    >>>                            tmax=tmax, tmin=tmin, rh=rh, croph=0.6)
-
-    Notes
-    -----
-    Based on equation 30 (FAO, 1990).
-
-    """
-    # aeroterm
-    ta = (tmax + tmin) / 2.
-    lambd = lambda_calc(temperature=ta)
-    pressure = press_calc(elevation=elevation, temperature=ta)
-    gamma = psy_calc(pressure=pressure, lambd=lambd)
-    eamax = e0_calc(temperature=tmax)
-    eamin = e0_calc(temperature=tmin)
-
-    raa = aero_r(wind, method=ra, croph=croph)
-    eadew = ed_calc(tmax=tmax, tmin=tmin, rh=rh)  # OK
-    aerodyn = raa * wind
-    aerotcff = 0.622 * 3.486 * 86400. / aerodyn / 1.01
-    lai = croph * 24
-    rs = 200 / lai
-    gamma1 = gamma * (1 + rs / raa)
-    dlt = vpc_calc(tmin=tmin, tmax=tmax, method=1)
-
-    gm_dl = gamma / (dlt + gamma1)
-    eamean = (eamax + eamin) / 2
-    etaero = gm_dl * aerotcff / (ta + 273.) * wind * (eamean - eadew)
-
-    dl_dl = dlt / (dlt + gamma)
-    # rad term
-    rso = rs_calc(tindex=solar.index, lat=lat)  # OK
-    rns = shortwave_r(solar=solar, n=n, nn=nn)
-    rnl = longwave_r(solar, tmax=tmax, tmin=tmin, rh=rh, rso=rso,
-                     elevation=elevation, lat=lat, ea=eadew)
-    net = rns - rnl
-
-    radterm = dl_dl * (net) / lambd
-    pm = (etaero + radterm)
-    return pm, radterm, etaero, rnl, rns
-
-
-def priestley_taylor(wind, elevation, lat, solar=None, net=None, tmax=None,
-                     tmin=None, rhmax=None, rhmin=None, rh=None, rso=None,
-                     n=None, nn=None, alpha=1.26):
-    """Evapotranspiration calculated with Penman-Monteith (FAO, 1990) method.
-
-    Parameters
-    ----------
-    wind: pandas.Series
-        mean day wind speed [m/s]
-    elevation: float/int
+    pressure: float, optional
+        atmospheric pressure [kPa]
+    elevation: float, optional
         the site elevation [m]
-    lat: float/int
+    lat: float, optional
         the site latitude [rad]
-    solar: pandas.Series
-        incoming measured solar radiation [MJ m-2 d-1]
-    net: pandas.Series
-        net radiation [MJ m-2 d-1]
-    tmax: pandas.Series
-        maximum day temperature [°C]
-    tmin: pandas.Series
-        minimum day temperature [°C]
-    rhmax: pandas.Series
-        maximum daily relative humidity [%]
-    rhmin: pandas.Series
-        mainimum daily relative humidity [%]
-    rh: pandas.Series
-        mean daily relative humidity [%]
-    n: Series/float
+    n: pandas.Series/float, optional
         actual duration of sunshine [hour]
-    nn: Series/float
+    nn: pandas.Series/float, optional
         maximum possible duration of sunshine or daylight hours [hour]
-    rso: Series/float
+    Rso: pandas.Series/float, optional
         clear-sky solar radiation [MJ m-2 day-1]
-    alpha: Series/float
-        calibration coefficient
+    a: float, optional
+        empirical coefficient for Net Long-Wave radiation [-]
+    b: float, optional
+        empirical coefficient for Net Long-Wave radiation [-]
+    alpha: float, optional
+        calibration coeffiecient [-]
 
     Returns
     -------
@@ -455,122 +391,464 @@ def priestley_taylor(wind, elevation, lat, solar=None, net=None, tmax=None,
 
     Examples
     --------
-    >>> pm = priestley_taylor(wind, elevation, lat, solar=solar,
-    >>>                       tmax=tmax, tmin=tmin, rh=rh, croph=0.6)
+    >>> pt = priestley_taylor(wind, Rn=Rn, tmean=tmean, rh=rh)
 
-    Notes
+    .. math::
     -----
-    Based on equation 6 in Allen et al (1998).
+        $E = \\frac{\\Delta (R_{n}-G)+ \\rho_a c_p K_{min} \\frac{e_{s}-e_{a}}
+        {r_a}}{\\lambda(\\Delta +\\gamma(1+\\frac{r_s}{r_a}))}$
+
+    References
+    -----
+    .. [priestley_and_taylor_1965] Priestley, C. H. B., & TAYLOR, R. J. (1972).
+       On the assessment of surface heat flux and evaporation using large-scale
+       parameters. Monthly weather review, 100(2), 81-92.
 
     """
-    ta = (tmax + tmin) / 2
-    lambd = lambda_calc(temperature=ta)
-    pressure = press_calc(elevation=elevation, temperature=ta)
-    gamma = psy_calc(pressure=pressure, lambd=None)
-    dlt = vpc_calc(temperature=ta, method=0)
+    if tmean is None:
+        tmean = (tmax + tmin) / 2
+    if pressure is None:
+        pressure = calc_press(elevation)
+    gamma = calc_psy(pressure)
+    dlt = calc_vpc(tmean)
+    lambd = calc_lambda(tmean)
 
-    ea = ea_calc(tmax, tmin, rhmax=rhmax, rhmin=rhmin, rh=rh)
+    if Rn is None:
+        Rns = calc_rad_short(Rs=Rs, n=n, nn=nn)  # [MJ/m2/d]
+        Rnl = calc_rad_long(Rs=Rs, tmean=tmean, tmax=tmax, tmin=tmin,
+                            rhmax=rhmax, rhmin=rhmin, rh=rh,
+                            elevation=elevation, lat=lat, Rso=Rso, a=a, b=b)
+        Rn = Rns - Rnl
 
-    if net is None:
-        rns = shortwave_r(solar=solar, n=n, nn=nn)  # in [MJ/m2/d]
-        rnl = longwave_r(solar=solar, tmax=tmax, tmin=tmin, rhmax=rhmax,
-                         rhmin=rhmin, rh=rh, rso=rso, elevation=elevation,
-                         lat=lat, ea=ea)  # in [MJ/m2/d]
-        net = rns - rnl
-
-    return (alpha * dlt * net) / (lambd * (dlt + gamma))
+    return (alpha * dlt * (Rn-G)) / (lambd * (dlt + gamma))
 
 
-def makkink(tmax, tmin, rs, elevation, f=1):
-    """Evapotranspiration calculated with the Makkink (1957) method.
+def makkink(Rs, tmean=None, tmax=None, tmin=None, pressure=None,
+            elevation=None):
+    """"Evaporation calculated according to [makkink_1965]_.
 
     Parameters
     ----------
-    tmax: pandas.Series
-        maximum day temperature [°C]
-    tmin: pandas.Series
-        minimum day temperature [°C]
-    rs: pandas.Series
+    Rs: pandas.Series, optional
         incoming measured solar radiation [MJ m-2 d-1]
-    elevation: float
+    tmean: pandas.Series, optional
+        average day temperature [°C]
+    tmax: pandas.Series, optional
+        maximum day temperature [°C]
+    tmin: pandas.Series, optional
+        minimum day temperature [°C]
+    pressure: float, optional
+        atmospheric pressure [kPa]
+    elevation: float, optional
         the site elevation [m]
-    f: float, optional
-        crop coefficient [-]
 
     Returns
     -------
-        Series containing the calculated evapotranspiration
+        pandas.Series containing the calculated evaporation
 
     Examples
     --------
-    >>> mak = makkink(tmax, tmin, rs, elevation)
+    >>> mak = makkink(Rs=Rs, tmean=tmean)
+
+    .. math::
+    -----
+        $E = \\frac{\\Delta (R_{n}-G)+ \\rho_a c_p K_{min} \\frac{e_{s}-e_{a}}
+        {r_a}}{\\lambda(\\Delta +\\gamma(1+\\frac{r_s}{r_a}))}$
+
+    References
+    -----
+    .. [priestley_and_taylor_1965] Priestley, C. H. B., & TAYLOR, R. J. (1972).
+       On the assessment of surface heat flux and evaporation using large-scale
+       parameters. Monthly weather review, 100(2), 81-92.
 
     """
-    ta = (tmax + tmin) / 2
-    pressure = press_calc(elevation, ta)
-    gamma = psy_calc(pressure=pressure, lambd=None)
-    dlt = vpc_calc(temperature=ta, method=0)
+    if tmean is None:
+        tmean = (tmax + tmin) / 2
+    if pressure is None:
+        pressure = calc_press(elevation)
+    gamma = calc_psy(pressure)
+    dlt = calc_vpc(tmean)
+    lambd = calc_lambda(tmean)
 
-    return f / 2.45 * 0.61 * rs * dlt / (dlt + gamma) - 0.12
+    return 0.65 * dlt / (dlt + gamma) * Rs / lambd
 
 
 ##% Utility functions (TODO: Make private?)
 
 
-def longwave_r(solar, tmax=None, tmin=None, rhmax=None, rhmin=None,
-               rh=None, rso=None, elevation=None, lat=None, ea=None,
-               a=1.35, b=-0.35, freq="D", ta=None):
-    """Net outgoing longwave radiation.
+def calc_psy(pressure, tmean=None):
+    """Psychrometric constant [kPa °C-1].
 
     Parameters
     ----------
-    solar: Series
-        incoming measured solar radiation [MJ m-2 d-1]
-    elevation: float
-        the site elevation above sea level [m]
-    lat: float/int
-        the site latitude [rad]
-    tmax: Series
-        maximum day temperature [°C]
-    tmin: Series
-        minimum day temperature [°C]
-    rhmax: Series
-        maximum daily relative humidity [%]
-    rhmin: Series
-        mainimum daily relative humidity [%]
-    rh: Series
-        mean daily relative humidity [%]
-    rso: Series/float
-        clear-sky solar radiation [MJ m-2 day-1]
-    ea: Series
-        actual vapour pressure.
+    pressure: float
+        atmospheric pressure [kPa].
+    tmean: float, optional
+        average day temperature [°C].
 
     Returns
     -------
-        pandas.Series containing the calculated net outgoing radiation
+        pandas.Series containing the Psychrometric constant [kPa °C-1].
+
+    Examples
+    --------
+    >>> psy = calc_psy(pressure, tmean)
 
     Notes
     -----
-    Based on equation 39 in Allen et al (1998).
+    if tmean is none:
+        Based on equation 8 in [allen_1998]_.
+    elif rh is None:
+        From FAO (1990), ANNEX V, eq. 4.
+
+    References
+    -----
+    .. [allen_1998] Allen, R. G., Pereira, L. S., Raes, D., & Smith, M. (1998).
+       Crop evapotranspiration-Guidelines for computing crop water
+       requirements-FAO Irrigation and drainage paper 56. Fao, Rome, 300.
+       (http://www.fao.org/3/x0490e/x0490e06.htm#TopOfPage)
+
+    """
+    if tmean is None:
+        return 0.000665 * pressure
+    else:
+        lambd = calc_lambda(tmean)  # MJ kg-1
+        return CP * pressure / (0.622 * lambd)
+
+
+def calc_vpc(tmean):
+    """Slope of saturation vapour pressure curve at air Temperature [kPa °C-1].
+
+    Parameters
+    ----------
+    tmean: pandas.Series, optional
+        average day temperature [°C]
+
+    Returns
+    -------
+        pandas.Series containing the calculated Saturation vapour pressure
+        [kPa °C-1].
+
+    Examples
+    --------
+    >>> vpc = calc_vpc(tmean)
+
+    Notes
+    -----
+        Based on equation 13. in [allen_1998]_.
+
+    References
+    -----
+    .. [allen_1998] Allen, R. G., Pereira, L. S., Raes, D., & Smith, M. (1998).
+       Crop evapotranspiration-Guidelines for computing crop water
+       requirements-FAO Irrigation and drainage paper 56. Fao, Rome, 300.
+       (http://www.fao.org/3/x0490e/x0490e06.htm#TopOfPage)
+
+    """
+    es = calc_e0(tmean)
+    return 4098 * es / (tmean + 237.3) ** 2
+
+
+def calc_lambda(tmean):
+    """ Latent Heat of Vaporization [MJ kg-1].
+
+    Parameters
+    ----------
+    tmean: pandas.Series, optional
+        average day temperature [°C]
+
+    Returns
+    -------
+        pandas.Series containing the calculated Latent Heat of Vaporization
+        [MJ kg-1].
+
+    Examples
+    --------
+    >>> lambd = calc_lambda(tmean)
+
+    Notes
+    -----
+        Based on equation (3-1) in [allen_1998]_.
+
+    References
+    -----
+    .. [allen_1998] Allen, R. G., Pereira, L. S., Raes, D., & Smith, M. (1998).
+       Crop evapotranspiration-Guidelines for computing crop water
+       requirements-FAO Irrigation and drainage paper 56. Fao, Rome, 300.
+       (http://www.fao.org/3/x0490e/x0490e06.htm#TopOfPage)
+
+    """
+    return 2.501 - 0.002361 * tmean
+
+
+def calc_press(elevation):
+    """Atmospheric pressure [kPa].
+
+    Parameters
+    ----------
+    elevation: float, optional
+        the site elevation [m]
+
+    Returns
+    -------
+        pandas.Series containing the calculated atmospheric pressure [kPa].
+
+    Examples
+    --------
+    >>> pressure = calc_press(elevation)
+
+    Notes
+    -----
+        Based on equation 7 in [allen_1998]_.
+
+    References
+    -----
+    .. [allen_1998] Allen, R. G., Pereira, L. S., Raes, D., & Smith, M. (1998).
+       Crop evapotranspiration-Guidelines for computing crop water
+       requirements-FAO Irrigation and drainage paper 56. Fao, Rome, 300.
+       (http://www.fao.org/3/x0490e/x0490e06.htm#TopOfPage)
+
+    """
+    return 101.3 * ((293 - 0.0065 * elevation) / 293) ** 5.26
+
+
+def calc_rho(pressure, tmean, ea):
+    """atmospheric air density calculated according to [allen_1998]_..
+
+    Parameters
+    ----------
+    pressure: pandas.Series
+        atmospheric pressure [kPa]
+    tmean: pandas.Series, optional
+        average day temperature [°C]
+    ea: pandas.Series, optional
+        actual vapour pressure [kPa]
+
+    Returns
+    -------
+        pandas.Series containing the calculated mean air density
+
+    Examples
+    --------
+    >>> rho = calc_rho(pressure, tmean, ea)
+
+    Notes
+    -----
+        Based on equation (3-5) in [allen_1998]_.
+
+    .. math::
+    -----
+        rho = 3.486 \\frac{P}{T_{KV}}
+
+    References
+    -----
+    .. [allen_1998] Allen, R. G., Pereira, L. S., Raes, D., & Smith, M. (1998).
+       Crop evapotranspiration-Guidelines for computing crop water
+       requirements-FAO Irrigation and drainage paper 56. Fao, Rome, 300.
+       (http://www.fao.org/3/x0490e/x0490e06.htm#TopOfPage)
+
+    """
+    tkv = (273.16 + tmean) * (1 - 0.378 * ea / pressure) ** -1
+    return 3.486 * pressure / tkv
+
+
+def calc_e0(tmean):
+    """ Saturation vapor pressure at the air temperature T [kPa].
+
+    Parameters
+    ----------
+    tmean: pandas.Series, optional
+        average day temperature [°C]
+
+    Returns
+    -------
+        pandas.Series containing the calculated saturation vapor pressure at
+        the air temperature tmean [kPa].
+
+    Examples
+    --------
+    >>> e0 = calc_e0(tmean)
+
+    Notes
+    -----
+        Based on equation 11 in [allen_1998]_.
+
+    References
+    -----
+    .. [allen_1998] Allen, R. G., Pereira, L. S., Raes, D., & Smith, M. (1998).
+       Crop evapotranspiration-Guidelines for computing crop water
+       requirements-FAO Irrigation and drainage paper 56. Fao, Rome, 300.
+       (http://www.fao.org/3/x0490e/x0490e06.htm#TopOfPage)
+
+    """
+    return 0.6108 * exp(17.27 * tmean / (tmean + 237.3))
+
+
+def calc_es(tmean=None, tmax=None, tmin=None):
+    """ Saturation vapor pressure [kPa].
+
+    Parameters
+    ----------
+    tmean: pandas.Series, optional
+        average day temperature [°C]
+    tmax: pandas.Series, optional
+        maximum day temperature [°C]
+    tmin: pandas.Series, optional
+        minimum day temperature [°C]
+
+    Returns
+    -------
+        pandas.Series containing the calculated saturation vapor pressure
+        [kPa].
+
+    Examples
+    --------
+    >>> es = calc_es(tmean)
+
+    Notes
+    -----
+        Based on equation 11, 12 in [allen_1998]_.
+
+    References
+    -----
+    .. [allen_1998] Allen, R. G., Pereira, L. S., Raes, D., & Smith, M. (1998).
+       Crop evapotranspiration-Guidelines for computing crop water
+       requirements-FAO Irrigation and drainage paper 56. Fao, Rome, 300.
+       (http://www.fao.org/3/x0490e/x0490e06.htm#TopOfPage)
+
+    """
+    if tmax is not None:
+        eamax = calc_e0(tmax)
+        eamin = calc_e0(tmin)
+        return (eamax + eamin) / 2
+    else:
+        return calc_e0(tmean)
+
+
+def calc_ea(tmean=None, tmax=None, tmin=None, rhmax=None, rhmin=None, rh=None):
+    """ Actual vapor pressure [kPa].
+
+    Parameters
+    ----------
+    tmean: pandas.Series, optional
+        average day temperature [°C]
+    tmax: pandas.Series, optional
+        maximum day temperature [°C]
+    tmin: pandas.Series, optional
+        minimum day temperature [°C]
+    rhmax: pandas.Series, optional
+        maximum daily relative humidity [%]
+    rhmin: pandas.Series, optional
+        mainimum daily relative humidity [%]
+    rh: pandas.Series, optional
+        mean daily relative humidity [%]
+
+    Returns
+    -------
+        pandas.Series containing the calculated actual vapor pressure
+        [kPa].
+
+    Examples
+    --------
+    >>> ea = calc_ea(tmean, rh)
+
+    Notes
+    -----
+        Based on equation 17, 19 in [allen_1998]_.
+
+    References
+    -----
+    .. [allen_1998] Allen, R. G., Pereira, L. S., Raes, D., & Smith, M. (1998).
+       Crop evapotranspiration-Guidelines for computing crop water
+       requirements-FAO Irrigation and drainage paper 56. Fao, Rome, 300.
+       (http://www.fao.org/3/x0490e/x0490e06.htm#TopOfPage)
+
+    """
+    if rhmax is not None:  # eq. 11
+        esmax = calc_e0(tmax)
+        esmin = calc_e0(tmin)
+        return (esmin * rhmax / 200) + (esmax * rhmin / 200)
+    else:  # eq. 14
+        if tmax is not None:
+            es = calc_es(tmax=tmax, tmin=tmin)
+        else:
+            es = calc_e0(tmean)
+        return rh / 100 * es
+
+
+def calc_rad_long(Rs, tmean=None, tmax=None, tmin=None, rhmax=None,
+                  rhmin=None, rh=None, elevation=None, lat=None, Rso=None,
+                  a=1.35, b=-0.35, ea=None, freq="D"):
+    """Net longwave radiation [MJ m-2 d-1].
+
+    Parameters
+    ----------
+    Rs: pandas.Series, optional
+        incoming measured solar radiation [MJ m-2 d-1]
+    tmean: pandas.Series, optional
+        average day temperature [°C]
+    tmax: pandas.Series, optional
+        maximum day temperature [°C]
+    tmin: pandas.Series, optional
+        minimum day temperature [°C]
+    rhmax: pandas.Series, optional
+        maximum daily relative humidity [%]
+    rhmin: pandas.Series, optional
+        mainimum daily relative humidity [%]
+    rh: pandas.Series, optional
+        mean daily relative humidity [%]
+    elevation: float, optional
+        the site elevation [m]
+    lat: float, optional
+        the site latitude [rad]
+    Rso: pandas.Series/float, optional
+        clear-sky solar radiation [MJ m-2 day-1]
+    a: float, optional
+        empirical coefficient for Net Long-Wave radiation [-]
+    b: float, optional
+        empirical coefficient for Net Long-Wave radiation [-]
+    ea: pandas.Series, optional
+        actual vapor pressure [kPa]
+    freq: string, optional
+        "D" => daily estimation
+        "H" => hourly estimation
+
+    Returns
+    -------
+        pandas.Series containing the calculated net longwave radiation
+
+    Notes
+    -----
+        Based on equation 39 in [allen_1998]_.
+
+    References
+    -----
+    .. [allen_1998] Allen, R. G., Pereira, L. S., Raes, D., & Smith, M. (1998).
+       Crop evapotranspiration-Guidelines for computing crop water
+       requirements-FAO Irrigation and drainage paper 56. Fao, Rome, 300.
+       (http://www.fao.org/3/x0490e/x0490e06.htm#TopOfPage)
 
     """
     if ea is None:
-        ea = ea_calc(tmin=tmin, tmax=tmax, rhmin=rhmin, rhmax=rhmax, rh=rh)
+        ea = calc_ea(tmean=tmean, tmax=tmax, tmin=tmin, rhmax=rhmax,
+                     rhmin=rhmin, rh=rh)
 
     if freq == "H":
-        steff = 2.042 * 10 ** (-10)  # MJm-2K-4h-1
-        if rso is None:
-            ra = extraterrestrial_r_hour(tindex=solar.index, lat=lat)
-            rso = rso_calc(ra=ra, elevation=elevation)
-        solar_rat = clip(solar / rso, 0.3, 1)
-        tmp1 = steff * (ta + 273.2) ** 4
+        if Rso is None:
+            Ra = extraterrestrial_r_hour(tindex=Rs.index, lat=lat)
+            Rso = calc_rso(Ra=Ra, elevation=elevation)
+        solar_rat = clip(Rs / Rso, 0.3, 1)
+        tmp1 = STEFAN_BOLTZMANN_HOUR * (tmean + 273.2) ** 4
     else:
-        steff = 4.903 * 10 ** (-9)  # MJm-2K-4d-1
-        if rso is None:
-            ra = extraterrestrial_r(tindex=solar.index, lat=lat)
-            rso = rso_calc(ra=ra, elevation=elevation)
-        solar_rat = clip(solar / rso, 0.3, 1)
-        tmp1 = steff * ((tmax + 273.2) ** 4 + (tmin + 273.2) ** 4) / 2
+        if Rso is None:
+            Ra = extraterrestrial_r(tindex=Rs.index, lat=lat)
+            Rso = calc_rso(Ra=Ra, elevation=elevation)
+        solar_rat = clip(Rs / Rso, 0.3, 1)
+        if tmax is not None:
+            tmp1 = STEFAN_BOLTZMANN_DAY * ((tmax + 273.2) ** 4 +
+                                           (tmin + 273.2) ** 4) / 2
+        else:
+            tmp1 = STEFAN_BOLTZMANN_DAY * (tmean + 273.2) ** 4
 
     tmp2 = 0.34 - 0.139 * sqrt(ea)  # OK
     tmp2 = clip(tmp2, 0.05, 1)
@@ -578,354 +856,241 @@ def longwave_r(solar, tmax=None, tmin=None, rhmax=None, rhmin=None,
     return tmp1 * tmp2 * tmp3
 
 
-def vpc_calc(temperature=None, tmin=None, tmax=None, method=0):
-    """
-    Slope of saturation vapour pressure curve at air Temperature.
+def calc_rad_short(Rs=None, tindex=None, lat=None, alpha=0.23, n=None,
+                   nn=None):
+    """Net shortwave radiation [MJ m-2 d-1].
 
     Parameters
     ----------
-    temperature: Series
-        mean day temperature [degC].
+    Rs: pandas.Series, optional
+        incoming measured solar radiation [MJ m-2 d-1]
+    tindex: pandas.Series.index
+    lat: float, optional
+        the site latitude [rad]
+    alpha: float, optional
+        surface albedo [-]
+    n: pandas.Series/float, optional
+        actual duration of sunshine [hour]
+    nn: pandas.Series/float, optional
+        maximum possible duration of sunshine or daylight hours [hour]
+
 
     Returns
     -------
-        Series of Saturation vapour pressure [kPa degC-1].
+        pandas.Series containing the calculated net shortwave radiation
 
     Notes
     -----
-    if method is 0:
-        Based on equation 13. in Allen et al 1998. The slope of the vapour
-        pressure curve is in the FAO-56 method calculated using mean air
-        temperature
-    if method is 1:
-        From FAO (1990), ANNEX V, eq. 3
+        Based on equation 38 in [allen_1998]_.
 
-    """
-    if method == 0:
-        ea = e0_calc(temperature)
-        return 4098 * ea / (temperature + 237.3) ** 2
-    elif method == 1:
-        eamax = e0_calc(tmax)
-        eamin = e0_calc(tmin)
-        return round((2049. * eamax / (tmax + 237.3) ** 2) +
-                     (2049. * eamin / (tmin + 237.3) ** 2), 8)
-    elif method == 2:
-        return 2503 * exp((17.27 * temperature) / (temperature + 237.3)) / (
-                temperature + 237.3) ** 2
-
-
-def e0_calc(temperature):
-    """
-    saturation vapour pressure at the air temperature T.
-
-    Based on equations 11 in ALLen et al (1998).
-    Parameters
-    ----------Saturation Vapour Pressure  (es) from air temperature
-    temperature: pandas.Series
-         temperature [degC]
-    Returns
-    -------
-        pandas.Series of saturation vapour pressure at the air temperature
-        T [kPa]
-
-    """
-    return 0.6108 * exp((17.27 * temperature) / (temperature + 237.3))
-
-
-def es_calc(tmax, tmin):
-    """
-    saturation vapour pressure at the air temperature T.
-
-    Based on equations 11 in Allen et al (1998).
-
-    Parameters
-    ----------Saturation Vapour Pressure  (es) from air temperature
-    tmax: pandas.Series
-        maximum day temperature [°C]
-    tmin: pandas.Series
-        minimum day temperature [°C]
-
-    Returns
-    -------
-        pandas.Series of saturation vapour pressure at the air temperature
-        T [kPa]
-
-    """
-    eamax = e0_calc(tmax)
-    eamin = e0_calc(tmin)
-    return (eamax + eamin) / 2
-
-
-def ea_calc(tmax, tmin, rhmax=None, rhmin=None, rh=None):
-    """Actual Vapour Pressure (ea) from air temperature.
-
-    Based on equations 17, 18, 19, in ALLen et al (1998).
-    Parameters
-    ----------
-    tmax: Series
-        maximum day temperature [degC]
-    tmin: Series
-        minimum day temperature [degC]
-    rhmax: Series
-        maximum daily relative humidity [%]
-    rhmin: Series
-        mainimum daily relative humidity [%]
-    rh: pandas.Series/int
-        mean daily relative humidity [%]
-    Returns
-    -------
-        Series of saturation vapour pressure at the air temperature
-        T [kPa]
-    """
-    eamax = e0_calc(tmax)
-    eamin = e0_calc(tmin)
-    if rhmax is not None and rhmin is not None:  # eq. 17
-        return (eamin * rhmax / 200) + (eamax * rhmin / 200)
-    elif rhmax is not None and rhmin is None:  # eq.18
-        return eamin * rhmax / 100
-    elif rhmax is None and rhmin is not None:  # eq. 48
-        return eamin
-    elif rh is not None:  # eq. 19
-        return rh / 200 * (eamax + eamin)
-    else:
-        print("error")
-
-
-def rso_calc(ra, elevation):
-    """
-    Actual Vapour Pressure (ea) from air temperature.
-
-    Based on equations 37 in ALLen et al (1998).
-    Parameters
-    ----------
-    ra: Series
-        extraterrestrial radiation [MJ m-2 day-1]
-    elevation: float
-        the site elevation above sea level [m]
-
-    Returns
-    -------
-        Series of clear-sky solar radiation [MJ m-2 day-1]
-
-    """
-    return (0.75 + (2 * 10 ** -5) * elevation) * ra
-
-
-def psy_calc(pressure, lambd=None):
-    """Psychrometric constant [kPa degC-1].
-
-    Parameters
-    ----------
-    pressure: int/real
-        atmospheric pressure [kPa].
-    lambd: float,m optional
-        Divide the pressure by this value.
-
-    Returns
-    -------
-        pandas.series of Psychrometric constant [kPa degC-1].
-
-    Notes
+    References
     -----
-    if lambd is none:
-        From FAO (1990), ANNEX V, eq. 4
-    else:
-        Based on equation 8 in Allen et al (1998).
+    .. [allen_1998] Allen, R. G., Pereira, L. S., Raes, D., & Smith, M. (1998).
+       Crop evapotranspiration-Guidelines for computing crop water
+       requirements-FAO Irrigation and drainage paper 56. Fao, Rome, 300.
+       (http://www.fao.org/3/x0490e/x0490e06.htm#TopOfPage)
 
     """
-    if lambd is None:
-        return 0.000665 * pressure
+    if Rs is not None:
+        return (1 - alpha) * Rs
     else:
-        return 0.0016286 * pressure / lambd
+        return (1 - alpha) * calc_rad_sol_in(tindex, lat, n=n, nn=nn)
 
 
-def press_calc(elevation, temperature):
-    """Atmospheric pressure. Based on equation 7 in Allen et al (1998).
-
-    Parameters
-    ----------
-    elevation: int/real
-        elevation above sea level [m].
-    temperature
-
-    Returns
-    -------
-        int/real of atmospheric pressure [kPa].
-
-    """
-    return 101.3 * (((273.16 + temperature) - 0.0065 * elevation) /
-                    (273.16 + temperature)) ** (9.807 / (0.0065 * 287))
-
-
-def shortwave_r(solar=None, tindex=None, lat=None, alpha=0.23, n=None,
-                nn=None):
-    """Net solar or shortwave radiation.
-
-    Based on equation 38 in Allen et al (1998).
+def calc_rad_sol_in(tindex, lat, as1=0.25, bs1=0.5, n=None, nn=None):
+    """Incoming solar radiation [MJ m-2 d-1].
 
     Parameters
     ----------
     tindex: pandas.Series.index
-    solar: Series
-        incoming measured solar radiation [MJ m-2 d-1]
-    lat: float/int
+    lat: float, optional
         the site latitude [rad]
-    alpha: float/int
-        albedo or canopy reflection coefficient, which is 0.23 for the
-        hypothetical grass reference crop [-]
-    n: float/int
+    as1: float, optional
+        regression constant,  expressing the fraction of extraterrestrial
+        reaching the earth on overcast days (n = 0) [-]
+    bs1: float, optional
+        empirical coefficient for extraterrestrial radiation [-]
+    n: pandas.Series/float, optional
         actual duration of sunshine [hour]
-    nn: float/int
-        daylight hours [-]
+    nn: pandas.Series/float, optional
+        maximum possible duration of sunshine or daylight hours [hour]
 
     Returns
     -------
-        Series containing the calculated net outgoing radiation
-    """
-    if solar is not None:
-        return (1 - alpha) * solar
-    else:
-        return (1 - alpha) * in_solar_r(tindex, lat, n=n, nn=nn)
+        pandas.Series containing the calculated net shortwave radiation
 
+    Notes
+    -----
+        Based on equation 35 in [allen_1998]_.
 
-def in_solar_r(tindex, lat, a_s=0.25, b_s=0.5, n=None, nn=None):
-    """Incoming solar radiation. Based on eq. 35 from FAO56.
+    References
+    -----
+    .. [allen_1998] Allen, R. G., Pereira, L. S., Raes, D., & Smith, M. (1998).
+       Crop evapotranspiration-Guidelines for computing crop water
+       requirements-FAO Irrigation and drainage paper 56. Fao, Rome, 300.
+       (http://www.fao.org/3/x0490e/x0490e06.htm#TopOfPage)
+
     """
-    ra = extraterrestrial_r(tindex, lat)
+    Ra = extraterrestrial_r(tindex, lat)
     if n is None:
         n = daylight_hours(tindex, lat)
-    return (a_s + b_s * n / nn) * ra
+    return (as1 + bs1 * n / nn) * Ra
 
 
-def surface_r(lai=None, method=1, laieff=0, rl=100, co2=300, srs=0.0009,
-              flai=1):
-    if method == 1:
-        return 70
-    elif method == 2:
-        lai_eff = calc_laieff(lai=lai, method=laieff)
-        return rl / lai_eff
-    elif method == 3:
-        lai_eff = calc_laieff(lai=lai, method=laieff)
+def calc_rso(Ra, elevation):
+    """Clear-sky solar radiation [MJ m-2 day-1].
+
+    Parameters
+    ----------
+    Ra: pandas.Series, optional
+        Extraterrestrial daily radiation [MJ m-2 d-1]
+    elevation: float, optional
+        the site elevation [m]
+
+    Returns
+    -------
+        pandas.Series containing the calculated Clear-sky solar radiation
+
+    Notes
+    -----
+        Based on equation 37 in [allen_1998]_.
+
+    """
+    return (0.75 + (2 * 10 ** -5) * elevation) * Ra
+
+
+def calc_res_surf(lai=None, rs=70, rl=100, lai_eff=0, srs=None, co2=None):
+    """Surface resistance [s m-1].
+
+    Parameters
+    ----------
+    lai: pandas.Series/float, optional
+        measured leaf area index [-]
+    rs: pandas.series/float, optional
+        surface resistance [s m-1]
+    rl: float, optional
+        bulk stomatal resistance [s m-1]
+    lai_eff: float, optional
+        1 => LAI_eff = 0.5 * LAI
+        2 => LAI_eff = lai / (0.3 * lai + 1.2)
+        3 => LAI_eff = 0.5 * LAI; (LAI>4=4)
+        4 => see [zhang_2008]_.
+    srs: float, optional
+        Relative sensitivity of rl to Δ[CO2]
+    co2: float
+        CO2 concentration [ppm]
+
+    Returns
+    -------
+        pandas.Series containing the calculated surface resistance
+
+    References
+    -----
+    .. [allen_1998] Allen, R. G., Pereira, L. S., Raes, D., & Smith, M. (1998).
+       Crop evapotranspiration-Guidelines for computing crop water
+       requirements-FAO Irrigation and drainage paper 56. Fao, Rome, 300.
+       (http://www.fao.org/3/x0490e/x0490e06.htm#TopOfPage)
+    .. [zhang_2008] Zhang, B., Kang, S., Li, F., & Zhang, L. (2008). Comparison
+       of three evapotranspiration models to Bowen ratio-energy balance method
+       for a vineyard in an arid desert region of northwest China. Agricultural
+        and Forest Meteorology, 148(10), 1629-1640.
+    .. [schymanski_2016] Schymanski, S. J., & Or, D. (2017). Leaf-scale
+       experiments reveal an important omission in the Penman–Monteith
+       equation. Hydrology and Earth System Sciences, 21(2), 685-706.
+    .. [yang_2019] Yang, Y., Roderick, M. L., Zhang, S., McVicar, T. R., &
+       Donohue, R. J. (2019). Hydrologic implications of vegetation response to
+       elevated CO 2 in climate projections. Nature Climate Change, 9, 44-48.
+
+    """
+    if lai:
         fco2 = (1 + srs * (co2 - 300))
-        return rl / lai_eff * fco2
-    elif method == 4:
-        lai_eff = calc_laieff(lai=lai, method=laieff)
-        flai1 = lai_eff / lai_eff.max() * flai
-        fco2 = (1 + srs * (co2 - 300))
-        return rl / lai_eff * fco2 * flai1
+        return fco2 * rl / calc_laieff(lai=lai, lai_eff=lai_eff)
+    else:
+        return rs
 
 
-def calc_laieff(lai=None, method=0):
-    if method == 0:
+def calc_laieff(lai=None, lai_eff=0):
+    """Effective leaf area index [-].
+
+    Parameters
+    ----------
+    lai: pandas.Series/float, optional
+        measured leaf area index [-]
+    lai_eff: float, optional
+        1 => LAI_eff = 0.5 * LAI
+        2 => LAI_eff = lai / (0.3 * lai + 1.2)
+        3 => LAI_eff = 0.5 * LAI; (LAI>4=4)
+        4 => see [zhang_2008]_.
+
+    Returns
+    -------
+        pandas.Series containing the calculated effective leaf area index
+
+    References
+    -----
+    .. [allen_1998] Allen, R. G., Pereira, L. S., Raes, D., & Smith, M. (1998).
+       Crop evapotranspiration-Guidelines for computing crop water
+       requirements-FAO Irrigation and drainage paper 56. Fao, Rome, 300.
+       (http://www.fao.org/3/x0490e/x0490e06.htm#TopOfPage)
+    .. [zhang_2008] Zhang, B., Kang, S., Li, F., & Zhang, L. (2008). Comparison
+       of three evapotranspiration models to Bowen ratio-energy balance method
+       for a vineyard in an arid desert region of northwest China. Agricultural
+        and Forest Meteorology, 148(10), 1629-1640.
+    .. [schymanski_2016] Schymanski, S. J., & Or, D. (2017). Leaf-scale
+       experiments reveal an important omission in the Penman–Monteith
+       equation. Hydrology and Earth System Sciences, 21(2), 685-706.
+    .. [yang_2019] Yang, Y., Roderick, M. L., Zhang, S., McVicar, T. R., &
+       Donohue, R. J. (2019). Hydrologic implications of vegetation response to
+       elevated CO 2 in climate projections. Nature Climate Change, 9, 44-48.
+    """
+    if lai_eff == 0:
         return 0.5 * lai
-    if method == 1:
+    if lai_eff == 1:
         return lai / (0.3 * lai + 1.2)
-    if method == 2:
+    if lai_eff == 2:
         laie = lai.copy()
         laie[(lai > 2) & (lai < 4)] = 2
         laie[lai > 4] = 0.5 * lai
         return laie
-    if method == 3:
+    if lai_eff == 3:
         laie = lai.copy()
         laie[lai > 4] = 4
         return laie * 0.5
 
 
-def lambda_calc(temperature):
-    """
-    From ASCE (2001), eq. B.7
-    """
-    return 2.501 - 0.002361 * temperature
-
-
-def calc_rhoa(pressure, ta, ea):
-    tkv = (273.16 + ta) * (1 - 0.378 * ea / pressure) ** (-1)
-    return 3.486 * pressure / tkv
-
-
-def aero_r(wind, croph=None, zw=2, zh=2, method=1):
-    """The aerodynamic resistance, applied for neutral stability conditions
-     from ASCE (2001), eq. B.2
+def calc_res_aero(wind, croph=None, zw=2, zh=2, ra_method=1):
+    """Aerodynamic resistance [s m-1].
 
     Parameters
     ----------
     wind: pandas.Series
-         wind speed at height z [m/s]
-    croph: float, optional
-        DESCRIBE
+        mean day wind speed [m/s]
+    croph: pandas.series/float, optional
+        crop height [m]
     zw: float, optional
-        height of wind measurements [m]
+        height of wind measurement [m]
     zh: float, optional
-         height of humidity and or air temperature measurements [m]
-    method: 1 or 2, optionall
-
+         height of humidity and or air temperature measurement [m]
+    ra_method: float, optional
+        1 => ra = 208/wind
+        2 => ra is calculated based on equation 36 in FAO (1990), ANNEX V.
     Returns
     -------
-    pandas.Series
-        Series containing the calculated aerodynamic resistance.
+        pandas.Series containing the calculated aerodynamic resistance
+
+    References
+    -----
+    .. [allen_1998] Allen, R. G., Pereira, L. S., Raes, D., & Smith, M. (1998).
+       Crop evapotranspiration-Guidelines for computing crop water
+       requirements-FAO Irrigation and drainage paper 56. Fao, Rome, 300.
+       (http://www.fao.org/3/x0490e/x0490e06.htm#TopOfPage)
 
     """
-    if method == 1:
+    if ra_method == 1:
         return 208 / wind
-    elif method == 2:
+    else:
         d = 0.667 * croph
         zom = 0.123 * croph
         zoh = 0.0123 * croph
-        return (log((zw - d) / zom)) * \
-               (log((zh - d) / zoh) /
-                (0.41 ** 2) / wind)
-
-
-def cloudiness_factor(rs, rso, ac=1.35, bc=-0.35):
-    """Cloudiness factor f. From FAO (1990), ANNEX V, eq. 57
-    """
-    return ac * rs / rso + bc
-
-
-def rs_calc(tindex, lat, a_s=0.25, b_s=0.5):
-    """Incoming solar radiation rs. From FAO (1990), ANNEX V, eq. 52
-    """
-    ra = extraterrestrial_r(tindex, lat)
-    nn = 1
-    return (a_s + b_s * nn) * ra
-
-
-def ed_calc(tmax, tmin, rh):
-    """
-    Actual Vapour Pressure (ed).
-    From FAO (1990), ANNEX V, eq. 11
-    """
-    eamax = e0_calc(tmax)
-    eamin = e0_calc(tmin)
-    return rh / (50. / eamin + 50. / eamax)
-
-
-def calc_rns(solar=None, tindex=None, lat=None, alpha=0.23):
-    """
-    Net Shortwave Radiation Rns
-    From FAO (1990), ANNEX V, eq. 51
-    """
-    if solar is not None:
-        return (1 - alpha) * solar
-    else:
-        return (1 - alpha) * rs_calc(tindex, lat)
-
-
-def calc_rnl(tmax, tmin, ea, cloudf, longa=0.34, longb=-0.139):
-    """Net Longwave Radiation Rnl from FAO (1990), ANNEX V, eq. 56
-
-    Parameters
-    ----------
-    tmax: Series
-        maximum day temperature [°C]
-    tmin: Series
-        minimum day temperature [°C]
-
-    Returns
-    -------
-        pandas.Series containing the calculated net outgoing radiation.
-
-    """
-    sigma = 0.00000000245 * ((tmax + 273.16) ** 4 + (tmin + 273.16) ** 4)
-    emiss = longa + longb * round(sqrt(ea), 8)
-    return sigma * cloudf * emiss
+        return (log((zw - d) / zom)) * (log((zh - d) / zoh) /
+                                        (0.41 ** 2) / wind)
