@@ -1,6 +1,7 @@
 from numpy import sqrt, log, exp, clip
 
-from .utils import extraterrestrial_r, daylight_hours, extraterrestrial_r_hour
+from .utils import extraterrestrial_r, daylight_hours, \
+    extraterrestrial_r_hour, day_of_year
 
 # Specific heat of air [MJ kg-1 °C-1]
 CP = 1.013 * 10 ** -3
@@ -105,10 +106,9 @@ def penman(wind, Rs=None, Rn=None, G=0, tmean=None, tmax=None, tmin=None,
     fu = aw * (1 + bw * wind)
 
     den = lambd * (dlt + gamma)
-    num1 = (dlt * (Rn - G) / den)
-    num2 = (gamma * (es - ea) * fu / den)
-    pet = (num1 + num2)
-    return pet
+    num1 = dlt * (Rn - G) / den
+    num2 = gamma * (es - ea) * fu / den
+    return num1 + num2
 
 
 def pm_fao56(wind, Rs=None, Rn=None, G=0, tmean=None, tmax=None, tmin=None,
@@ -197,10 +197,10 @@ def pm_fao56(wind, Rs=None, Rn=None, G=0, tmean=None, tmax=None, tmin=None,
                             ea=ea)  # [MJ/m2/d]
         Rn = Rns - Rnl
 
-    den = (dlt + gamma1)
-    num1 = (0.408 * dlt * (Rn - G))
-    num2 = (gamma * (es - ea) * 900 * wind / (tmean + 273))
-    return (num1 + num2) / den
+    den = dlt + gamma1
+    num1 = (0.408 * dlt * (Rn - G)) / den
+    num2 = (gamma * (es - ea) * 900 * wind / (tmean + 273)) / den
+    return num1 + num2
 
 
 def pm(wind, Rs=None, Rn=None, G=0, tmean=None, tmax=None, tmin=None,
@@ -332,9 +332,284 @@ def pm(wind, Rs=None, Rn=None, G=0, tmean=None, tmax=None, tmin=None,
     kmin = 86400  # unit conversion s d-1
     rho_a = calc_rho(pressure, tmean, ea)
 
-    den = (lambd * (dlt + gamma1))
-    num1 = (dlt * (Rn - G) / den)
-    num2 = (rho_a * CP * kmin * (es - ea) * a_sh / res_a / den)
+    den = lambd * (dlt + gamma1)
+    num1 = dlt * (Rn - G) / den
+    num2 = rho_a * CP * kmin * (es - ea) * a_sh / res_a / den
+    return num1 + num2
+
+
+def kimberly_penman(wind, Rs=None, Rn=None, G=0, tmean=None, tmax=None,
+                    tmin=None, rhmax=None, rhmin=None, rh=None, pressure=None,
+                    elevation=None, lat=None, n=None, nn=None, Rso=None,
+                    a=1.35, b=-0.35):
+    """Evaporation calculated according to [wright_1982]_.
+
+    Parameters
+    ----------
+    wind: pandas.Series
+        mean day wind speed [m/s]
+    Rs: pandas.Series, optional
+        incoming measured solar radiation [MJ m-2 d-1]
+    Rn: pandas.Series, optional
+        net radiation [MJ m-2 d-1]
+    G: pandas.Series/int, optional
+        soil heat flux [MJ m-2 d-1]
+    tmean: pandas.Series, optional
+        average day temperature [°C]
+    tmax: pandas.Series, optional
+        maximum day temperature [°C]
+    tmin: pandas.Series, optional
+        minimum day temperature [°C]
+    rhmax: pandas.Series, optional
+        maximum daily relative humidity [%]
+    rhmin: pandas.Series, optional
+        mainimum daily relative humidity [%]
+    rh: pandas.Series, optional
+        mean daily relative humidity [%]
+    pressure: float, optional
+        atmospheric pressure [kPa]
+    elevation: float, optional
+        the site elevation [m]
+    lat: float, optional
+        the site latitude [rad]
+    n: pandas.Series/float, optional
+        actual duration of sunshine [hour]
+    nn: pandas.Series/float, optional
+        maximum possible duration of sunshine or daylight hours [hour]
+    Rso: pandas.Series/float, optional
+        clear-sky solar radiation [MJ m-2 day-1]
+    a: float, optional
+        empirical coefficient for Net Long-Wave radiation [-]
+    b: float, optional
+        empirical coefficient for Net Long-Wave radiation [-]
+
+    Returns
+    -------
+        pandas.Series containing the calculated evaporation
+
+    .. math::
+    -----
+        $E = \\frac{\\Delta (R_{n}-G)+ \\rho_a c_p K_{min} \\frac{e_{s}-e_{a}}
+        {r_a}}{\\lambda(\\Delta +\\gamma(1+\\frac{r_s}{r_a}))}$
+
+    References
+    -----
+    .. [wright_1982] Wright, J. L. (1982). New evapotranspiration crop
+       coefficients. Proceedings of the American Society of Civil Engineers,
+       Journal of the Irrigation and Drainage Division, 108(IR2), 57-74.
+    .. [oudin_2005] Oudin, L., Hervieu, F., Michel, C., Perrin, C.,
+       Andréassian, V., Anctil, F., & Loumagne, C. (2005). Which potential
+       evapotranspiration input for a lumped rainfall–runoff model?:
+       Part 2—Towards a simple and efficient potential evapotranspiration model
+       for rainfall–runoff modelling. Journal of hydrology, 303(1-4), 290-306.
+
+    """
+    if tmean is None:
+        tmean = (tmax + tmin) / 2
+    if pressure is None:
+        pressure = calc_press(elevation)
+    gamma = calc_psy(pressure)
+    dlt = calc_vpc(tmean)
+    lambd = calc_lambda(tmean)
+
+    ea = calc_ea(tmean=tmean, tmax=tmax, tmin=tmin, rhmax=rhmax, rhmin=rhmin,
+                 rh=rh)
+    es = calc_es(tmean=tmean, tmax=tmax, tmin=tmin)
+
+    if Rn is None:
+        Rns = calc_rad_short(Rs=Rs, n=n, nn=nn)  # [MJ/m2/d]
+        Rnl = calc_rad_long(Rs=Rs, tmean=tmean, tmax=tmax, tmin=tmin,
+                            rhmax=rhmax, rhmin=rhmin, rh=rh,
+                            elevation=elevation, lat=lat, Rso=Rso, a=a, b=b,
+                            ea=ea)  # [MJ/m2/d]
+        Rn = Rns - Rnl
+
+    j = day_of_year(tmean.index)
+    w = wind * (0.4 + 0.14 * exp(-((j - 173)/58)**2) + (0.605 + 0.345 *
+                                                        exp((j - 243)/80)**2))
+
+    den = lambd * (dlt + gamma)
+    num1 = dlt * (Rn - G) / den
+    num2 = gamma * (es - ea) * w / den
+    return num1 + num2
+
+
+def fao_24(wind, Rs=None, Rn=None, tmean=None, tmax=None, tmin=None, rh=None,
+           pressure=None, elevation=None, albedo=0.23):
+    """Evaporation calculated according to [priestley_and_taylor_1965]_.
+
+    Parameters
+    ----------
+    wind: pandas.Series
+        mean day wind speed [m/s]
+    Rs: pandas.Series, optional
+        incoming measured solar radiation [MJ m-2 d-1]
+    tmean: pandas.Series, optional
+        average day temperature [°C]
+    tmax: pandas.Series, optional
+        maximum day temperature [°C]
+    tmin: pandas.Series, optional
+        minimum day temperature [°C]
+    rh: pandas.Series, optional
+        mean daily relative humidity [%]
+    pressure: float, optional
+        atmospheric pressure [kPa]
+    elevation: float, optional
+        the site elevation [m]
+    albedo: float, optional
+        surface albedo [-]
+
+    Returns
+    -------
+        pandas.Series containing the calculated evapotranspiration
+
+    Examples
+    --------
+    >>> pt = priestley_taylor(wind, Rn=Rn, tmean=tmean, rh=rh)
+
+    .. math::
+    -----
+        $E = \\frac{\\Delta (R_{n}-G)+ \\rho_a c_p K_{min} \\frac{e_{s}-e_{a}}
+        {r_a}}{\\lambda(\\Delta +\\gamma(1+\\frac{r_s}{r_a}))}$
+
+    References
+    -----
+    .. [priestley_and_taylor_1965] Priestley, C. H. B., & TAYLOR, R. J. (1972).
+       On the assessment of surface heat flux and evaporation using large-scale
+       parameters. Monthly weather review, 100(2), 81-92.
+
+    """
+    if tmean is None:
+        tmean = (tmax + tmin) / 2
+    if pressure is None:
+        pressure = calc_press(elevation)
+    gamma = calc_psy(pressure)
+    dlt = calc_vpc(tmean)
+    lambd = calc_lambda(tmean)
+
+    w = 1.066 - 0.13 * rh/100 + 0.045 * wind - 0.023 * rh/100 * wind - 3.15 * \
+        (rh/100)**2 - 0.0011 * wind
+
+    return -0.3 + dlt * (dlt + gamma) * Rs * (1 - albedo) * w / lambd
+
+
+def thom_oliver(wind, Rs=None, Rn=None, G=0, tmean=None, tmax=None, tmin=None,
+                rhmax=None, rhmin=None, rh=None, pressure=None, elevation=None,
+                lat=None, n=None, nn=None, Rso=None, a=1.35, b=-0.35, lai=None,
+                croph=None, rl=100, rs=70, ra_method=1, lai_eff=1, srs=0.0009,
+                co2=300):
+    """Evaporation calculated according to [thom_1977]_.
+
+    Parameters
+    ----------
+    wind: pandas.Series
+        mean day wind speed [m/s]
+    Rs: pandas.Series, optional
+        incoming measured solar radiation [MJ m-2 d-1]
+    Rn: pandas.Series, optional
+        net radiation [MJ m-2 d-1]
+    G: pandas.Series/int, optional
+        soil heat flux [MJ m-2 d-1]
+    tmean: pandas.Series, optional
+        average day temperature [°C]
+    tmax: pandas.Series, optional
+        maximum day temperature [°C]
+    tmin: pandas.Series, optional
+        minimum day temperature [°C]
+    rhmax: pandas.Series, optional
+        maximum daily relative humidity [%]
+    rhmin: pandas.Series, optional
+        mainimum daily relative humidity [%]
+    rh: pandas.Series, optional
+        mean daily relative humidity [%]
+    pressure: float, optional
+        atmospheric pressure [kPa]
+    elevation: float, optional
+        the site elevation [m]
+    lat: float, optional
+        the site latitude [rad]
+    n: pandas.Series/float, optional
+        actual duration of sunshine [hour]
+    nn: pandas.Series/float, optional
+        maximum possible duration of sunshine or daylight hours [hour]
+    Rso: pandas.Series/float, optional
+        clear-sky solar radiation [MJ m-2 day-1]
+    a: float, optional
+        empirical coefficient for Net Long-Wave radiation [-]
+    b: float, optional
+        empirical coefficient for Net Long-Wave radiation [-]
+    lai: pandas.Series/float, optional
+        measured leaf area index [-]
+    croph: pandas.series/float, optional
+        crop height [m]
+    rl: pandas.series/float, optional
+        bulk stomatal resistance [s m-1]
+    rs: pandas.series/float, optional
+        bulk surface resistance [s m-1]
+    ra_method: float, optional
+        1 => ra = 208/wind
+        2 => ra is calculated based on equation 36 in FAO (1990), ANNEX V.
+    lai_eff: float, optional
+        1 => LAI_eff = 0.5 * LAI
+        2 => LAI_eff = lai / (0.3 * lai + 1.2)
+        3 => LAI_eff = 0.5 * LAI; (LAI>4=4)
+        4 => see [zhang_2008]_.
+    srs: float, optional
+        Relative sensitivity of rl to Δ[CO2]
+    co2: float
+        CO2 concentration [ppm]
+
+    Returns
+    -------
+        pandas.Series containing the calculated evaporation
+
+    .. math::
+    -----
+        $E = \\frac{\\Delta (R_{n}-G)+ \\rho_a c_p K_{min} \\frac{e_{s}-e_{a}}
+        {r_a}}{\\lambda(\\Delta +\\gamma(1+\\frac{r_s}{r_a}))}$
+
+    References
+    -----
+    .. [thom_1977] Thom, A. S., & Oliver, H. R. (1977). On Penman's equation
+       for estimating regional evaporation. Quarterly Journal of the Royal
+       Meteorological Society, 103(436), 345-357.
+    .. [oudin_2005] Oudin, L., Hervieu, F., Michel, C., Perrin, C.,
+       Andréassian, V., Anctil, F., & Loumagne, C. (2005). Which potential
+       evapotranspiration input for a lumped rainfall–runoff model?:
+       Part 2—Towards a simple and efficient potential evapotranspiration model
+       for rainfall–runoff modelling. Journal of hydrology, 303(1-4), 290-306.
+
+    """
+    if tmean is None:
+        tmean = (tmax + tmin) / 2
+    if pressure is None:
+        pressure = calc_press(elevation)
+    gamma = calc_psy(pressure)
+    dlt = calc_vpc(tmean)
+    lambd = calc_lambda(tmean)
+
+    ea = calc_ea(tmean=tmean, tmax=tmax, tmin=tmin, rhmax=rhmax, rhmin=rhmin,
+                 rh=rh)
+    es = calc_es(tmean=tmean, tmax=tmax, tmin=tmin)
+
+    res_a = calc_res_aero(wind, ra_method=ra_method, croph=croph)
+    res_s = calc_res_surf(lai=lai, rs=rs, rl=rl, lai_eff=lai_eff, srs=srs,
+                          co2=co2)
+    gamma1 = gamma * (1 + res_s / res_a)
+
+    if Rn is None:
+        Rns = calc_rad_short(Rs=Rs, n=n, nn=nn)  # [MJ/m2/d]
+        Rnl = calc_rad_long(Rs=Rs, tmean=tmean, tmax=tmax, tmin=tmin,
+                            rhmax=rhmax, rhmin=rhmin, rh=rh,
+                            elevation=elevation, lat=lat, Rso=Rso, a=a, b=b,
+                            ea=ea)  # [MJ/m2/d]
+        Rn = Rns - Rnl
+
+    w = 2.6 * (1 + 0.536 * wind)
+
+    den = lambd * (dlt + gamma1)
+    num1 = dlt * (Rn - G) / den
+    num2 = 2.5 * gamma * (es - ea) * w / den
     return num1 + num2
 
 
