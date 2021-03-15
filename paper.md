@@ -22,9 +22,9 @@ bibliography: paper.bib
 
 # Summary - write
 
-The evaporation (ET) of water from land surfaces to the atmosphere is a major component of the 
-water cycle and accurate estimates of the flux are essential to the water and agricultural sector.  
-As direct observations of ET still present a diffulty, ET is often estimated from available 
+The evaporation (ET) of water from land surfaces to the atmosphere is a major component of the water 
+cycle and accurate estimates of the flux are essential to the water and agricultural sector. As 
+direct observations of ET still present a diffulty, ET is often estimated from available 
 meteorological data using empirical formulas. There exist a variety of such formulas, where most 
 tend to estimate the potential evaporation (PET), which is the maximum amount of water that would 
 be evaporated if enough water were available. Consistently implementing these methods is difficult 
@@ -42,26 +42,26 @@ in other hydrological models or sensitivity analysis.
 [@oudin2005potential], [@jensen1990evapotranspiration]), to estimate potential evaporation at a single 
 location using input data at daily resolution.
 
-| Classification | Common method name        | Data needed | PyEt Method        | Reference                      |
-|----------------|---------------------------|-------------|--------------------|--------------------------------|
-| Combination    | Penman                    | RH, T, U, D |`penman`            |[@penman1948natural]            |
-|                | Penman-Monteith           | RH, T, U, D |`pm`                |[@monteith1965evaporation]      |
-|                | FAO-56                    | RH, T, U, D |`pm_fao56`          |[@allen1998crop]                |
-|                | Priestley-Taylor          | T, D        |`priestley_taylor`  |[@priestley1972assessment]      |
-|                | Kimberly-Penman           | RH, T, U, D |`kimberly_penman`   |[@wright1982new]                |
-|                | Thom-Oliver               | RH, T, U, D |`thom_oliver`       |[@thom1977penman]               |
-| Temperature    | Blaney–Criddle            | T, D        |`blaney_criddle`    |[@blaney1952determining]        |
-|                | Hamon                     | T           |`hamon`             |[@hamon1963estimating]          |
-|                | Romanenko                 | RH, T       |`romanenko`         |[@xu2001evaluation]             |
-|                | Linacre                   | T           |`linacre`           |[@linacre1977simple]            |
-| Radiation      | Turc                      | T, D        |`turc`              |[@xu2001evaluation]             |
-|                | Jensen–Haise              | T, D        |`jensen_haise`      |[@jensen1963estimating]         |
-|                | McGuinness–Bordne         | T, D        |`mcguinness_bordne` |[@mcguinness1972comparison]     |
-|                | Hargreaves                | T           |`hargreaves`        |[@hargreaves1982estimating]     |
-|                | Doorenbos–Pruitt (FAO-24) | RH, T, U, D |`fao_24`            |[@jensen1990evapotranspiration] |
-|                | Abtew                     | T, D        |`abtew`             |[@abtew1996evapotranspiration]  |
-|                | Makkink                   | T, D        |`makkink`           |[@makkink1957testing]           |
-|                | Oudin                     | T           |`oudin`             |[@oudin2005potential]           |
+| Common method name        | Data needed | PyEt Method        | Reference                      |
+|---------------------------|-------------|--------------------|--------------------------------|
+| Penman                    | RH, T, U, D |`penman`            |[@penman1948natural]            |
+| Penman-Monteith           | RH, T, U, D |`pm`                |[@monteith1965evaporation]      |
+| FAO-56                    | RH, T, U, D |`pm_fao56`          |[@allen1998crop]                |
+| Priestley-Taylor          | T, D        |`priestley_taylor`  |[@priestley1972assessment]      |
+| Kimberly-Penman           | RH, T, U, D |`kimberly_penman`   |[@wright1982new]                |
+| Thom-Oliver               | RH, T, U, D |`thom_oliver`       |[@thom1977penman]               |
+| Blaney–Criddle            | T, D        |`blaney_criddle`    |[@blaney1952determining]        |
+| Hamon                     | T           |`hamon`             |[@hamon1963estimating]          |
+| Romanenko                 | RH, T       |`romanenko`         |[@xu2001evaluation]             |
+| Linacre                   | T           |`linacre`           |[@linacre1977simple]            |
+| Turc                      | T, D        |`turc`              |[@xu2001evaluation]             |
+| Jensen–Haise              | T, D        |`jensen_haise`      |[@jensen1963estimating]         |
+| McGuinness–Bordne         | T, D        |`mcguinness_bordne` |[@mcguinness1972comparison]     |
+| Hargreaves                | T           |`hargreaves`        |[@hargreaves1982estimating]     |
+| Doorenbos–Pruitt (FAO-24) | RH, T, U, D |`fao_24`            |[@jensen1990evapotranspiration] |
+| Abtew                     | T, D        |`abtew`             |[@abtew1996evapotranspiration]  |
+| Makkink                   | T, D        |`makkink`           |[@makkink1957testing]           |
+| Oudin                     | T           |`oudin`             |[@oudin2005potential]           |
 
 T, Temperature; U, Wind Speed; D, Radiation; RH, Relative Humidity. Adapted from [@oudin2005potential].
 
@@ -84,8 +84,10 @@ tmax, tmin, rh, wind, rs = [meteo[col] for col in meteo.columns]
 elevation = 279
 lat = 46.5678 * np.pi / 180
 
-et_penman = pyet.pm(wind, Rs=Rs, elevation=elevation, lat=lat, tmax=tmax, tmin=tmin, rh=rh)
-et_pt = pyet.priestley_taylor(wind, rs=rs, elevation=elevation, lat=lat, tmax=tmax, tmin=tmin, rh=rh)
+et_penman = pyet.pm(wind, Rs=Rs, elevation=elevation, lat=lat, tmax=tmax, 
+					tmin=tmin, rh=rh)
+et_pt = pyet.priestley_taylor(wind, rs=rs, elevation=elevation, lat=lat, 
+							  tmax=tmax, tmin=tmin, rh=rh)
 et_mak = pyet.makkink(Rs, tmax=tmax, tmin=tmin, elevation=elevation)
 et_hamon = pyet.hamon(tmean.index, tmean, lat)
 ```
