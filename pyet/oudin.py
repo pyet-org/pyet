@@ -43,20 +43,20 @@ def oudin(tmean, lat, k1=100, k2=5):
        for rainfall–runoff modelling. Journal of hydrology, 303(1-4), 290-306.
     """
     lambd = calc_lambda(tmean)
-    Ra = extraterrestrial_r(tmean.index, lat)
-    et = Ra * (tmean + k2) / lambd / k1
+    ra = extraterrestrial_r(tmean.index, lat)
+    et = ra * (tmean + k2) / lambd / k1
     et[(tmean + k2) < 0] = 0
     return et
 
 
-def abtew(tmean, Rs, k=0.53):
+def abtew(tmean, rs, k=0.53):
     """Evaporation calculated according to [abtew_1996]_.
 
     Parameters
     ----------
     tmean: pandas.Series, optional
         average day temperature [°C]
-    Rs: pandas.Series, optional
+    rs: pandas.Series, optional
         incoming solar radiation [MJ m-2 d-1]
     k: float, optional
         calibration coefficient [-]
@@ -67,7 +67,7 @@ def abtew(tmean, Rs, k=0.53):
 
     Examples
     --------
-    >>> et_abtew = abtew(tmean, Rs)
+    >>> et_abtew = abtew(tmean, rs)
 
     Notes
     -----
@@ -87,18 +87,18 @@ def abtew(tmean, Rs, k=0.53):
        Hydrological processes, 14(2), 339-349.
     """
     lambd = calc_lambda(tmean)
-    et = k * Rs / lambd
+    et = k * rs / lambd
     return et
 
 
-def turc(tmean, Rs, rh, k=0.0133):
+def turc(tmean, rs, rh, k=0.0133):
     """Evaporation calculated according to [turc_1961]_.
 
     Parameters
     ----------
     tmean: pandas.Series
         average day temperature [°C]
-    Rs: pandas.Series
+    rs: pandas.Series
         incoming solar radiation [MJ m-2 d-1]
     rh: pandas.Series
         mean daily relative humidity [%]
@@ -111,7 +111,7 @@ def turc(tmean, Rs, rh, k=0.0133):
 
     Examples
     --------
-    >>> et_turc = turc(tmean, Rs, rh)
+    >>> et_turc = turc(tmean, rs, rh)
 
     Notes
     -----
@@ -130,8 +130,9 @@ def turc(tmean, Rs, rh, k=0.0133):
        generalization of radiation‐based methods for calculating evaporation.
        Hydrological processes, 14(2), 339-349.
     """
-    et = k * tmean / (tmean + 15) * (Rs/4.184 + 50)
-    et[rh < 50] = k * tmean / (tmean + 15) * (Rs/4.184 + 50) * (1+(50-rh)/70)
+    et = k * tmean / (tmean + 15) * (rs / 4.184 + 50)
+    et[rh < 50] = k * tmean / (tmean + 15) * (rs / 4.184 + 50) * (
+            1 + (50 - rh) / 70)
     return et * 4.184
 
 
@@ -174,8 +175,8 @@ def mcguinness_bordne(tmean, lat, k=0.0147):
        Hydrological processes, 14(2), 339-349.
     """
     lambd = calc_lambda(tmean)
-    Ra = extraterrestrial_r(tmean.index, lat)
-    et = k * Ra * (tmean + 5) / lambd
+    ra = extraterrestrial_r(tmean.index, lat)
+    et = k * ra * (tmean + 5) / lambd
     return et
 
 
@@ -225,7 +226,7 @@ def linacre(tmean, elevation, lat, tdew=None, tmax=None, tmin=None):
        Hydrological processes, 15(2), 305-319.
     """
     if tdew is None:
-        tdew = 0.52 * tmin + 0.6 * tmax - 0.009 * tmax**2 - 2
+        tdew = 0.52 * tmin + 0.6 * tmax - 0.009 * tmax ** 2 - 2
     tm = tmean + 0.006 * elevation
     et = (500 * tm / (100 - lat) + 15 * (tmean - tdew)) / (80 - tmean)
     return et
@@ -311,4 +312,4 @@ def romanenko(tmean, rh, k=4.5):
     ea = calc_ea(tmean=tmean, rh=rh)
     es = calc_es(tmean=tmean)
 
-    return k * (1 + tmean/25)**2 * (1 - ea/es)
+    return k * (1 + tmean / 25) ** 2 * (1 - ea / es)

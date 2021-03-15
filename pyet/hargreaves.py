@@ -10,7 +10,7 @@ def hargreaves(tindex, tmax, tmin, lat):
 
         Parameters
         ----------
-        tindex: pandas.Series.index
+        tindex: pandas.DatetimeIndex
         tmax: pandas.Series, optional
             maximum day temperature [°C]
         tmin: pandas.Series, optional
@@ -40,11 +40,11 @@ def hargreaves(tindex, tmax, tmin, lat):
            Estimating potential evapotranspiration. Journal of the irrigation
            and Drainage Division, 108(3), 225-230.
         .. [jensen_allen_2016] Task Committee on Revision of Manual 70. (2016).
-        Evaporation, evapotranspiration, and irrigation water requirements.
-        American Society of Civil Engineers.
+           Evaporation, evapotranspiration, and irrigation water requirements.
+           American Society of Civil Engineers.
 
         """
     tmean = (tmax + tmin) / 2
     lambd = calc_lambda(tmean)
-    Ra = extraterrestrial_r(tindex=tindex, lat=lat)
-    return 0.0023 * (tmean + 17.8) * sqrt(tmax - tmin) * Ra / lambd
+    ra = extraterrestrial_r(tindex=tindex, lat=lat)
+    return 0.0023 * (tmean + 17.8) * sqrt(tmax - tmin) * ra / lambd

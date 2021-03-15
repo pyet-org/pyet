@@ -11,9 +11,9 @@ STEFAN_BOLTZMANN_HOUR = 2.042 * 10 ** -10
 STEFAN_BOLTZMANN_DAY = 4.903 * 10 ** -9
 
 
-def penman(wind, Rs=None, Rn=None, G=0, tmean=None, tmax=None, tmin=None,
+def penman(wind, rs=None, rn=None, g=0, tmean=None, tmax=None, tmin=None,
            rhmax=None, rhmin=None, rh=None, pressure=None, elevation=None,
-           lat=None, n=None, nn=None, Rso=None, aw=2.6, bw=0.536, a=1.35,
+           lat=None, n=None, nn=None, rso=None, aw=2.6, bw=0.536, a=1.35,
            b=-0.35):
     """Evaporation calculated according to [penman_1948]_.
 
@@ -21,11 +21,11 @@ def penman(wind, Rs=None, Rn=None, G=0, tmean=None, tmax=None, tmin=None,
     ----------
     wind: pandas.Series
         mean day wind speed [m/s]
-    Rs: pandas.Series, optional
-        incoming measured solar radiation [MJ m-2 d-1]
-    Rn: pandas.Series, optional
+    rs: pandas.Series, optional
+        incoming solar radiation [MJ m-2 d-1]
+    rn: pandas.Series, optional
         net radiation [MJ m-2 d-1]
-    G: pandas.Series/int, optional
+    g: pandas.Series/int, optional
         soil heat flux [MJ m-2 d-1]
     tmean: pandas.Series, optional
         average day temperature [°C]
@@ -49,7 +49,7 @@ def penman(wind, Rs=None, Rn=None, G=0, tmean=None, tmax=None, tmin=None,
         actual duration of sunshine [hour]
     nn: pandas.Series/float, optional
         maximum possible duration of sunshine or daylight hours [hour]
-    Rso: pandas.Series/float, optional
+    rso: pandas.Series/float, optional
         clear-sky solar radiation [MJ m-2 day-1]
     aw: float, optional
         wind coefficient [-]
@@ -66,7 +66,7 @@ def penman(wind, Rs=None, Rn=None, G=0, tmean=None, tmax=None, tmin=None,
 
     Examples
     --------
-    >>> et_penman = penman(wind, Rn=Rn, tmean=tmean, rh=rh)
+    >>> et_penman = penman(wind, rn=rn, tmean=tmean, rh=rh)
 
     .. math::
     -----
@@ -95,36 +95,36 @@ def penman(wind, Rs=None, Rn=None, G=0, tmean=None, tmax=None, tmin=None,
                  rh=rh)
     es = calc_es(tmean=tmean, tmax=tmax, tmin=tmin)
 
-    if Rn is None:
-        Rns = calc_rad_short(Rs=Rs, n=n, nn=nn)  # [MJ/m2/d]
-        Rnl = calc_rad_long(Rs=Rs, tmean=tmean, tmax=tmax, tmin=tmin,
+    if rn is None:
+        rns = calc_rad_short(rs=rs, n=n, nn=nn)  # [MJ/m2/d]
+        rnl = calc_rad_long(rs=rs, tmean=tmean, tmax=tmax, tmin=tmin,
                             rhmax=rhmax, rhmin=rhmin, rh=rh,
-                            elevation=elevation, lat=lat, Rso=Rso, a=a, b=b,
+                            elevation=elevation, lat=lat, rso=rso, a=a, b=b,
                             ea=ea)  # [MJ/m2/d]
-        Rn = Rns - Rnl
+        rn = rns - rnl
 
     fu = aw * (1 + bw * wind)
 
     den = lambd * (dlt + gamma)
-    num1 = dlt * (Rn - G) / den
+    num1 = dlt * (rn - g) / den
     num2 = gamma * (es - ea) * fu / den
     return num1 + num2
 
 
-def pm_fao56(wind, Rs=None, Rn=None, G=0, tmean=None, tmax=None, tmin=None,
+def pm_fao56(wind, rs=None, rn=None, g=0, tmean=None, tmax=None, tmin=None,
              rhmax=None, rhmin=None, rh=None, pressure=None, elevation=None,
-             lat=None, n=None, nn=None, Rso=None, a=1.35, b=-0.35):
+             lat=None, n=None, nn=None, rso=None, a=1.35, b=-0.35):
     """Evaporation calculated according to [allen_1998]_..
 
     Parameters
     ----------
     wind: pandas.Series
         mean day wind speed [m/s]
-    Rs: pandas.Series, optional
-        incoming measured solar radiation [MJ m-2 d-1]
-    Rn: pandas.Series, optional
+    rs: pandas.Series, optional
+        incoming solar radiation [MJ m-2 d-1]
+    rn: pandas.Series, optional
         net radiation [MJ m-2 d-1]
-    G: pandas.Series/int, optional
+    g: pandas.Series/int, optional
         soil heat flux [MJ m-2 d-1]
     tmean: pandas.Series, optional
         average day temperature [°C]
@@ -148,7 +148,7 @@ def pm_fao56(wind, Rs=None, Rn=None, G=0, tmean=None, tmax=None, tmin=None,
         actual duration of sunshine [hour]
     nn: pandas.Series/float, optional
         maximum possible duration of sunshine or daylight hours [hour]
-    Rso: pandas.Series/float, optional
+    rso: pandas.Series/float, optional
         clear-sky solar radiation [MJ m-2 day-1]
     a: float, optional
         empirical coefficient for Net Long-Wave radiation [-]
@@ -161,7 +161,7 @@ def pm_fao56(wind, Rs=None, Rn=None, G=0, tmean=None, tmax=None, tmin=None,
 
     Examples
     --------
-    >>> et_fao56 = pm_fao56(wind, Rn=Rn, tmean=tmean, rh=rh)
+    >>> et_fao56 = pm_fao56(wind, rn=rn, tmean=tmean, rh=rh)
 
     .. math::
     -----
@@ -189,24 +189,24 @@ def pm_fao56(wind, Rs=None, Rn=None, G=0, tmean=None, tmax=None, tmin=None,
                  rh=rh)
     es = calc_es(tmean=tmean, tmax=tmax, tmin=tmin)
 
-    if Rn is None:
-        Rns = calc_rad_short(Rs=Rs, n=n, nn=nn)  # [MJ/m2/d]
-        Rnl = calc_rad_long(Rs=Rs, tmean=tmean, tmax=tmax, tmin=tmin,
+    if rn is None:
+        rns = calc_rad_short(rs=rs, n=n, nn=nn)  # [MJ/m2/d]
+        rnl = calc_rad_long(rs=rs, tmean=tmean, tmax=tmax, tmin=tmin,
                             rhmax=rhmax, rhmin=rhmin, rh=rh,
-                            elevation=elevation, lat=lat, Rso=Rso, a=a, b=b,
+                            elevation=elevation, lat=lat, rso=rso, a=a, b=b,
                             ea=ea)  # [MJ/m2/d]
-        Rn = Rns - Rnl
+        rn = rns - rnl
 
     den = dlt + gamma1
-    num1 = (0.408 * dlt * (Rn - G)) / den
+    num1 = (0.408 * dlt * (rn - g)) / den
     num2 = (gamma * (es - ea) * 900 * wind / (tmean + 273)) / den
     return num1 + num2
 
 
-def pm(wind, Rs=None, Rn=None, G=0, tmean=None, tmax=None, tmin=None,
+def pm(wind, rs=None, rn=None, g=0, tmean=None, tmax=None, tmin=None,
        rhmax=None, rhmin=None, rh=None, pressure=None, elevation=None,
-       lat=None, n=None, nn=None, Rso=None, a=1.35, b=-0.35, lai=None,
-       croph=None, rl=100, rs=70, ra_method=1, a_sh=1, a_s=1, lai_eff=1,
+       lat=None, n=None, nn=None, rso=None, a=1.35, b=-0.35, lai=None,
+       croph=None, r_l=100, r_s=70, ra_method=1, a_sh=1, a_s=1, lai_eff=1,
        srs=0.0009, co2=300):
     """Evaporation calculated according to [monteith_1965]_.
 
@@ -214,11 +214,11 @@ def pm(wind, Rs=None, Rn=None, G=0, tmean=None, tmax=None, tmin=None,
     ----------
     wind: pandas.Series
         mean day wind speed [m/s]
-    Rs: pandas.Series, optional
-        incoming measured solar radiation [MJ m-2 d-1]
-    Rn: pandas.Series, optional
+    rs: pandas.Series, optional
+        incoming solar radiation [MJ m-2 d-1]
+    rn: pandas.Series, optional
         net radiation [MJ m-2 d-1]
-    G: pandas.Series/int, optional
+    g: pandas.Series/int, optional
         soil heat flux [MJ m-2 d-1]
     tmean: pandas.Series, optional
         average day temperature [°C]
@@ -242,19 +242,19 @@ def pm(wind, Rs=None, Rn=None, G=0, tmean=None, tmax=None, tmin=None,
         actual duration of sunshine [hour]
     nn: pandas.Series/float, optional
         maximum possible duration of sunshine or daylight hours [hour]
-    Rso: pandas.Series/float, optional
+    rso: pandas.Series/float, optional
         clear-sky solar radiation [MJ m-2 day-1]
     a: float, optional
         empirical coefficient for Net Long-Wave radiation [-]
     b: float, optional
         empirical coefficient for Net Long-Wave radiation [-]
     lai: pandas.Series/float, optional
-        measured leaf area index [-]
+        leaf area index [-]
     croph: pandas.series/float, optional
         crop height [m]
-    rl: pandas.series/float, optional
+    r_l: pandas.series/float, optional
         bulk stomatal resistance [s m-1]
-    rs: pandas.series/float, optional
+    r_s: pandas.series/float, optional
         bulk surface resistance [s m-1]
     ra_method: float, optional
         1 => ra = 208/wind
@@ -317,30 +317,30 @@ def pm(wind, Rs=None, Rn=None, G=0, tmean=None, tmax=None, tmin=None,
     es = calc_es(tmean=tmean, tmax=tmax, tmin=tmin)
 
     res_a = calc_res_aero(wind, ra_method=ra_method, croph=croph)
-    res_s = calc_res_surf(lai=lai, rs=rs, rl=rl, lai_eff=lai_eff, srs=srs,
+    res_s = calc_res_surf(lai=lai, r_s=r_s, r_l=r_l, lai_eff=lai_eff, srs=srs,
                           co2=co2)
     gamma1 = gamma * a_sh / a_s * (1 + res_s / res_a)
 
-    if Rn is None:
-        Rns = calc_rad_short(Rs=Rs, n=n, nn=nn)  # [MJ/m2/d]
-        Rnl = calc_rad_long(Rs=Rs, tmean=tmean, tmax=tmax, tmin=tmin,
+    if rn is None:
+        rns = calc_rad_short(rs=rs, n=n, nn=nn)  # [MJ/m2/d]
+        rnl = calc_rad_long(rs=rs, tmean=tmean, tmax=tmax, tmin=tmin,
                             rhmax=rhmax, rhmin=rhmin, rh=rh,
-                            elevation=elevation, lat=lat, Rso=Rso, a=a, b=b,
+                            elevation=elevation, lat=lat, rso=rso, a=a, b=b,
                             ea=ea)  # [MJ/m2/d]
-        Rn = Rns - Rnl
+        rn = rns - rnl
 
     kmin = 86400  # unit conversion s d-1
     rho_a = calc_rho(pressure, tmean, ea)
 
     den = lambd * (dlt + gamma1)
-    num1 = dlt * (Rn - G) / den
+    num1 = dlt * (rn - g) / den
     num2 = rho_a * CP * kmin * (es - ea) * a_sh / res_a / den
     return num1 + num2
 
 
-def kimberly_penman(wind, Rs=None, Rn=None, G=0, tmean=None, tmax=None,
+def kimberly_penman(wind, rs=None, rn=None, g=0, tmean=None, tmax=None,
                     tmin=None, rhmax=None, rhmin=None, rh=None, pressure=None,
-                    elevation=None, lat=None, n=None, nn=None, Rso=None,
+                    elevation=None, lat=None, n=None, nn=None, rso=None,
                     a=1.35, b=-0.35):
     """Evaporation calculated according to [wright_1982]_.
 
@@ -348,11 +348,11 @@ def kimberly_penman(wind, Rs=None, Rn=None, G=0, tmean=None, tmax=None,
     ----------
     wind: pandas.Series
         mean day wind speed [m/s]
-    Rs: pandas.Series, optional
-        incoming measured solar radiation [MJ m-2 d-1]
-    Rn: pandas.Series, optional
+    rs: pandas.Series, optional
+        incoming solar radiation [MJ m-2 d-1]
+    rn: pandas.Series, optional
         net radiation [MJ m-2 d-1]
-    G: pandas.Series/int, optional
+    g: pandas.Series/int, optional
         soil heat flux [MJ m-2 d-1]
     tmean: pandas.Series, optional
         average day temperature [°C]
@@ -376,7 +376,7 @@ def kimberly_penman(wind, Rs=None, Rn=None, G=0, tmean=None, tmax=None,
         actual duration of sunshine [hour]
     nn: pandas.Series/float, optional
         maximum possible duration of sunshine or daylight hours [hour]
-    Rso: pandas.Series/float, optional
+    rso: pandas.Series/float, optional
         clear-sky solar radiation [MJ m-2 day-1]
     a: float, optional
         empirical coefficient for Net Long-Wave radiation [-]
@@ -416,34 +416,34 @@ def kimberly_penman(wind, Rs=None, Rn=None, G=0, tmean=None, tmax=None,
                  rh=rh)
     es = calc_es(tmean=tmean, tmax=tmax, tmin=tmin)
 
-    if Rn is None:
-        Rns = calc_rad_short(Rs=Rs, n=n, nn=nn)  # [MJ/m2/d]
-        Rnl = calc_rad_long(Rs=Rs, tmean=tmean, tmax=tmax, tmin=tmin,
+    if rn is None:
+        rns = calc_rad_short(rs=rs, n=n, nn=nn)  # [MJ/m2/d]
+        rnl = calc_rad_long(rs=rs, tmean=tmean, tmax=tmax, tmin=tmin,
                             rhmax=rhmax, rhmin=rhmin, rh=rh,
-                            elevation=elevation, lat=lat, Rso=Rso, a=a, b=b,
+                            elevation=elevation, lat=lat, rso=rso, a=a, b=b,
                             ea=ea)  # [MJ/m2/d]
-        Rn = Rns - Rnl
+        rn = rns - rnl
 
     j = day_of_year(tmean.index)
-    w = wind * (0.4 + 0.14 * exp(-((j - 173)/58)**2) + (0.605 + 0.345 *
-                                                        exp((j - 243)/80)**2))
+    w = wind * (0.4 + 0.14 * exp(-((j - 173) / 58) ** 2) + (
+            0.605 + 0.345 * exp((j - 243) / 80) ** 2))
 
     den = lambd * (dlt + gamma)
-    num1 = dlt * (Rn - G) / den
+    num1 = dlt * (rn - g) / den
     num2 = gamma * (es - ea) * w / den
     return num1 + num2
 
 
-def fao_24(wind, Rs=None, Rn=None, tmean=None, tmax=None, tmin=None, rh=None,
+def fao_24(wind, rs=None, tmean=None, tmax=None, tmin=None, rh=None,
            pressure=None, elevation=None, albedo=0.23):
-    """Evaporation calculated according to [priestley_and_taylor_1965]_.
+    """Evaporation calculated according to [jensen_1990]_.
 
     Parameters
     ----------
     wind: pandas.Series
         mean day wind speed [m/s]
-    Rs: pandas.Series, optional
-        incoming measured solar radiation [MJ m-2 d-1]
+    rs: pandas.Series, optional
+        incoming solar radiation [MJ m-2 d-1]
     tmean: pandas.Series, optional
         average day temperature [°C]
     tmax: pandas.Series, optional
@@ -461,11 +461,11 @@ def fao_24(wind, Rs=None, Rn=None, tmean=None, tmax=None, tmin=None, rh=None,
 
     Returns
     -------
-        pandas.Series containing the calculated evapotranspiration
+        pandas.Series containing the calculated evaporation
 
     Examples
     --------
-    >>> pt = priestley_taylor(wind, Rn=Rn, tmean=tmean, rh=rh)
+    >>> et_fao24 = fao_24(wind, rs, tmean=tmean, rh=rh)
 
     .. math::
     -----
@@ -474,9 +474,8 @@ def fao_24(wind, Rs=None, Rn=None, tmean=None, tmax=None, tmin=None, rh=None,
 
     References
     -----
-    .. [priestley_and_taylor_1965] Priestley, C. H. B., & TAYLOR, R. J. (1972).
-       On the assessment of surface heat flux and evaporation using large-scale
-       parameters. Monthly weather review, 100(2), 81-92.
+    .. [jensen_1990] Jensen, M. E., Burman, R. D., & Allen, R. G. (1990).
+       Evapotranspiration and irrigation water requirements. ASCE.
 
     """
     if tmean is None:
@@ -487,28 +486,28 @@ def fao_24(wind, Rs=None, Rn=None, tmean=None, tmax=None, tmin=None, rh=None,
     dlt = calc_vpc(tmean)
     lambd = calc_lambda(tmean)
 
-    w = 1.066 - 0.13 * rh/100 + 0.045 * wind - 0.023 * rh/100 * wind - 3.15 * \
-        (rh/100)**2 - 0.0011 * wind
+    w = 1.066 - 0.13 * rh / 100 + 0.045 * wind - 0.023 * rh / 100 * wind - \
+        3.15 * (rh / 100) ** 2 - 0.0011 * wind
 
-    return -0.3 + dlt * (dlt + gamma) * Rs * (1 - albedo) * w / lambd
+    return -0.3 + dlt * (dlt + gamma) * rs * (1 - albedo) * w / lambd
 
 
-def thom_oliver(wind, Rs=None, Rn=None, G=0, tmean=None, tmax=None, tmin=None,
+def thom_oliver(wind, rs=None, rn=None, g=0, tmean=None, tmax=None, tmin=None,
                 rhmax=None, rhmin=None, rh=None, pressure=None, elevation=None,
-                lat=None, n=None, nn=None, Rso=None, a=1.35, b=-0.35, lai=None,
-                croph=None, rl=100, rs=70, ra_method=1, lai_eff=1, srs=0.0009,
-                co2=300):
+                lat=None, n=None, nn=None, rso=None, a=1.35, b=-0.35, lai=None,
+                croph=None, r_l=100, r_s=70, ra_method=1, lai_eff=1,
+                srs=0.0009, co2=300):
     """Evaporation calculated according to [thom_1977]_.
 
     Parameters
     ----------
     wind: pandas.Series
         mean day wind speed [m/s]
-    Rs: pandas.Series, optional
-        incoming measured solar radiation [MJ m-2 d-1]
-    Rn: pandas.Series, optional
+    rs: pandas.Series, optional
+        incoming solar radiation [MJ m-2 d-1]
+    rn: pandas.Series, optional
         net radiation [MJ m-2 d-1]
-    G: pandas.Series/int, optional
+    g: pandas.Series/int, optional
         soil heat flux [MJ m-2 d-1]
     tmean: pandas.Series, optional
         average day temperature [°C]
@@ -532,19 +531,19 @@ def thom_oliver(wind, Rs=None, Rn=None, G=0, tmean=None, tmax=None, tmin=None,
         actual duration of sunshine [hour]
     nn: pandas.Series/float, optional
         maximum possible duration of sunshine or daylight hours [hour]
-    Rso: pandas.Series/float, optional
+    rso: pandas.Series/float, optional
         clear-sky solar radiation [MJ m-2 day-1]
     a: float, optional
         empirical coefficient for Net Long-Wave radiation [-]
     b: float, optional
         empirical coefficient for Net Long-Wave radiation [-]
     lai: pandas.Series/float, optional
-        measured leaf area index [-]
+        leaf area index [-]
     croph: pandas.series/float, optional
         crop height [m]
-    rl: pandas.series/float, optional
+    r_l: pandas.series/float, optional
         bulk stomatal resistance [s m-1]
-    rs: pandas.series/float, optional
+    r_s: pandas.series/float, optional
         bulk surface resistance [s m-1]
     ra_method: float, optional
         1 => ra = 208/wind
@@ -593,29 +592,29 @@ def thom_oliver(wind, Rs=None, Rn=None, G=0, tmean=None, tmax=None, tmin=None,
     es = calc_es(tmean=tmean, tmax=tmax, tmin=tmin)
 
     res_a = calc_res_aero(wind, ra_method=ra_method, croph=croph)
-    res_s = calc_res_surf(lai=lai, rs=rs, rl=rl, lai_eff=lai_eff, srs=srs,
+    res_s = calc_res_surf(lai=lai, r_s=r_s, r_l=r_l, lai_eff=lai_eff, srs=srs,
                           co2=co2)
     gamma1 = gamma * (1 + res_s / res_a)
 
-    if Rn is None:
-        Rns = calc_rad_short(Rs=Rs, n=n, nn=nn)  # [MJ/m2/d]
-        Rnl = calc_rad_long(Rs=Rs, tmean=tmean, tmax=tmax, tmin=tmin,
+    if rn is None:
+        rns = calc_rad_short(rs=rs, n=n, nn=nn)  # [MJ/m2/d]
+        rnl = calc_rad_long(rs=rs, tmean=tmean, tmax=tmax, tmin=tmin,
                             rhmax=rhmax, rhmin=rhmin, rh=rh,
-                            elevation=elevation, lat=lat, Rso=Rso, a=a, b=b,
+                            elevation=elevation, lat=lat, rso=rso, a=a, b=b,
                             ea=ea)  # [MJ/m2/d]
-        Rn = Rns - Rnl
+        rn = rns - rnl
 
     w = 2.6 * (1 + 0.536 * wind)
 
     den = lambd * (dlt + gamma1)
-    num1 = dlt * (Rn - G) / den
+    num1 = dlt * (rn - g) / den
     num2 = 2.5 * gamma * (es - ea) * w / den
     return num1 + num2
 
 
-def priestley_taylor(wind, Rs=None, Rn=None, G=0, tmean=None, tmax=None,
+def priestley_taylor(wind, rs=None, rn=None, g=0, tmean=None, tmax=None,
                      tmin=None, rhmax=None, rhmin=None, rh=None, pressure=None,
-                     elevation=None, lat=None, n=None, nn=None, Rso=None,
+                     elevation=None, lat=None, n=None, nn=None, rso=None,
                      a=1.35, b=-0.35, alpha=1.26):
     """Evaporation calculated according to [priestley_and_taylor_1965]_.
 
@@ -623,11 +622,11 @@ def priestley_taylor(wind, Rs=None, Rn=None, G=0, tmean=None, tmax=None,
     ----------
     wind: pandas.Series
         mean day wind speed [m/s]
-    Rs: pandas.Series, optional
-        incoming measured solar radiation [MJ m-2 d-1]
-    Rn: pandas.Series, optional
+    rs: pandas.Series, optional
+        incoming solar radiation [MJ m-2 d-1]
+    rn: pandas.Series, optional
         net radiation [MJ m-2 d-1]
-    G: pandas.Series/int, optional
+    g: pandas.Series/int, optional
         soil heat flux [MJ m-2 d-1]
     tmean: pandas.Series, optional
         average day temperature [°C]
@@ -651,7 +650,7 @@ def priestley_taylor(wind, Rs=None, Rn=None, G=0, tmean=None, tmax=None,
         actual duration of sunshine [hour]
     nn: pandas.Series/float, optional
         maximum possible duration of sunshine or daylight hours [hour]
-    Rso: pandas.Series/float, optional
+    rso: pandas.Series/float, optional
         clear-sky solar radiation [MJ m-2 day-1]
     a: float, optional
         empirical coefficient for Net Long-Wave radiation [-]
@@ -662,11 +661,11 @@ def priestley_taylor(wind, Rs=None, Rn=None, G=0, tmean=None, tmax=None,
 
     Returns
     -------
-        pandas.Series containing the calculated evapotranspiration
+        pandas.Series containing the calculated evaporation
 
     Examples
     --------
-    >>> pt = priestley_taylor(wind, Rn=Rn, tmean=tmean, rh=rh)
+    >>> pt = priestley_taylor(wind, rn=rn, tmean=tmean, rh=rh)
 
     .. math::
     -----
@@ -688,24 +687,24 @@ def priestley_taylor(wind, Rs=None, Rn=None, G=0, tmean=None, tmax=None,
     dlt = calc_vpc(tmean)
     lambd = calc_lambda(tmean)
 
-    if Rn is None:
-        Rns = calc_rad_short(Rs=Rs, n=n, nn=nn)  # [MJ/m2/d]
-        Rnl = calc_rad_long(Rs=Rs, tmean=tmean, tmax=tmax, tmin=tmin,
+    if rn is None:
+        rns = calc_rad_short(rs=rs, n=n, nn=nn)  # [MJ/m2/d]
+        rnl = calc_rad_long(rs=rs, tmean=tmean, tmax=tmax, tmin=tmin,
                             rhmax=rhmax, rhmin=rhmin, rh=rh,
-                            elevation=elevation, lat=lat, Rso=Rso, a=a, b=b)
-        Rn = Rns - Rnl
+                            elevation=elevation, lat=lat, rso=rso, a=a, b=b)
+        rn = rns - rnl
 
-    return (alpha * dlt * (Rn-G)) / (lambd * (dlt + gamma))
+    return (alpha * dlt * (rn - g)) / (lambd * (dlt + gamma))
 
 
-def makkink(Rs, tmean=None, tmax=None, tmin=None, pressure=None,
+def makkink(rs, tmean=None, tmax=None, tmin=None, pressure=None,
             elevation=None):
     """"Evaporation calculated according to [makkink_1965]_.
 
     Parameters
     ----------
-    Rs: pandas.Series, optional
-        incoming measured solar radiation [MJ m-2 d-1]
+    rs: pandas.Series, optional
+        incoming solar radiation [MJ m-2 d-1]
     tmean: pandas.Series, optional
         average day temperature [°C]
     tmax: pandas.Series, optional
@@ -723,7 +722,7 @@ def makkink(Rs, tmean=None, tmax=None, tmin=None, pressure=None,
 
     Examples
     --------
-    >>> mak = makkink(Rs=Rs, tmean=tmean)
+    >>> mak = makkink(rs=rs, tmean=tmean)
 
     .. math::
     -----
@@ -745,10 +744,10 @@ def makkink(Rs, tmean=None, tmax=None, tmin=None, pressure=None,
     dlt = calc_vpc(tmean)
     lambd = calc_lambda(tmean)
 
-    return 0.65 * dlt / (dlt + gamma) * Rs / lambd
+    return 0.65 * dlt / (dlt + gamma) * rs / lambd
 
 
-##% Utility functions (TODO: Make private?)
+# % Utility functions (TODO: Make private?)
 
 
 def calc_psy(pressure, tmean=None):
@@ -1051,15 +1050,15 @@ def calc_ea(tmean=None, tmax=None, tmin=None, rhmax=None, rhmin=None, rh=None):
         return rh / 100 * es
 
 
-def calc_rad_long(Rs, tmean=None, tmax=None, tmin=None, rhmax=None,
-                  rhmin=None, rh=None, elevation=None, lat=None, Rso=None,
+def calc_rad_long(rs, tmean=None, tmax=None, tmin=None, rhmax=None,
+                  rhmin=None, rh=None, elevation=None, lat=None, rso=None,
                   a=1.35, b=-0.35, ea=None, freq="D"):
     """Net longwave radiation [MJ m-2 d-1].
 
     Parameters
     ----------
-    Rs: pandas.Series, optional
-        incoming measured solar radiation [MJ m-2 d-1]
+    rs: pandas.Series, optional
+        incoming solar radiation [MJ m-2 d-1]
     tmean: pandas.Series, optional
         average day temperature [°C]
     tmax: pandas.Series, optional
@@ -1076,7 +1075,7 @@ def calc_rad_long(Rs, tmean=None, tmax=None, tmin=None, rhmax=None,
         the site elevation [m]
     lat: float, optional
         the site latitude [rad]
-    Rso: pandas.Series/float, optional
+    rso: pandas.Series/float, optional
         clear-sky solar radiation [MJ m-2 day-1]
     a: float, optional
         empirical coefficient for Net Long-Wave radiation [-]
@@ -1109,16 +1108,16 @@ def calc_rad_long(Rs, tmean=None, tmax=None, tmin=None, rhmax=None,
                      rhmin=rhmin, rh=rh)
 
     if freq == "H":
-        if Rso is None:
-            Ra = extraterrestrial_r_hour(tindex=Rs.index, lat=lat)
-            Rso = calc_rso(Ra=Ra, elevation=elevation)
-        solar_rat = clip(Rs / Rso, 0.3, 1)
+        if rso is None:
+            ra = extraterrestrial_r_hour(tindex=rs.index, lat=lat)
+            rso = calc_rso(ra=ra, elevation=elevation)
+        solar_rat = clip(rs / rso, 0.3, 1)
         tmp1 = STEFAN_BOLTZMANN_HOUR * (tmean + 273.2) ** 4
     else:
-        if Rso is None:
-            Ra = extraterrestrial_r(tindex=Rs.index, lat=lat)
-            Rso = calc_rso(Ra=Ra, elevation=elevation)
-        solar_rat = clip(Rs / Rso, 0.3, 1)
+        if rso is None:
+            ra = extraterrestrial_r(tindex=rs.index, lat=lat)
+            rso = calc_rso(ra=ra, elevation=elevation)
+        solar_rat = clip(rs / rso, 0.3, 1)
         if tmax is not None:
             tmp1 = STEFAN_BOLTZMANN_DAY * ((tmax + 273.2) ** 4 +
                                            (tmin + 273.2) ** 4) / 2
@@ -1131,15 +1130,15 @@ def calc_rad_long(Rs, tmean=None, tmax=None, tmin=None, rhmax=None,
     return tmp1 * tmp2 * tmp3
 
 
-def calc_rad_short(Rs=None, tindex=None, lat=None, alpha=0.23, n=None,
+def calc_rad_short(rs=None, tindex=None, lat=None, alpha=0.23, n=None,
                    nn=None):
     """Net shortwave radiation [MJ m-2 d-1].
 
     Parameters
     ----------
-    Rs: pandas.Series, optional
-        incoming measured solar radiation [MJ m-2 d-1]
-    tindex: pandas.Series.index
+    rs: pandas.Series, optional
+        incoming solar radiation [MJ m-2 d-1]
+    tindex: pandas..DatetimeIndex
     lat: float, optional
         the site latitude [rad]
     alpha: float, optional
@@ -1166,8 +1165,8 @@ def calc_rad_short(Rs=None, tindex=None, lat=None, alpha=0.23, n=None,
        (http://www.fao.org/3/x0490e/x0490e06.htm#TopOfPage)
 
     """
-    if Rs is not None:
-        return (1 - alpha) * Rs
+    if rs is not None:
+        return (1 - alpha) * rs
     else:
         return (1 - alpha) * calc_rad_sol_in(tindex, lat, n=n, nn=nn)
 
@@ -1177,7 +1176,7 @@ def calc_rad_sol_in(tindex, lat, as1=0.25, bs1=0.5, n=None, nn=None):
 
     Parameters
     ----------
-    tindex: pandas.Series.index
+    tindex: pandas.DatetimeIndex
     lat: float, optional
         the site latitude [rad]
     as1: float, optional
@@ -1206,18 +1205,18 @@ def calc_rad_sol_in(tindex, lat, as1=0.25, bs1=0.5, n=None, nn=None):
        (http://www.fao.org/3/x0490e/x0490e06.htm#TopOfPage)
 
     """
-    Ra = extraterrestrial_r(tindex, lat)
+    ra = extraterrestrial_r(tindex, lat)
     if n is None:
         n = daylight_hours(tindex, lat)
-    return (as1 + bs1 * n / nn) * Ra
+    return (as1 + bs1 * n / nn) * ra
 
 
-def calc_rso(Ra, elevation):
+def calc_rso(ra, elevation):
     """Clear-sky solar radiation [MJ m-2 day-1].
 
     Parameters
     ----------
-    Ra: pandas.Series, optional
+    ra: pandas.Series, optional
         Extraterrestrial daily radiation [MJ m-2 d-1]
     elevation: float, optional
         the site elevation [m]
@@ -1231,19 +1230,19 @@ def calc_rso(Ra, elevation):
         Based on equation 37 in [allen_1998]_.
 
     """
-    return (0.75 + (2 * 10 ** -5) * elevation) * Ra
+    return (0.75 + (2 * 10 ** -5) * elevation) * ra
 
 
-def calc_res_surf(lai=None, rs=70, rl=100, lai_eff=0, srs=None, co2=None):
+def calc_res_surf(lai=None, r_s=70, r_l=100, lai_eff=0, srs=None, co2=None):
     """Surface resistance [s m-1].
 
     Parameters
     ----------
     lai: pandas.Series/float, optional
-        measured leaf area index [-]
-    rs: pandas.series/float, optional
+        leaf area index [-]
+    r_s: pandas.series/float, optional
         surface resistance [s m-1]
-    rl: float, optional
+    r_l: float, optional
         bulk stomatal resistance [s m-1]
     lai_eff: float, optional
         1 => LAI_eff = 0.5 * LAI
@@ -1279,9 +1278,9 @@ def calc_res_surf(lai=None, rs=70, rl=100, lai_eff=0, srs=None, co2=None):
     """
     if lai:
         fco2 = (1 + srs * (co2 - 300))
-        return fco2 * rl / calc_laieff(lai=lai, lai_eff=lai_eff)
+        return fco2 * r_l / calc_laieff(lai=lai, lai_eff=lai_eff)
     else:
-        return rs
+        return r_s
 
 
 def calc_laieff(lai=None, lai_eff=0):
@@ -1290,7 +1289,7 @@ def calc_laieff(lai=None, lai_eff=0):
     Parameters
     ----------
     lai: pandas.Series/float, optional
-        measured leaf area index [-]
+        leaf area index [-]
     lai_eff: float, optional
         1 => LAI_eff = 0.5 * LAI
         2 => LAI_eff = lai / (0.3 * lai + 1.2)

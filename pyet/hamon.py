@@ -8,7 +8,7 @@ def hamon(tindex, tmean, lat):
 
     Parameters
     ----------
-    tindex: pandas.Series.index
+    tindex: pandas.DatetimeIndex
     tmean: pandas.Series, optional
         average day temperature [°C]
     lat: float, optional

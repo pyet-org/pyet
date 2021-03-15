@@ -19,7 +19,7 @@ class TestFAO56(unittest.TestCase):
     def test_vpc(self):
         # Based on ASCE Table C-3
         tmean = np.array([21.65, 22.9, 23.7, 22.8, 24.3,
-                       26.0, 26.1, 26.4, 23.9, 24.2])
+                          26.0, 26.1, 26.4, 23.9, 24.2])
         vpc1 = et.calc_vpc(tmean).round(3).tolist()
         vpcr = np.array([0.1585, 0.1692, 0.1762, 0.1684, 0.1820,
                          0.199, 0.1996, 0.2027, 0.1781, 0.1809]).round(
@@ -97,7 +97,7 @@ class TestFAO56(unittest.TestCase):
     def test_calc_rad_long(self):
         # Based on Example 10, p. 52 FAO.
         Rs = pd.Series([14.5], index=pd.DatetimeIndex(["2015-05-15"]))
-        Rnl = et.calc_rad_long(Rs, tmax=25.1, tmin=19, ea=2.1, Rso=18.8)
+        Rnl = et.calc_rad_long(Rs, tmax=25.1, tmin=19, ea=2.1, rso=18.8)
         self.assertAlmostEqual(float(Rnl), 3.6, 1)
 
     def test_et_fao56(self):
@@ -112,7 +112,7 @@ class TestFAO56(unittest.TestCase):
         nn = 16.1
         elevation = 100
         lat = 50.80 * np.pi / 180
-        et56 = et.pm_fao56(wind, elevation=elevation, lat=lat, Rs=Rs,
-                                 tmax=tmax, tmin=tmin, rhmax=rhmax,
-                                 rhmin=rhmin, n=n, nn=nn)
+        et56 = et.pm_fao56(wind, elevation=elevation, lat=lat, rs=Rs,
+                           tmax=tmax, tmin=tmin, rhmax=rhmax,
+                           rhmin=rhmin, n=n, nn=nn)
         self.assertAlmostEqual(float(et56), 3.9, 1)

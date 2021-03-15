@@ -1,14 +1,14 @@
 from .penman import calc_lambda
 
 
-def jensen_haise(tmean, Rs, cr=0.025, tx=-3):
+def jensen_haise(tmean, rs, cr=0.025, tx=-3):
     """Evaporation calculated accordinf to [jensen_haise_1963]_.
 
     Parameters
     ----------
     tmean: pandas.Series, optional
         average day temperature [°C]
-    Rs: pandas.Series, optional
+    rs: pandas.Series, optional
         incoming solar radiation [MJ m-2 d-1]
     cr: float, optional
         temperature coefficient [-]
@@ -21,7 +21,7 @@ def jensen_haise(tmean, Rs, cr=0.025, tx=-3):
 
     Examples
     --------
-    >>> jh_et = jensen_haise(tmean, Rs)
+    >>> jh_et = jensen_haise(tmean, rs)
 
     Notes
     -----
@@ -34,9 +34,9 @@ def jensen_haise(tmean, Rs, cr=0.025, tx=-3):
     References
     -----
     .. [jensen_allen_2016] Task Committee on Revision of Manual 70. (2016).
-    Evaporation, evapotranspiration, and irrigation water requirements.
-    American Society of Civil Engineers.
+       Evaporation, evapotranspiration, and irrigation water requirements.
+       American Society of Civil Engineers.
 
     """
     lambd = calc_lambda(tmean)
-    return Rs / lambd * cr * (tmean - tx)
+    return rs / lambd * cr * (tmean - tx)
