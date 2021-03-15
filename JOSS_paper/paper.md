@@ -62,6 +62,7 @@ location using input data at daily resolution.
 |                | Abtew                     | T, D        |`abtew`             |[@abtew1996evapotranspiration]  |
 |                | Makkink                   | T, D        |`makkink`           |[@makkink1957testing]           |
 |                | Oudin                     | T           |`oudin`             |[@oudin2005potential]           |
+
 T, Temperature; U, Wind Speed; D, Radiation; RH, Relative Humidity. Adapted from [@oudin2005potential].
 
 # Example application
@@ -69,7 +70,6 @@ T, Temperature; U, Wind Speed; D, Radiation; RH, Relative Humidity. Adapted from
 This example shows how `PyEt` can be used to calculate potential evaporation using various PET methods. 
 The PET in the example is estimated for the city of Maribor (Slovenia), using online available data from the
 Slovenian Environmental Agency (ARSO).  
-+
 
 ``` python
 import numpy as np

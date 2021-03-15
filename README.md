@@ -31,6 +31,7 @@ implemented:
 |                | Abtew                     | T, D        |`abtew`             |Abtew (1996)                 |
 |                | Makkink                   | T, D        |`makkink`           |Makkink (1957)               |
 |                | Oudin                     | T           |`oudin`             |Oudin (2005)                 |
+
 T, Temperature; U, Wind Speed; D, Radiation; RH, Relative Humidity. Adapted from [@oudin2005potential].
 
 ## Examples and Documentation
