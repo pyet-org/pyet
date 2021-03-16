@@ -1,5 +1,5 @@
 ---
-title: 'PyEt: A Python package for estimating reference and potential evaporation'
+title: 'PyEt: A Python package for the estimation of reference and potential evaporation'
 tags:
   - Python
   - Evaporation
