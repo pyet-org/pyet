@@ -70,8 +70,8 @@ def penman(wind, rs=None, rn=None, g=0, tmean=None, tmax=None, tmin=None,
 
     .. math::
     -----
-        E = \\frac{\\Delta (R_{n}-G)+ 6.43 \\gamma (a_w+b_w u_2)
-        (e_{s}-e_{a})}{\\lambda (\\Delta +\\gamma)}
+        $ET = \\frac{\\Delta (R_n-G) + \\gamma 2.6 (1 + 0.536 u_2)
+        (e_s-e_a)}{\\lambda (\\Delta +\\gamma)}$
 
     References
     -----
@@ -165,8 +165,8 @@ def pm_fao56(wind, rs=None, rn=None, g=0, tmean=None, tmax=None, tmin=None,
 
     .. math::
     -----
-        $E = \\frac{0.408 \\Delta (R_{n}-G)+ \\gamma \\frac{900}{T+273}
-        (e_{s}-e_{a})}{\\Delta +\\gamma(1+0.34u_2)}$
+        $ET = \\frac{0.408 \\Delta (R_{n}-G)+\\gamma \\frac{900}{T+273}
+        (e_s-e_a) u_2}{\\Delta+\\gamma(1+0.34 u_2)}$
 
     References
     -----
@@ -265,10 +265,10 @@ def pm(wind, rs=None, rn=None, g=0, tmean=None, tmax=None, tmin=None,
     a_sh: float, optional
         Fraction of projected area exchanging sensible heat with the air (2)
     lai_eff: float, optional
-        1 => LAI_eff = 0.5 * LAI
-        2 => LAI_eff = lai / (0.3 * lai + 1.2)
-        3 => LAI_eff = 0.5 * LAI; (LAI>4=4)
-        4 => see [zhang_2008]_.
+        0 => LAI_eff = 0.5 * LAI
+        1 => LAI_eff = lai / (0.3 * lai + 1.2)
+        2 => LAI_eff = 0.5 * LAI; (LAI>4=4)
+        3 => see [zhang_2008]_.
     srs: float, optional
         Relative sensitivity of rl to Δ[CO2]
     co2: float
@@ -280,7 +280,7 @@ def pm(wind, rs=None, rn=None, g=0, tmean=None, tmax=None, tmin=None,
 
     .. math::
     -----
-        $E = \\frac{\\Delta (R_{n}-G)+ \\rho_a c_p K_{min} \\frac{e_{s}-e_{a}}
+        $ET = \\frac{\\Delta (R_{n}-G)+ \\rho_a c_p K_{min} \\frac{e_s-e_a}
         {r_a}}{\\lambda(\\Delta +\\gamma(1+\\frac{r_s}{r_a}))}$
 
     References
@@ -389,8 +389,10 @@ def kimberly_penman(wind, rs=None, rn=None, g=0, tmean=None, tmax=None,
 
     .. math::
     -----
-        $E = \\frac{\\Delta (R_{n}-G)+ \\rho_a c_p K_{min} \\frac{e_{s}-e_{a}}
-        {r_a}}{\\lambda(\\Delta +\\gamma(1+\\frac{r_s}{r_a}))}$
+        $ET = \\frac{\\Delta (R_n-G)+ \\gamma (e_s-e_a) w}
+        {\\lambda(\\Delta +\\gamma)}$;
+        $w =  u_2 * (0.4 + 0.14 * exp(-(\\frac{J_D-173}{58})^2)) +
+            (0.605 + 0.345 * exp(-(\\frac{J_D-243}{80})^2))$
 
     References
     -----
@@ -434,8 +436,8 @@ def kimberly_penman(wind, rs=None, rn=None, g=0, tmean=None, tmax=None,
     return num1 + num2
 
 
-def fao_24(wind, rs=None, tmean=None, tmax=None, tmin=None, rh=None,
-           pressure=None, elevation=None, albedo=0.23):
+def fao_24(wind, rs, rh, tmean=None, tmax=None, tmin=None, pressure=None,
+           elevation=None, albedo=0.23):
     """Evaporation calculated according to [jensen_1990]_.
 
     Parameters
@@ -444,14 +446,14 @@ def fao_24(wind, rs=None, tmean=None, tmax=None, tmin=None, rh=None,
         mean day wind speed [m/s]
     rs: pandas.Series, optional
         incoming solar radiation [MJ m-2 d-1]
+    rh: pandas.Series, optional
+        mean daily relative humidity [%]
     tmean: pandas.Series, optional
         average day temperature [°C]
     tmax: pandas.Series, optional
         maximum day temperature [°C]
     tmin: pandas.Series, optional
         minimum day temperature [°C]
-    rh: pandas.Series, optional
-        mean daily relative humidity [%]
     pressure: float, optional
         atmospheric pressure [kPa]
     elevation: float, optional
@@ -465,12 +467,14 @@ def fao_24(wind, rs=None, tmean=None, tmax=None, tmin=None, rh=None,
 
     Examples
     --------
-    >>> et_fao24 = fao_24(wind, rs, tmean=tmean, rh=rh)
+    >>> et_fao24 = fao_24(wind, rs, rh, tmean=tmean, pressure=pressure)
 
     .. math::
     -----
-        $E = \\frac{\\Delta (R_{n}-G)+ \\rho_a c_p K_{min} \\frac{e_{s}-e_{a}}
-        {r_a}}{\\lambda(\\Delta +\\gamma(1+\\frac{r_s}{r_a}))}$
+        $ET = \\frac{- 0.3 \\Delta + R_s (1-\\alpha) w}
+        {\\lambda(\\Delta +\\gamma)}$
+        $w = 1.066-0.13*\\frac{rh}{100}+0.045*u_2-0.02*\\frac{rh}{100}*u_2\
+        -3.15*(\\frac{rh}{100})^2-0.0011*u_2$
 
     References
     -----
@@ -486,17 +490,17 @@ def fao_24(wind, rs=None, tmean=None, tmax=None, tmin=None, rh=None,
     dlt = calc_vpc(tmean)
     lambd = calc_lambda(tmean)
 
-    w = 1.066 - 0.13 * rh / 100 + 0.045 * wind - 0.023 * rh / 100 * wind - \
-        3.15 * (rh / 100) ** 2 - 0.0011 * wind
+    w = 1.066 - 0.13 * rh / 100 + 0.045 * wind - 0.02 * rh / 100 * wind - \
+        0.315 * (rh / 100) ** 2 - 0.0011 * wind
 
-    return -0.3 + dlt * (dlt + gamma) * rs * (1 - albedo) * w / lambd
+    return -0.3 + dlt / (dlt + gamma) * rs * (1 - albedo) * w / lambd
 
 
 def thom_oliver(wind, rs=None, rn=None, g=0, tmean=None, tmax=None, tmin=None,
                 rhmax=None, rhmin=None, rh=None, pressure=None, elevation=None,
-                lat=None, n=None, nn=None, rso=None, a=1.35, b=-0.35, lai=None,
-                croph=None, r_l=100, r_s=70, ra_method=1, lai_eff=1,
-                srs=0.0009, co2=300):
+                lat=None, n=None, nn=None, rso=None, aw=2.6, bw=0.536, a=1.35,
+                b=-0.35, lai=None, croph=None, r_l=100, r_s=70, ra_method=1,
+                lai_eff=1, srs=0.0009, co2=300):
     """Evaporation calculated according to [thom_1977]_.
 
     Parameters
@@ -533,6 +537,10 @@ def thom_oliver(wind, rs=None, rn=None, g=0, tmean=None, tmax=None, tmin=None,
         maximum possible duration of sunshine or daylight hours [hour]
     rso: pandas.Series/float, optional
         clear-sky solar radiation [MJ m-2 day-1]
+    aw: float, optional
+        wind coefficient [-]
+    bw: float, optional
+        wind coefficient [-]
     a: float, optional
         empirical coefficient for Net Long-Wave radiation [-]
     b: float, optional
@@ -549,10 +557,10 @@ def thom_oliver(wind, rs=None, rn=None, g=0, tmean=None, tmax=None, tmin=None,
         1 => ra = 208/wind
         2 => ra is calculated based on equation 36 in FAO (1990), ANNEX V.
     lai_eff: float, optional
-        1 => LAI_eff = 0.5 * LAI
-        2 => LAI_eff = lai / (0.3 * lai + 1.2)
-        3 => LAI_eff = 0.5 * LAI; (LAI>4=4)
-        4 => see [zhang_2008]_.
+        0 => LAI_eff = 0.5 * LAI
+        1 => LAI_eff = lai / (0.3 * lai + 1.2)
+        2 => LAI_eff = 0.5 * LAI; (LAI>4=4)
+        3 => see [zhang_2008]_.
     srs: float, optional
         Relative sensitivity of rl to Δ[CO2]
     co2: float
@@ -564,8 +572,9 @@ def thom_oliver(wind, rs=None, rn=None, g=0, tmean=None, tmax=None, tmin=None,
 
     .. math::
     -----
-        $E = \\frac{\\Delta (R_{n}-G)+ \\rho_a c_p K_{min} \\frac{e_{s}-e_{a}}
-        {r_a}}{\\lambda(\\Delta +\\gamma(1+\\frac{r_s}{r_a}))}$
+        $ET = \\frac{\\Delta (R_{n}-G)+ 2.5 \\gamma (e_s-e_a) w}
+        {\\lambda(\\Delta +\\gamma(1+\\frac{r_s}{r_a}))}$
+        $w=2.6(1+0.53u_2)$
 
     References
     -----
@@ -604,7 +613,7 @@ def thom_oliver(wind, rs=None, rn=None, g=0, tmean=None, tmax=None, tmin=None,
                             ea=ea)  # [MJ/m2/d]
         rn = rns - rnl
 
-    w = 2.6 * (1 + 0.536 * wind)
+    w = aw * (1 + bw * wind)
 
     den = lambd * (dlt + gamma1)
     num1 = dlt * (rn - g) / den
@@ -669,8 +678,8 @@ def priestley_taylor(wind, rs=None, rn=None, g=0, tmean=None, tmax=None,
 
     .. math::
     -----
-        $E = \\frac{\\Delta (R_{n}-G)+ \\rho_a c_p K_{min} \\frac{e_{s}-e_{a}}
-        {r_a}}{\\lambda(\\Delta +\\gamma(1+\\frac{r_s}{r_a}))}$
+        $ET = \\frac{\\alpha_{PT} \\Delta (R_n-G)}
+        {\\lambda(\\Delta +\\gamma)}$
 
     References
     -----
@@ -726,8 +735,7 @@ def makkink(rs, tmean=None, tmax=None, tmin=None, pressure=None,
 
     .. math::
     -----
-        $E = \\frac{\\Delta (R_{n}-G)+ \\rho_a c_p K_{min} \\frac{e_{s}-e_{a}}
-        {r_a}}{\\lambda(\\Delta +\\gamma(1+\\frac{r_s}{r_a}))}$
+        $ET = \\frac{0.65 \\Delta (R_s)}{\\lambda(\\Delta +\\gamma)}$
 
     References
     -----
@@ -828,7 +836,7 @@ def calc_lambda(tmean):
 
     Parameters
     ----------
-    tmean: pandas.Series, optional
+    tmean: pandas.Series/float, optional
         average day temperature [°C]
 
     Returns
@@ -891,11 +899,11 @@ def calc_rho(pressure, tmean, ea):
 
     Parameters
     ----------
-    pressure: pandas.Series
+    pressure: pandas.Series/float
         atmospheric pressure [kPa]
-    tmean: pandas.Series, optional
+    tmean: pandas.Series/float, optional
         average day temperature [°C]
-    ea: pandas.Series, optional
+    ea: pandas.Series/float, optional
         actual vapour pressure [kPa]
 
     Returns
@@ -1276,11 +1284,11 @@ def calc_res_surf(lai=None, r_s=70, r_l=100, lai_eff=0, srs=None, co2=None):
        elevated CO 2 in climate projections. Nature Climate Change, 9, 44-48.
 
     """
-    if lai:
+    if lai is None:
+        return r_s
+    else:
         fco2 = (1 + srs * (co2 - 300))
         return fco2 * r_l / calc_laieff(lai=lai, lai_eff=lai_eff)
-    else:
-        return r_s
 
 
 def calc_laieff(lai=None, lai_eff=0):
@@ -1291,10 +1299,10 @@ def calc_laieff(lai=None, lai_eff=0):
     lai: pandas.Series/float, optional
         leaf area index [-]
     lai_eff: float, optional
-        1 => LAI_eff = 0.5 * LAI
-        2 => LAI_eff = lai / (0.3 * lai + 1.2)
-        3 => LAI_eff = 0.5 * LAI; (LAI>4=4)
-        4 => see [zhang_2008]_.
+        0 => LAI_eff = 0.5 * LAI
+        1 => LAI_eff = lai / (0.3 * lai + 1.2)
+        2 => LAI_eff = 0.5 * LAI; (LAI>4=4)
+        3 => see [zhang_2008]_.
 
     Returns
     -------
@@ -1310,12 +1318,6 @@ def calc_laieff(lai=None, lai_eff=0):
        of three evapotranspiration models to Bowen ratio-energy balance method
        for a vineyard in an arid desert region of northwest China. Agricultural
         and Forest Meteorology, 148(10), 1629-1640.
-    .. [schymanski_2016] Schymanski, S. J., & Or, D. (2017). Leaf-scale
-       experiments reveal an important omission in the Penman–Monteith
-       equation. Hydrology and Earth System Sciences, 21(2), 685-706.
-    .. [yang_2019] Yang, Y., Roderick, M. L., Zhang, S., McVicar, T. R., &
-       Donohue, R. J. (2019). Hydrologic implications of vegetation response to
-       elevated CO 2 in climate projections. Nature Climate Change, 9, 44-48.
     """
     if lai_eff == 0:
         return 0.5 * lai

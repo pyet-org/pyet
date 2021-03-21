@@ -32,7 +32,8 @@ def hargreaves(tindex, tmax, tmin, lat):
 
         .. math::
         -----
-            E = \\frac{C_r(T-T_x)R_s}{\\lambda}
+            $ET = 0.0023 \\frac{R_a (T_a+17.8)\\sqrt{(T_{max}-T_{min})}}
+            {\\lambda}$
 
         References
         -----

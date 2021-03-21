@@ -31,8 +31,8 @@ def oudin(tmean, lat, k1=100, k2=5):
 
     .. math::
     -----
-        E = \\frac{R_a (T_a +5)}{\\lambda \\rho 100};   if T_a+5>0
-        P = 0,                                          otherwise
+        $ET = \\frac{R_a (T_a +5)}{\\lambda 100}; if T_a+5>0$
+        $else: P = 0$
 
     References
     -----
@@ -75,7 +75,7 @@ def abtew(tmean, rs, k=0.53):
 
     .. math::
     -----
-        E = \\frac{k Rs}{\\lambda}
+        $ET = \\frac{k R_s}{\\lambda}$
 
     References
     -----
@@ -91,7 +91,7 @@ def abtew(tmean, rs, k=0.53):
     return et
 
 
-def turc(tmean, rs, rh, k=0.0133):
+def turc(tmean, rs, rh, k=0.31):
     """Evaporation calculated according to [turc_1961]_.
 
     Parameters
@@ -119,7 +119,9 @@ def turc(tmean, rs, rh, k=0.0133):
 
     .. math::
     -----
-        E = (k * T_a / (T_a + 15) * (R_s/4.184 + 50)) / 4.184
+        $ET=k(\\frac{T_a}{T_a+15})(R_s/4.184 + 50)*4.184; for RH>50$
+        $ET=k(\\frac{T_a}{T_a+15})(R_s/4.184 + 50)(1+\frac{50-RH}{70})*4.184;
+        for RH<50$
 
     References
     -----
@@ -130,10 +132,10 @@ def turc(tmean, rs, rh, k=0.0133):
        generalization of radiation‐based methods for calculating evaporation.
        Hydrological processes, 14(2), 339-349.
     """
-    et = k * tmean / (tmean + 15) * (rs / 4.184 + 50)
-    et[rh < 50] = k * tmean / (tmean + 15) * (rs / 4.184 + 50) * (
-            1 + (50 - rh) / 70)
-    return et * 4.184
+    c = tmean / tmean
+    c[rh] = 1 - (50 - rh) / 70
+    et = k * c * tmean / (tmean + 15) * (rs + 2.094)
+    return et
 
 
 def mcguinness_bordne(tmean, lat, k=0.0147):
@@ -162,7 +164,7 @@ def mcguinness_bordne(tmean, lat, k=0.0147):
 
     .. math::
     -----
-        E = \\frac{0.0147 R_a (T_a + 5)}{\\lambda}
+        $ET = \\frac{0.0147 R_a (T_a + 5)}{\\lambda}$
 
     References
     -----
@@ -212,7 +214,7 @@ def linacre(tmean, elevation, lat, tdew=None, tmax=None, tmin=None):
 
     .. math::
     -----
-        E = \\frac{500 T_m / (100-A)+15 (T_a-T_d)}{(80-T_a)}
+        $ET = \\frac{\\frac{500 T_m}{(100-A)}+15 (T_a-T_d)}{80-T_a}$
 
     References
     -----
@@ -258,7 +260,7 @@ def blaney_criddle(tmean, p, k=0.85):
 
     .. math::
     -----
-        E =  kp(0.46 * T_a + 8.13)
+        $ET=kp(0.46 * T_a + 8.13)$
 
     References
     -----
@@ -298,7 +300,7 @@ def romanenko(tmean, rh, k=4.5):
 
     .. math::
     -----
-        E =  4.5 (1 + T_a/25)^2 (1 - \\frac{ea}{es})
+       $ET=4.5(1 + (\\frac{T_a}{25})^2 (1  \\frac{e_a}{e_s})$
 
     References
     -----

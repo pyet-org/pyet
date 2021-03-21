@@ -20,11 +20,11 @@ def hamon(tindex, tmean, lat):
 
     Examples
     --------
-    >>> et_ham = hamon(tmean, lat)
+    >>> et_hamon = hamon(tmean, lat)
 
     .. math::
     -----
-        E = (\\frac{DL}{12})^2 exp(\\frac{T_a}{16})
+       $ET = (\\frac{DL}{12})^2 exp(\\frac{T_a}{16})$
 
     References
     -----

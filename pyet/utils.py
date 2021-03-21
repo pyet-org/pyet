@@ -3,11 +3,11 @@ from pandas import to_numeric
 
 
 def day_of_year(tindex):
-    """Day of the year (1-365) based on pandas.DatetimeIndex
+    """Day of the year (1-365) based on pandas.Index
 
     Parameters
     ----------
-    tindex: pandas.DatetimeIndex
+    tindex: pandas.Index
 
     Returns
     -------
@@ -22,7 +22,7 @@ def daylight_hours(tindex, lat):
 
     Parameters
     ----------
-    tindex: pandas.DatetimeIndex
+    tindex: pandas.Index
     lat: float
         the site latitude [rad]
 
@@ -82,7 +82,7 @@ def sunset_angle_hour(tindex, sol_dec, lat, lz, lm):
 
     Parameters
     ----------
-    tindex: pandas.DatetimeIndex
+    tindex: pandas.Index
     sol_dec: pandas.Series
         solar declination [rad]
     lat: float
@@ -186,7 +186,7 @@ def extraterrestrial_r(tindex, lat):
 
     Parameters
     ----------
-    tindex: pandas.DatetimeIndex
+    tindex: pandas.Index
     lat: float
         the site latitude [rad]
 
@@ -221,7 +221,7 @@ def extraterrestrial_r_hour(tindex, lat, lz=0, lm=0):
 
     Parameters
     ----------
-    tindex: pandas.DatetimeIndex
+    tindex: pandas.Index
     lat: float
         the site latitude [rad]
     lz: float, optional
