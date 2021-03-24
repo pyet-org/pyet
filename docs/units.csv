@@ -1,0 +1,24 @@
+ Variable , Description , Units 
+ $PET$ , Potential evaporation , mm $d^{-1}$ 
+ $\Delta$ , Slope of vapor pressure curve , kPa °$C^{-1}$
+ $\lambda$ , Latent heat of vaporization , MJ $kg^{-1}$
+ $\rho_w$ , Water density (=1000) , kg $L^{-1}$ 
+ $\rho_a$ , Air density , kg $m^3$ 
+ $\gamma $, Psychrometric constant , kPa °$C^{-1}$
+ $e_s$ , Saturation vapour pressure , kPa 
+ $e_a$ , Actual vapour pressure , kPa 
+ $r_a$ , Aerodynamic resistance , s $m^{-1}$ 
+ $r_s$ , Surface resistance of reference crop (70) , s $m^{-1}$ 
+ $u_2$ , Wind speed 2 m above soil surface , m $s^{-1}$ 
+ $T_a$ , Air temperature , °C 
+ $T_d$ , Dew point temperature , °C 
+ $T_{max}$ , Maximum air temperature , °C 
+ $T_{min}$ , Minimum air temperature , °C 
+ $R_a$ , Extraterrestrial radiation , MJ $m^{-2}$ $d^{-1}$
+ $R_s$ , Global short-wave radiation , MJ $m^{-2}$ $d^{-1}$
+ $R_n$ , Net incoming solar radiation , MJ $m^{-2}$ $d^{-1}$
+ $RH$ , Relative humidity , % 
+ $DL$ , Day length , h $d^{-1}$
+ $\alpha$ , Surface albedo , - 
+ $J_D$ , Julian day , ordinal date 
+ $c_p$ , Air specific heat capacity , MJ $kg^{-21$ °$C^{-1}$ 
