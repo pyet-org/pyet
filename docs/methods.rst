@@ -17,16 +17,16 @@ Penman-Monteith (Monteith, 1965)
 
 .. math::
 
-   \begin{eqnarray}
-      PET = \frac{\Delta (R_n-G)+ \rho_a c_p 86400 \frac{e_s-e_a}{r_a}}{\lambda(\Delta +\gamma(1+\frac{r_s}{r_a}))}
-   \end{eqnarray}
-   
+    PET = \frac{\Delta (R_n-G)+ \rho_a c_p 86400 \frac{e_s-e_a}{r_a}}{\lambda(\Delta +\gamma(1+\frac{r_s}{r_a}))}
+
 Kimberly-Penman (Wright, 1982)
 ------------------------------
 
 .. math::
 
-    PET = \frac{\Delta (R_n-G)+ \gamma (e_s-e_a) w}{\lambda(\Delta+\gamma)};
+    PET = \frac{\Delta (R_n-G)+ \gamma (e_s-e_a) w}{\lambda(\Delta+\gamma)}
+
+.. math::
 
     w =  u_2 * (0.4 + 0.14 * exp(-(\frac{J_D-173}{58})^2))+(0.605 + 0.345 * exp(-(\frac{J_D-243}{80})^2))
 
@@ -37,6 +37,8 @@ Doorenbos–Pruitt (FAO-24) (Jensen et al., 1990)
 
     PET = \frac{-0.3 \Delta + R_s (1-\alpha) w}{\lambda(\Delta +\gamma)}
 
+.. math::
+
     w = 1.066-0.13*\frac{rh}{100}+0.045*u_2-0.02*\frac{rh}{100}*u_2-3.15*(\frac{rh}{100})^2-0.0011*u_2
 
     
@@ -46,6 +48,8 @@ Thom and Oliver (1977)
 .. math::
 
     PET = \frac{\Delta (R_n-G)+ 2.5 \gamma (e_s-e_a) w}{\lambda(\Delta+\gamma(1+\frac{r_s}{r_a}))}
+
+.. math::
 
     w=2.6(1+0.53u_2)
 
@@ -84,6 +88,8 @@ Jensen and Haise (2005)
 
     PET = \frac{C_r (T - T_x) R_s}{\lambda}
 
+.. math::
+
     PET = \frac{R_a (T_a+5)}{\lambda 68}
 
 Oudin (1961)
@@ -91,7 +97,9 @@ Oudin (1961)
 
 .. math::
 
-    PET = \frac{R_a (T_a+K_2)}{\lambda K_1}; if $T_a+K_2>0$
+    PET = \frac{R_a (T_a+K_2)}{\lambda K_1}; if T_a+K_2>0
+
+.. math::
 
     else: P = 0
 
@@ -109,6 +117,8 @@ Turc (1961)
 
     PET=k(\frac{T_a}{T_a+15})(R_s/4.184 + 50)*4.184; for RH>50
 
+.. math::
+
     PET=k(\frac{T_a}{T_a+15})(R_s/4.184 + 50)(1+\frac{50-RH}{70})*4.184;for RH<50
    
 McGuinness and Bordne (1972)
@@ -125,6 +135,8 @@ Linacre (1977)
 
     PET = \frac{\frac{500 T_m}{(100-A)}+15 (T_a-T_d)}{80-T_a}
 
+.. math::
+
     T_m = T_a + 0.006 * elevation
 
 Blaney-Criddle (1950)
@@ -132,10 +144,8 @@ Blaney-Criddle (1950)
 
 .. math::
 
-   \begin{eqnarray}
-       PET=kp(0.46 * T_a + 8.13)
-   \end{eqnarray}
-   
+    PET=kp(0.46 * T_a + 8.13)
+
 Romanenko (1961)
 ----------------
 
@@ -146,7 +156,52 @@ Romanenko (1961)
 Notation and units
 ------------------
 
-.. csv-table:: Units
-   :file: units.csv
-   :widths: 30, 50, 20
-   :header-rows: 1
+.. math::
+
+    Variable , Description , Units
+
+    PET , Potential evaporation , mm d^{-1}
+
+    \Delta , Slope of vapor pressure curve , kPa °C^{-1}
+
+    \gamma , Latent heat of vaporization , MJ kg^{-1}
+
+    \rho_w , Water density (=1000) , kg L^{-1}
+
+    \rho_a , Air density , kg m^{-3}
+
+    \gamma , Psychrometric constant , kPa °C^{-1}
+
+    e_s , Saturation vapour pressure , kPa
+
+    e_a , Actual vapour pressure , kPa
+
+    r_a , Aerodynamic resistance , s m^{-1}
+
+    r_s , Surface resistance of reference crop (70) , s m^{-1}
+
+    u_2 , Wind speed 2 m above soil surface , m s^{-1}
+
+    T_a , Air temperature , °C
+
+    T_d , Dew point temperature , °C
+
+    T_{max} , Maximum air temperature , °C
+
+    T_{min} , Minimum air temperature , °C
+
+    R_a , Extraterrestrial radiation , MJ m^{-2} d^{-1}
+
+    R_s , Global short-wave radiation , MJ m^{-2} d^{-1}
+
+    R_n , Net incoming solar radiation , MJ m^{-2} d^{-1}
+
+    RH , Relative humidity , %
+
+    DL , Day length , h d^{-1}
+
+    \alpha , Surface albedo , -
+
+    J_D , Julian day , ordinal date
+
+    c_p , Air specific heat capacity , MJ kg^{-1} °C^{-1}
