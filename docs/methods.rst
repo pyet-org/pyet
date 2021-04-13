@@ -156,16 +156,16 @@ Romanenko (1961)
 Notation and units
 ------------------
 
-.. math::
+.. list-table::
+   :widths: 25 50 25
+   :header-rows: 1
 
-    Variable ---- Description --- Units
-
-    PET --- Potential evaporation --- mm d^{-1}
-
-    \Delta --- Slope of vapor pressure curve --- kPa °C^{-1}
-
-    \gamma --- Latent heat of vaporization --- MJ kg^{-1}
-
-    \rho_w --- Water density (=1000) --- kg L^{-1}
-
-    \rho_a --- Air density --- kg m^{-3}
+   * - PET
+     - Potential evaporation
+     - .. math:: mm d^{-1}
+   * - .. math:: \Delta, column 1
+     - Slope of vapor pressure curve
+     - .. math:: kPa °C^{-1}
+   * - .. math:: \gamma
+     - Latent heat of vaporization
+     - .. math:: MJ kg^{-1}
