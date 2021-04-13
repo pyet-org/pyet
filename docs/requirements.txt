@@ -1,0 +1,4 @@
+# Requirements for building sphinx-doc-template
+sphinx_bootstrap_theme
+plantweb
+recommonmark
