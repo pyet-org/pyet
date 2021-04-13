@@ -1,3 +1,7 @@
+"""The combination module contains functions of combination PET methods
+
+"""
+
 from .meteo_utils import *
 from .rad_utils import *
 
@@ -66,13 +70,15 @@ def penman(wind, rs=None, rn=None, g=0, tmean=None, tmax=None, tmin=None,
     --------
     >>> et_penman = penman(wind, rn=rn, tmean=tmean, rh=rh)
 
-    .. math::
+    Notes
     -----
-        $ET = \\frac{\\Delta (R_n-G) + \\gamma 2.6 (1 + 0.536 u_2)
-        (e_s-e_a)}{\\lambda (\\Delta +\\gamma)}$
+    Following [penman_1948]_ and [valiantzas_2006]_.
+
+    .. math:: ET = \\frac{\\Delta (R_n-G) + \\gamma 2.6 (1 + 0.536 u_2)
+        (e_s-e_a)}{\\lambda (\\Delta +\\gamma)}
 
     References
-    -----
+    ----------
     .. [penman_1948] Penman, H. L. (1948). Natural evaporation from open water,
        bare soil and grass. Proceedings of the Royal Society of London. Series
        A. Mathematical and Physical Sciences, 193, 120-145.
@@ -182,33 +188,39 @@ def pm(wind, rs=None, rn=None, g=0, tmean=None, tmax=None, tmin=None,
 
     Returns
     -------
-        pandas.Series containing the calculated evaporation
+    pandas.Series containing the calculated evaporation
 
-    .. math::
+    Examples
+    --------
+    >>> et_pm = pm(wind, rn=rn, tmean=tmean, rh=rh)
+
+    Notes
     -----
-        $ET = \\frac{\\Delta (R_{n}-G)+ \\rho_a c_p K_{min} \\frac{e_s-e_a}
-        {r_a}}{\\lambda(\\Delta +\\gamma(1+\\frac{r_s}{r_a}))}$
+    Following [monteith_1965]_, [allen_1998]_, [zhang_2008]_,
+        [schymanski_2016]_ and [yang_2019]_.
+
+    .. math:: ET = \\frac{\\Delta (R_{n}-G)+ \\rho_a c_p K_{min}
+        \\frac{e_s-e_a}{r_a}}{\\lambda(\\Delta +\\gamma(1+\\frac{r_s}{r_a}))}
 
     References
-    -----
+    ----------
     .. [monteith_1965] Monteith, J. L. (1965). Evaporation and environment.
        In Symposia of the society for experimental biology (Vol. 19, pp.
        205-234). Cambridge University Press (CUP) Cambridge.
     .. [allen_1998] Allen, R. G., Pereira, L. S., Raes, D., & Smith, M. (1998).
        Crop evapotranspiration-Guidelines for computing crop water
        requirements-FAO Irrigation and drainage paper 56. Fao, Rome, 300.
-       (http://www.fao.org/3/x0490e/x0490e06.htm#TopOfPage)
+       (http://www.fao.org/3/x0490e/x0490e06.htm#TopOfPage).
     .. [zhang_2008] Zhang, B., Kang, S., Li, F., & Zhang, L. (2008). Comparison
        of three evapotranspiration models to Bowen ratio-energy balance method
        for a vineyard in an arid desert region of northwest China. Agricultural
-        and Forest Meteorology, 148(10), 1629-1640.
+       and Forest Meteorology, 148(10), 1629-1640.
     .. [schymanski_2016] Schymanski, S. J., & Or, D. (2017). Leaf-scale
        experiments reveal an important omission in the Penman–Monteith
        equation. Hydrology and Earth System Sciences, 21(2), 685-706.
     .. [yang_2019] Yang, Y., Roderick, M. L., Zhang, S., McVicar, T. R., &
        Donohue, R. J. (2019). Hydrologic implications of vegetation response to
        elevated CO 2 in climate projections. Nature Climate Change, 9, 44-48.
-
     """
     if tmean is None:
         tmean = (tmax + tmin) / 2
@@ -247,7 +259,7 @@ def pm(wind, rs=None, rn=None, g=0, tmean=None, tmax=None, tmin=None,
 def pm_fao56(wind, rs=None, rn=None, g=0, tmean=None, tmax=None, tmin=None,
              rhmax=None, rhmin=None, rh=None, pressure=None, elevation=None,
              lat=None, n=None, nn=None, rso=None, a=1.35, b=-0.35):
-    """Evaporation calculated according to [allen_1998]_..
+    """Evaporation calculated according to [allen_1998]_.
 
     Parameters
     ----------
@@ -296,17 +308,10 @@ def pm_fao56(wind, rs=None, rn=None, g=0, tmean=None, tmax=None, tmin=None,
     --------
     >>> et_fao56 = pm_fao56(wind, rn=rn, tmean=tmean, rh=rh)
 
-    .. math::
+    Notes
     -----
-        $ET = \\frac{0.408 \\Delta (R_{n}-G)+\\gamma \\frac{900}{T+273}
-        (e_s-e_a) u_2}{\\Delta+\\gamma(1+0.34 u_2)}$
-
-    References
-    -----
-    .. [allen_1998] Allen, R. G., Pereira, L. S., Raes, D., & Smith, M. (1998).
-       Crop evapotranspiration-Guidelines for computing crop water
-       requirements-FAO Irrigation and drainage paper 56. Fao, Rome, 300.
-       (http://www.fao.org/3/x0490e/x0490e06.htm#TopOfPage)
+    .. math:: ET = \\frac{0.408 \\Delta (R_{n}-G)+\\gamma \\frac{900}{T+273}
+        (e_s-e_a) u_2}{\\Delta+\\gamma(1+0.34 u_2)}
 
     """
     if tmean is None:
@@ -391,13 +396,14 @@ def priestley_taylor(wind, rs=None, rn=None, g=0, tmean=None, tmax=None,
     --------
     >>> pt = priestley_taylor(wind, rn=rn, tmean=tmean, rh=rh)
 
-    .. math::
+    Notes
     -----
-        $ET = \\frac{\\alpha_{PT} \\Delta (R_n-G)}
-        {\\lambda(\\Delta +\\gamma)}$
+
+    .. math:: ET = \\frac{\\alpha_{PT} \\Delta (R_n-G)}
+        {\\lambda(\\Delta +\\gamma)}
 
     References
-    -----
+    ----------
     .. [priestley_and_taylor_1965] Priestley, C. H. B., & TAYLOR, R. J. (1972).
        On the assessment of surface heat flux and evaporation using large-scale
        parameters. Monthly weather review, 100(2), 81-92.
@@ -468,17 +474,19 @@ def kimberly_penman(wind, rs=None, rn=None, g=0, tmean=None, tmax=None,
 
     Returns
     -------
-        pandas.Series containing the calculated evaporation
+    pandas.Series containing the calculated evaporation
 
-    .. math::
+    Notes
     -----
-        $ET = \\frac{\\Delta (R_n-G)+ \\gamma (e_s-e_a) w}
-        {\\lambda(\\Delta +\\gamma)}$;
-        $w =  u_2 * (0.4 + 0.14 * exp(-(\\frac{J_D-173}{58})^2)) +
-            (0.605 + 0.345 * exp(-(\\frac{J_D-243}{80})^2))$
+    Following [oudin_2005]_.
+
+    .. math:: ET = \\frac{\\Delta (R_n-G)+ \\gamma (e_s-e_a) w}
+        {\\lambda(\\Delta +\\gamma)}
+    .. math:: w =  u_2 * (0.4 + 0.14 * exp(-(\\frac{J_D-173}{58})^2)) +
+            (0.605 + 0.345 * exp(-(\\frac{J_D-243}{80})^2))
 
     References
-    -----
+    ----------
     .. [wright_1982] Wright, J. L. (1982). New evapotranspiration crop
        coefficients. Proceedings of the American Society of Civil Engineers,
        Journal of the Irrigation and Drainage Division, 108(IR2), 57-74.
@@ -593,23 +601,19 @@ def thom_oliver(wind, rs=None, rn=None, g=0, tmean=None, tmax=None, tmin=None,
     -------
         pandas.Series containing the calculated evaporation
 
-    .. math::
+    Notes
     -----
-        $ET = \\frac{\\Delta (R_{n}-G)+ 2.5 \\gamma (e_s-e_a) w}
+    Following [oudin_2005]_.
+
+    .. math:: ET = \\frac{\\Delta (R_{n}-G)+ 2.5 \\gamma (e_s-e_a) w}
         {\\lambda(\\Delta +\\gamma(1+\\frac{r_s}{r_a}))}$
-        $w=2.6(1+0.53u_2)$
+        $w=2.6(1+0.53u_2)
 
     References
-    -----
+    ----------
     .. [thom_1977] Thom, A. S., & Oliver, H. R. (1977). On Penman's equation
        for estimating regional evaporation. Quarterly Journal of the Royal
        Meteorological Society, 103(436), 345-357.
-    .. [oudin_2005] Oudin, L., Hervieu, F., Michel, C., Perrin, C.,
-       Andréassian, V., Anctil, F., & Loumagne, C. (2005). Which potential
-       evapotranspiration input for a lumped rainfall–runoff model?:
-       Part 2—Towards a simple and efficient potential evapotranspiration model
-       for rainfall–runoff modelling. Journal of hydrology, 303(1-4), 290-306.
-
     """
     if tmean is None:
         tmean = (tmax + tmin) / 2

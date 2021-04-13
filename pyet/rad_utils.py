@@ -1,4 +1,4 @@
-"""The rad_utils module contains utility funtions for radiation data
+"""The rad_utils module contains utility functions for radiation data
 
 """
 

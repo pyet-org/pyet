@@ -1,4 +1,4 @@
-"""The meteo_utils module contains utility funtions for meteorological data
+"""The meteo_utils module contains utility functions for meteorological data
 
 """
 
