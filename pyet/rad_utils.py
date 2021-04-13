@@ -2,7 +2,7 @@
 
 """
 
-from numpy import sqrt, log, clip
+from numpy import sqrt, clip
 
 from .meteo_utils import calc_ea, extraterrestrial_r_hour, \
     extraterrestrial_r, daylight_hours
@@ -56,15 +56,10 @@ def calc_rad_long(rs, tmean=None, tmax=None, tmin=None, rhmax=None,
 
     Notes
     -----
-        Based on equation 39 in [allen_1998]_.
+    Based on equation 39 in [allen_1998]_.
 
     References
-    -----
-    .. [allen_1998] Allen, R. G., Pereira, L. S., Raes, D., & Smith, M. (1998).
-       Crop evapotranspiration-Guidelines for computing crop water
-       requirements-FAO Irrigation and drainage paper 56. Fao, Rome, 300.
-       (http://www.fao.org/3/x0490e/x0490e06.htm#TopOfPage)
-
+    ----------
     """
     if ea is None:
         ea = calc_ea(tmean=tmean, tmax=tmax, tmin=tmin, rhmax=rhmax,
@@ -114,19 +109,11 @@ def calc_rad_short(rs=None, tindex=None, lat=None, alpha=0.23, n=None,
 
     Returns
     -------
-        pandas.Series containing the calculated net shortwave radiation
+    pandas.Series containing the calculated net shortwave radiation
 
     Notes
     -----
-        Based on equation 38 in [allen_1998]_.
-
-    References
-    -----
-    .. [allen_1998] Allen, R. G., Pereira, L. S., Raes, D., & Smith, M. (1998).
-       Crop evapotranspiration-Guidelines for computing crop water
-       requirements-FAO Irrigation and drainage paper 56. Fao, Rome, 300.
-       (http://www.fao.org/3/x0490e/x0490e06.htm#TopOfPage)
-
+    Based on equation 38 in [allen_1998]_.
     """
     if rs is not None:
         return (1 - alpha) * rs
@@ -154,19 +141,11 @@ def calc_rad_sol_in(tindex, lat, as1=0.25, bs1=0.5, n=None, nn=None):
 
     Returns
     -------
-        pandas.Series containing the calculated net shortwave radiation
+    pandas.Series containing the calculated net shortwave radiation
 
     Notes
     -----
-        Based on equation 35 in [allen_1998]_.
-
-    References
-    -----
-    .. [allen_1998] Allen, R. G., Pereira, L. S., Raes, D., & Smith, M. (1998).
-       Crop evapotranspiration-Guidelines for computing crop water
-       requirements-FAO Irrigation and drainage paper 56. Fao, Rome, 300.
-       (http://www.fao.org/3/x0490e/x0490e06.htm#TopOfPage)
-
+    Based on equation 35 in [allen_1998]_.
     """
     ra = extraterrestrial_r(tindex, lat)
     if n is None:
@@ -186,142 +165,11 @@ def calc_rso(ra, elevation):
 
     Returns
     -------
-        pandas.Series containing the calculated Clear-sky solar radiation
+    pandas.Series containing the calculated Clear-sky solar radiation
 
     Notes
     -----
-        Based on equation 37 in [allen_1998]_.
+    Based on equation 37 in [allen_1998]_.
 
     """
     return (0.75 + (2 * 10 ** -5) * elevation) * ra
-
-
-def calc_res_surf(lai=None, r_s=70, r_l=100, lai_eff=0, srs=None, co2=None):
-    """Surface resistance [s m-1].
-
-    Parameters
-    ----------
-    lai: pandas.Series/float, optional
-        leaf area index [-]
-    r_s: pandas.series/float, optional
-        surface resistance [s m-1]
-    r_l: float, optional
-        bulk stomatal resistance [s m-1]
-    lai_eff: float, optional
-        1 => LAI_eff = 0.5 * LAI
-        2 => LAI_eff = lai / (0.3 * lai + 1.2)
-        3 => LAI_eff = 0.5 * LAI; (LAI>4=4)
-        4 => see [zhang_2008]_.
-    srs: float, optional
-        Relative sensitivity of rl to Δ[CO2]
-    co2: float
-        CO2 concentration [ppm]
-
-    Returns
-    -------
-        pandas.Series containing the calculated surface resistance
-
-    References
-    -----
-    .. [allen_1998] Allen, R. G., Pereira, L. S., Raes, D., & Smith, M. (1998).
-       Crop evapotranspiration-Guidelines for computing crop water
-       requirements-FAO Irrigation and drainage paper 56. Fao, Rome, 300.
-       (http://www.fao.org/3/x0490e/x0490e06.htm#TopOfPage)
-    .. [zhang_2008] Zhang, B., Kang, S., Li, F., & Zhang, L. (2008). Comparison
-       of three evapotranspiration models to Bowen ratio-energy balance method
-       for a vineyard in an arid desert region of northwest China. Agricultural
-        and Forest Meteorology, 148(10), 1629-1640.
-    .. [schymanski_2016] Schymanski, S. J., & Or, D. (2017). Leaf-scale
-       experiments reveal an important omission in the Penman–Monteith
-       equation. Hydrology and Earth System Sciences, 21(2), 685-706.
-    .. [yang_2019] Yang, Y., Roderick, M. L., Zhang, S., McVicar, T. R., &
-       Donohue, R. J. (2019). Hydrologic implications of vegetation response to
-       elevated CO 2 in climate projections. Nature Climate Change, 9, 44-48.
-
-    """
-    if lai is None:
-        return r_s
-    else:
-        fco2 = (1 + srs * (co2 - 300))
-        return fco2 * r_l / calc_laieff(lai=lai, lai_eff=lai_eff)
-
-
-def calc_laieff(lai=None, lai_eff=0):
-    """Effective leaf area index [-].
-
-    Parameters
-    ----------
-    lai: pandas.Series/float, optional
-        leaf area index [-]
-    lai_eff: float, optional
-        0 => LAI_eff = 0.5 * LAI
-        1 => LAI_eff = lai / (0.3 * lai + 1.2)
-        2 => LAI_eff = 0.5 * LAI; (LAI>4=4)
-        3 => see [zhang_2008]_.
-
-    Returns
-    -------
-        pandas.Series containing the calculated effective leaf area index
-
-    References
-    -----
-    .. [allen_1998] Allen, R. G., Pereira, L. S., Raes, D., & Smith, M. (1998).
-       Crop evapotranspiration-Guidelines for computing crop water
-       requirements-FAO Irrigation and drainage paper 56. Fao, Rome, 300.
-       (http://www.fao.org/3/x0490e/x0490e06.htm#TopOfPage)
-    .. [zhang_2008] Zhang, B., Kang, S., Li, F., & Zhang, L. (2008). Comparison
-       of three evapotranspiration models to Bowen ratio-energy balance method
-       for a vineyard in an arid desert region of northwest China. Agricultural
-        and Forest Meteorology, 148(10), 1629-1640.
-    """
-    if lai_eff == 0:
-        return 0.5 * lai
-    if lai_eff == 1:
-        return lai / (0.3 * lai + 1.2)
-    if lai_eff == 2:
-        laie = lai.copy()
-        laie[(lai > 2) & (lai < 4)] = 2
-        laie[lai > 4] = 0.5 * lai
-        return laie
-    if lai_eff == 3:
-        laie = lai.copy()
-        laie[lai > 4] = 4
-        return laie * 0.5
-
-
-def calc_res_aero(wind, croph=None, zw=2, zh=2, ra_method=1):
-    """Aerodynamic resistance [s m-1].
-
-    Parameters
-    ----------
-    wind: pandas.Series
-        mean day wind speed [m/s]
-    croph: pandas.series/float, optional
-        crop height [m]
-    zw: float, optional
-        height of wind measurement [m]
-    zh: float, optional
-         height of humidity and or air temperature measurement [m]
-    ra_method: float, optional
-        1 => ra = 208/wind
-        2 => ra is calculated based on equation 36 in FAO (1990), ANNEX V.
-    Returns
-    -------
-        pandas.Series containing the calculated aerodynamic resistance
-
-    References
-    -----
-    .. [allen_1998] Allen, R. G., Pereira, L. S., Raes, D., & Smith, M. (1998).
-       Crop evapotranspiration-Guidelines for computing crop water
-       requirements-FAO Irrigation and drainage paper 56. Fao, Rome, 300.
-       (http://www.fao.org/3/x0490e/x0490e06.htm#TopOfPage)
-
-    """
-    if ra_method == 1:
-        return 208 / wind
-    else:
-        d = 0.667 * croph
-        zom = 0.123 * croph
-        zoh = 0.0123 * croph
-        return (log((zw - d) / zom)) * (log((zh - d) / zoh) /
-                                        (0.41 ** 2) / wind)

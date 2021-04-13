@@ -207,20 +207,9 @@ def pm(wind, rs=None, rn=None, g=0, tmean=None, tmax=None, tmin=None,
     .. [monteith_1965] Monteith, J. L. (1965). Evaporation and environment.
        In Symposia of the society for experimental biology (Vol. 19, pp.
        205-234). Cambridge University Press (CUP) Cambridge.
-    .. [allen_1998] Allen, R. G., Pereira, L. S., Raes, D., & Smith, M. (1998).
-       Crop evapotranspiration-Guidelines for computing crop water
-       requirements-FAO Irrigation and drainage paper 56. Fao, Rome, 300.
-       (http://www.fao.org/3/x0490e/x0490e06.htm#TopOfPage).
-    .. [zhang_2008] Zhang, B., Kang, S., Li, F., & Zhang, L. (2008). Comparison
-       of three evapotranspiration models to Bowen ratio-energy balance method
-       for a vineyard in an arid desert region of northwest China. Agricultural
-       and Forest Meteorology, 148(10), 1629-1640.
     .. [schymanski_2016] Schymanski, S. J., & Or, D. (2017). Leaf-scale
        experiments reveal an important omission in the Penman–Monteith
        equation. Hydrology and Earth System Sciences, 21(2), 685-706.
-    .. [yang_2019] Yang, Y., Roderick, M. L., Zhang, S., McVicar, T. R., &
-       Donohue, R. J. (2019). Hydrologic implications of vegetation response to
-       elevated CO 2 in climate projections. Nature Climate Change, 9, 44-48.
     """
     if tmean is None:
         tmean = (tmax + tmin) / 2
@@ -490,12 +479,6 @@ def kimberly_penman(wind, rs=None, rn=None, g=0, tmean=None, tmax=None,
     .. [wright_1982] Wright, J. L. (1982). New evapotranspiration crop
        coefficients. Proceedings of the American Society of Civil Engineers,
        Journal of the Irrigation and Drainage Division, 108(IR2), 57-74.
-    .. [oudin_2005] Oudin, L., Hervieu, F., Michel, C., Perrin, C.,
-       Andréassian, V., Anctil, F., & Loumagne, C. (2005). Which potential
-       evapotranspiration input for a lumped rainfall–runoff model?:
-       Part 2—Towards a simple and efficient potential evapotranspiration model
-       for rainfall–runoff modelling. Journal of hydrology, 303(1-4), 290-306.
-
     """
     if tmean is None:
         tmean = (tmax + tmin) / 2

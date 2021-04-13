@@ -354,13 +354,6 @@ def oudin(tmean, lat, k1=100, k2=5):
     .. math:: ET = \\frac{R_a (T_a +5)}{\\lambda 100}; if T_a+5>0
         else: P = 0
 
-    References
-    ----------
-    .. [oudin_2005] Oudin, L., Hervieu, F., Michel, C., Perrin, C.,
-       Andréassian, V., Anctil, F., & Loumagne, C. (2005). Which potential
-       evapotranspiration input for a lumped rainfall–runoff model?:
-       Part 2—Towards a simple and efficient potential evapotranspiration model
-       for rainfall–runoff modelling. Journal of hydrology, 303(1-4), 290-306.
     """
     lambd = calc_lambda(tmean)
     ra = extraterrestrial_r(tmean.index, lat)
