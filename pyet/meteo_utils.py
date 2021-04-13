@@ -1,3 +1,7 @@
+"""The meteo_utils module contains utility funtions for meteorological data
+
+"""
+
 from numpy import tan, cos, pi, sin, arccos, clip, maximum, exp
 from pandas import to_numeric
 

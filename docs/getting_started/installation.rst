@@ -1,9 +1,9 @@
-Installing and Updating Phydrus
+Installing and Updating pyet
 ===============================
 
 Installing Python
 -----------------
-To install Phydrus, a working version of Python 3.7 or higher has to be
+To install pyet a working version of Python 3.7 or higher has to be
 installed. We recommend using the `Anaconda Distribution
 <https://www.continuum.io/downloads>`_ of Python. This Python distribution
 includes most of the python package dependencies and the Jupyter Lab
@@ -11,28 +11,28 @@ software to run the notebooks. Moreover, it includes the Graphical User
 Interface (GUI) Spyder to start scripting in Python. However, you are free
 to install any Python distribution you want.
 
-Installing the Phydrus package
+Installing the pyet package
 ------------------------------
-The latest stable version of the Phydrus package is available from the Pypi
+The latest stable version of the pyet package is available from the Pypi
 package index.
 
->>> pip install phydrus
+>>> pip install pyet
 
 To install in developer mode, clone the GitHub repository and use the
 following syntax:
 
 >>> pip install -e .
 
-Updating the Phydrus package
+Updating the pyet package
 ----------------------------
-If you have already installed Phydrus, it is possible to update Phydrus
+If you have already installed pyet, it is possible to update pyet
 easily. To update, open a Windows command screen or a Mac terminal and type:
 
->>> pip install phydrus --upgrade
+>>> pip install pyet --upgrade
 
 Dependencies
 ------------
-Phydrus depends on a number of Python packages, which are all automatically
+pyet depends on a number of Python packages, which are all automatically
 installed when using the pip install manager. The following packages are
 necessary for the installation of Phydrus:
 

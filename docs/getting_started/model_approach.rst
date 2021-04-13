@@ -1,3 +1,0 @@
-Modeling Approach in Phydrus
-============================
-

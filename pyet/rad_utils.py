@@ -1,3 +1,7 @@
+"""The rad_utils module contains utility funtions for radiation data
+
+"""
+
 from numpy import sqrt, log, clip
 
 from .meteo_utils import calc_ea, extraterrestrial_r_hour, \
