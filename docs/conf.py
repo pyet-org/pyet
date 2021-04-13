@@ -18,7 +18,7 @@ master_doc = 'index'
 
 # -- Project information -----------------------------------------------------
 
-project = 'PyEt'
+project = 'pyet'
 copyright = '2020, Matevz Vremec, Raoul Collenteur'
 author = 'Matevz Vremec, Raoul Collenteur'
 

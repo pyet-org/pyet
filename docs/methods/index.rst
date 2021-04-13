@@ -163,7 +163,7 @@ Notation and units
    * - .. math:: Variable
      - .. math:: Description
      - .. math:: Units
-   * - PET
+   * - .. math:: PET
      - Potential evaporation
      - .. math:: mm d^{-1}
    * - .. math:: \Delta

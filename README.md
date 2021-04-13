@@ -1,4 +1,4 @@
-# PyEt: Estimation of Potential Evaporation
+# pyet: Estimation of Potential Evaporation
 
 <a href="http://www.gnu.org/licenses/gpl-3.0.txt"><img src=https://img.shields.io/github/license/phydrus/pyet> </a>
 [![Build Status](https://travis-ci.org/phydrus/PyEt.svg?branch=master)](https://travis-ci.org/github/phydrus/PyEt)
@@ -7,11 +7,11 @@
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/7ed73a2e80784ccf90317c1af8c0cc17)](https://app.codacy.com/gh/phydrus/PyEt?utm_source=github.com&utm_medium=referral&utm_content=phydrus/PyEt&utm_campaign=Badge_Grade_Dashboard)
 
 
-PyEt is an open source python package for calculating reference and potential 
+pyet is an open source python package for calculating reference and potential 
 evaporation (PET). Currently eighteen methods for calculating PET are 
 implemented:
 
-| Classification | Common method name        | Data needed | PyEt Method        | Reference                   |
+| Classification | Common method name        | Data needed | pyet Method        | Reference                   |
 |----------------|---------------------------|-------------|--------------------|-----------------------------|
 | Combination    | Penman                    | RH, T, U, D |`penman`            |Penman (1948)                |
 |                | Penman-Monteith           | RH, T, U, D |`pm`                |Monteith (1965)              |
@@ -36,7 +36,7 @@ T, Temperature; U, Wind Speed; D, Radiation; RH, Relative Humidity. Adapted from
 
 ## Examples and Documentation
 
-Examples of using PyEt can be found in the example folder. This folder also 
+Examples of using pyet can be found in the example folder. This folder also 
 contains a number of Jupyter Notebooks that thoroughly explain the use of the 
 software. Documentation is hosted on [ReadTheDocs](pyet.readthedocs.io.).
 
@@ -47,13 +47,13 @@ line of python code:
 
 ## Bug reports and Questions
 
-PyEt is in active development, and bug reports are welcome as [GitHub 
-Issues](https://github.com/phydrus/PyEt/issues).
+pyet is in active development, and bug reports are welcome as [GitHub 
+Issues](https://github.com/phydrus/pyet/issues).
 General questions or discussions are possible through 
-[GitHub Discussions](https://github.com/phydrus/PyEt/discussions).
+[GitHub Discussions](https://github.com/phydrus/pyet/discussions).
 
 ## Installation
-The PyEt package is available from the Pypi package index and can be installed 
+The pyet package is available from the Pypi package index and can be installed 
 as follows:
 
 `>>> pip install pyet`
