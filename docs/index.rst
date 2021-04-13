@@ -1,10 +1,10 @@
-.. ID documentation master file, created by
-   sphinx-quickstart on Sat Dec 18 08:18:09 2017.
+.. pyet documentation master file, created by
+   sphinx-quickstart on Tue Apr 13 15:35:10 2021.
+   You can adapt this file completely to your liking, but it should at least
+   contain the root `toctree` directive.
 
-pyet
+pyet - estimating of potential evaporation
 =============================
-
-pyet is an open source Python package for estimating reference and potential evaporation (PET) using time series data. This enables the user to estimate evaporation and calibrate the models with just a few lines of python code.
 
 .. toctree::
    :maxdepth: 2
