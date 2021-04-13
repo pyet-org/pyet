@@ -158,6 +158,14 @@ Notation and units
 
 .. math::
 
-    Variable , Description , Units
+    Variable ---- Description --- Units
 
-    PET , Potential evaporation , mm d^{-1}
+    PET --- Potential evaporation --- mm d^{-1}
+
+    \Delta --- Slope of vapor pressure curve --- kPa °C^{-1}
+
+    \gamma --- Latent heat of vaporization --- MJ kg^{-1}
+
+    \rho_w --- Water density (=1000) --- kg L^{-1}
+
+    \rho_a --- Air density --- kg m^{-3}
