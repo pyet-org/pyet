@@ -160,6 +160,9 @@ Notation and units
    :widths: 25 50 25
    :header-rows: 1
 
+   * - .. math:: Variable
+     - .. math:: Description
+     - .. math:: Units
    * - PET
      - Potential evaporation
      - .. math:: mm d^{-1}
@@ -169,7 +172,7 @@ Notation and units
    * - .. math:: \gamma
      - Latent heat of vaporization
      - .. math:: MJ kg^{-1}
-   * - \rho_w
+   * - .. math::  \rho_w
      - Water density (=1000)
      - .. math:: kg L^{-1}
    * - .. math:: \rho_a
@@ -180,10 +183,10 @@ Notation and units
      - .. math:: kPa °C^{-1}
    * - .. math:: e_s
      - Saturation vapour pressure
-     - kPa
+     - .. math::  kPa
    * - .. math::  e_a
      - Actual vapour pressure
-     - kPa
+     - .. math::  kPa
    * - .. math:: r_a
      - Aerodynamic resistance
      - .. math:: s m^{-1}
@@ -216,7 +219,7 @@ Notation and units
      - .. math:: MJ m^{-2} d^{-1}
    * - .. math::  RH
      - Relative humidity
-     - [%]
+     - .. math::  [%]
    * - .. math::  DL
      - Day length
      - .. math:: h d^{-1}
