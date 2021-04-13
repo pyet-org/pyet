@@ -1,0 +1,317 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Radiation &#8212; pyet 2020 documentation</title>
+    
+  <link href="../_static/css/theme.css" rel="stylesheet" />
+  <link href="../_static/css/index.ee6fb81b276d6fba8a971ad8e9b95dd9.css" rel="stylesheet" />
+
+    
+  <link rel="stylesheet"
+    href="../_static/vendor/fontawesome/5.13.0/css/all.min.css">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="../_static/vendor/fontawesome/5.13.0/webfonts/fa-solid-900.woff2">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="../_static/vendor/fontawesome/5.13.0/webfonts/fa-brands-400.woff2">
+
+    
+      
+
+    
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/basic.css" type="text/css" />
+    
+  <link rel="preload" as="script" href="../_static/js/index.c86189f1ce1b71a67eb6.js">
+
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Combination" href="combination.html" />
+    <link rel="prev" title="Temperature" href="temperature.html" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="docsearch:language" content="en" />
+    
+  </head>
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="80">
+    
+    <div class="container-fluid" id="banner"></div>
+
+    
+    <nav class="navbar navbar-light navbar-expand-lg bg-light fixed-top bd-navbar" id="navbar-main"><div class="container-xl">
+
+  <div id="navbar-start">
+    
+    
+<a class="navbar-brand" href="../index.html">
+<p class="title">pyet</p>
+</a>
+
+    
+  </div>
+
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbar-collapsible" aria-controls="navbar-collapsible" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+
+  
+  <div id="navbar-collapsible" class="col-lg-9 collapse navbar-collapse">
+    <div id="navbar-center" class="mr-auto">
+      
+      <div class="navbar-center-item">
+        <ul id="navbar-main-elements" class="navbar-nav">
+    <li class="toctree-l1 nav-item">
+ <a class="reference internal nav-link" href="../getting_started/index.html">
+  Getting started
+ </a>
+</li>
+
+<li class="toctree-l1 current active nav-item">
+ <a class="reference internal nav-link" href="index.html">
+  Methods
+ </a>
+</li>
+
+<li class="toctree-l1 nav-item">
+ <a class="reference internal nav-link" href="../api/index.html">
+  API-docs
+ </a>
+</li>
+
+<li class="toctree-l1 nav-item">
+ <a class="reference internal nav-link" href="../references.html">
+  References
+ </a>
+</li>
+
+    
+</ul>
+      </div>
+      
+    </div>
+
+    <div id="navbar-end">
+      
+      <div class="navbar-end-item">
+        <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
+      </ul>
+      </div>
+      
+    </div>
+  </div>
+</div>
+    </nav>
+    
+
+    <div class="container-xl">
+      <div class="row">
+          
+            
+            <!-- Only show if we have sidebars configured, else just a small margin  -->
+            <div class="col-12 col-md-3 bd-sidebar"><form class="bd-search d-flex align-items-center" action="../search.html" method="get">
+  <i class="icon fas fa-search"></i>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search the docs ..." aria-label="Search the docs ..." autocomplete="off" >
+</form><nav class="bd-links" id="bd-docs-nav" aria-label="Main navigation">
+  <div class="bd-toc-item active">
+    <ul class="current nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="temperature.html">
+   Temperature
+  </a>
+ </li>
+ <li class="toctree-l1 current active">
+  <a class="current reference internal" href="#">
+   Radiation
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="combination.html">
+   Combination
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="units.html">
+   Units
+  </a>
+ </li>
+</ul>
+
+  </div>
+</nav>
+            </div>
+            
+          
+
+          
+          <div class="d-none d-xl-block col-xl-2 bd-toc">
+            
+              
+              <div class="toc-item">
+                
+<div class="tocsection onthispage pt-5 pb-3">
+    <i class="fas fa-list"></i> On this page
+</div>
+
+<nav id="bd-toc-nav">
+    <ul class="visible nav section-nav flex-column">
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#turc-1961">
+   Turc (1961)
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#jensen-and-haise-2005">
+   Jensen and Haise (2005)
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#mcguinness-and-bordne-1972">
+   McGuinness and Bordne (1972)
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#hargreaves-hargreaves-and-samani-1982-1985">
+   Hargreaves (Hargreaves and Samani, 1982; 1985)
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#doorenbospruitt-fao-24-jensen-et-al-1990">
+   Doorenbos–Pruitt (FAO-24) (Jensen et al., 1990)
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#abtew-1996">
+   Abtew (1996)
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#makkink-1957">
+   Makkink (1957)
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#oudin-1961">
+   Oudin (1961)
+  </a>
+ </li>
+</ul>
+
+</nav>
+              </div>
+              
+              <div class="toc-item">
+                
+              </div>
+              
+            
+          </div>
+          
+
+          
+          
+            
+          
+          <main class="col-12 col-md-9 col-xl-7 py-md-5 pl-md-5 pr-md-4 bd-content" role="main">
+              
+              <div>
+                
+  <div class="section" id="radiation">
+<h1>Radiation<a class="headerlink" href="#radiation" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="turc-1961">
+<h2>Turc (1961)<a class="headerlink" href="#turc-1961" title="Permalink to this headline">¶</a></h2>
+<div class="math notranslate nohighlight">
+\[PET=k(\frac{T_a}{T_a+15})(R_s/4.184 + 50)*4.184; for RH&gt;50\]</div>
+<div class="math notranslate nohighlight">
+\[PET=k(\frac{T_a}{T_a+15})(R_s/4.184 + 50)(1+\frac{50-RH}{70})*4.184;for RH&lt;50\]</div>
+</div>
+<div class="section" id="jensen-and-haise-2005">
+<h2>Jensen and Haise (2005)<a class="headerlink" href="#jensen-and-haise-2005" title="Permalink to this headline">¶</a></h2>
+<div class="math notranslate nohighlight">
+\[PET = \frac{C_r (T - T_x) R_s}{\lambda}\]</div>
+<div class="math notranslate nohighlight">
+\[PET = \frac{R_a (T_a+5)}{\lambda 68}\]</div>
+</div>
+<div class="section" id="mcguinness-and-bordne-1972">
+<h2>McGuinness and Bordne (1972)<a class="headerlink" href="#mcguinness-and-bordne-1972" title="Permalink to this headline">¶</a></h2>
+<div class="math notranslate nohighlight">
+\[PET = \frac{0.0147 R_a (T_a + 5)}{\lambda}\]</div>
+</div>
+<div class="section" id="hargreaves-hargreaves-and-samani-1982-1985">
+<h2>Hargreaves (Hargreaves and Samani, 1982; 1985)<a class="headerlink" href="#hargreaves-hargreaves-and-samani-1982-1985" title="Permalink to this headline">¶</a></h2>
+<div class="math notranslate nohighlight">
+\[PET = 0.0023 \frac{R_a (T_a+17.8)\sqrt{(T_{max}-T_{min})}}{\lambda}$\]</div>
+</div>
+<div class="section" id="doorenbospruitt-fao-24-jensen-et-al-1990">
+<h2>Doorenbos–Pruitt (FAO-24) (Jensen et al., 1990)<a class="headerlink" href="#doorenbospruitt-fao-24-jensen-et-al-1990" title="Permalink to this headline">¶</a></h2>
+<div class="math notranslate nohighlight">
+\[PET = \frac{-0.3 \Delta + R_s (1-\alpha) w}{\lambda(\Delta +\gamma)}\]</div>
+<div class="math notranslate nohighlight">
+\[w = 1.066-0.13*\frac{rh}{100}+0.045*u_2-0.02*\frac{rh}{100}*u_2-3.15*(\frac{rh}{100})^2-0.0011*u_2\]</div>
+</div>
+<div class="section" id="abtew-1996">
+<h2>Abtew (1996)<a class="headerlink" href="#abtew-1996" title="Permalink to this headline">¶</a></h2>
+<div class="math notranslate nohighlight">
+\[PET = \frac{k R_s}{\lambda}\]</div>
+</div>
+<div class="section" id="makkink-1957">
+<h2>Makkink (1957)<a class="headerlink" href="#makkink-1957" title="Permalink to this headline">¶</a></h2>
+<div class="math notranslate nohighlight">
+\[PET = \frac{0.65 \Delta (R_s)}{\lambda(\Delta+\gamma)}\]</div>
+</div>
+<div class="section" id="oudin-1961">
+<h2>Oudin (1961)<a class="headerlink" href="#oudin-1961" title="Permalink to this headline">¶</a></h2>
+<div class="math notranslate nohighlight">
+\[PET = \frac{R_a (T_a+K_2)}{\lambda K_1}; if T_a+K_2&gt;0\]</div>
+<div class="math notranslate nohighlight">
+\[else: P = 0\]</div>
+</div>
+</div>
+
+
+              </div>
+              
+              
+              <div class='prev-next-bottom'>
+                
+    <a class='left-prev' id="prev-link" href="temperature.html" title="previous page">Temperature</a>
+    <a class='right-next' id="next-link" href="combination.html" title="next page">Combination</a>
+
+              </div>
+              
+          </main>
+          
+
+      </div>
+    </div>
+    
+  <script src="../_static/js/index.c86189f1ce1b71a67eb6.js"></script>
+
+
+    <footer class="footer mt-5 mt-md-0">
+  <div class="container">
+    
+    <div class="footer-item">
+      <p class="copyright">
+    &copy; Copyright 2021, M. Vremec, R.A. Collenteur.<br/>
+</p>
+    </div>
+    
+    <div class="footer-item">
+      <p class="sphinx-version">
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 3.5.4.<br/>
+</p>
+    </div>
+    
+  </div>
+</footer>
+  </body>
+</html>

@@ -1,0 +1,825 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>pyet.combination &#8212; pyet 2020 documentation</title>
+    
+  <link href="../../_static/css/theme.css" rel="stylesheet" />
+  <link href="../../_static/css/index.ee6fb81b276d6fba8a971ad8e9b95dd9.css" rel="stylesheet" />
+
+    
+  <link rel="stylesheet"
+    href="../../_static/vendor/fontawesome/5.13.0/css/all.min.css">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="../../_static/vendor/fontawesome/5.13.0/webfonts/fa-solid-900.woff2">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="../../_static/vendor/fontawesome/5.13.0/webfonts/fa-brands-400.woff2">
+
+    
+      
+
+    
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/basic.css" type="text/css" />
+    
+  <link rel="preload" as="script" href="../../_static/js/index.c86189f1ce1b71a67eb6.js">
+
+    <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="docsearch:language" content="en" />
+    
+  </head>
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="80">
+    
+    <div class="container-fluid" id="banner"></div>
+
+    
+    <nav class="navbar navbar-light navbar-expand-lg bg-light fixed-top bd-navbar" id="navbar-main"><div class="container-xl">
+
+  <div id="navbar-start">
+    
+    
+<a class="navbar-brand" href="../../index.html">
+<p class="title">pyet</p>
+</a>
+
+    
+  </div>
+
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbar-collapsible" aria-controls="navbar-collapsible" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+
+  
+  <div id="navbar-collapsible" class="col-lg-9 collapse navbar-collapse">
+    <div id="navbar-center" class="mr-auto">
+      
+      <div class="navbar-center-item">
+        <ul id="navbar-main-elements" class="navbar-nav">
+    <li class="toctree-l1 nav-item">
+ <a class="reference internal nav-link" href="../../getting_started/index.html">
+  Getting started
+ </a>
+</li>
+
+<li class="toctree-l1 nav-item">
+ <a class="reference internal nav-link" href="../../methods/index.html">
+  Methods
+ </a>
+</li>
+
+<li class="toctree-l1 nav-item">
+ <a class="reference internal nav-link" href="../../api/index.html">
+  API-docs
+ </a>
+</li>
+
+<li class="toctree-l1 nav-item">
+ <a class="reference internal nav-link" href="../../references.html">
+  References
+ </a>
+</li>
+
+    
+</ul>
+      </div>
+      
+    </div>
+
+    <div id="navbar-end">
+      
+      <div class="navbar-end-item">
+        <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
+      </ul>
+      </div>
+      
+    </div>
+  </div>
+</div>
+    </nav>
+    
+
+    <div class="container-xl">
+      <div class="row">
+          
+            
+            <!-- Only show if we have sidebars configured, else just a small margin  -->
+            <div class="col-12 col-md-3 bd-sidebar"><form class="bd-search d-flex align-items-center" action="../../search.html" method="get">
+  <i class="icon fas fa-search"></i>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search the docs ..." aria-label="Search the docs ..." autocomplete="off" >
+</form><nav class="bd-links" id="bd-docs-nav" aria-label="Main navigation">
+  <div class="bd-toc-item active">
+    
+  </div>
+</nav>
+            </div>
+            
+          
+
+          
+          <div class="d-none d-xl-block col-xl-2 bd-toc">
+            
+              
+              <div class="toc-item">
+                
+
+<nav id="bd-toc-nav">
+    
+</nav>
+              </div>
+              
+              <div class="toc-item">
+                
+              </div>
+              
+            
+          </div>
+          
+
+          
+          
+            
+          
+          <main class="col-12 col-md-9 col-xl-7 py-md-5 pl-md-5 pr-md-4 bd-content" role="main">
+              
+              <div>
+                
+  <h1>Source code for pyet.combination</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;The combination module contains functions of combination PET methods</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">.meteo_utils</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">.rad_utils</span> <span class="kn">import</span> <span class="o">*</span>
+
+<span class="c1"># Specific heat of air [MJ kg-1 °C-1]</span>
+<span class="n">CP</span> <span class="o">=</span> <span class="mf">1.013</span> <span class="o">*</span> <span class="mi">10</span> <span class="o">**</span> <span class="o">-</span><span class="mi">3</span>
+<span class="c1"># Stefan Boltzmann constant - hourly [MJm-2K-4h-1]</span>
+<span class="n">STEFAN_BOLTZMANN_HOUR</span> <span class="o">=</span> <span class="mf">2.042</span> <span class="o">*</span> <span class="mi">10</span> <span class="o">**</span> <span class="o">-</span><span class="mi">10</span>
+<span class="c1"># Stefan Boltzmann constant - daily [MJm-2K-4d-1]</span>
+<span class="n">STEFAN_BOLTZMANN_DAY</span> <span class="o">=</span> <span class="mf">4.903</span> <span class="o">*</span> <span class="mi">10</span> <span class="o">**</span> <span class="o">-</span><span class="mi">9</span>
+
+
+<div class="viewcode-block" id="penman"><a class="viewcode-back" href="../../api/generated/generated/pyet.combination.penman.html#pyet.combination.penman">[docs]</a><span class="k">def</span> <span class="nf">penman</span><span class="p">(</span><span class="n">wind</span><span class="p">,</span> <span class="n">rs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">rn</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">g</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">tmean</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">tmax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">tmin</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+           <span class="n">rhmax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">rhmin</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">rh</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">pressure</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">elevation</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+           <span class="n">lat</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">nn</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">rso</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">aw</span><span class="o">=</span><span class="mf">2.6</span><span class="p">,</span> <span class="n">bw</span><span class="o">=</span><span class="mf">0.536</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="mf">1.35</span><span class="p">,</span>
+           <span class="n">b</span><span class="o">=-</span><span class="mf">0.35</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Evaporation calculated according to [penman_1948]_.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    wind: pandas.Series</span>
+<span class="sd">        mean day wind speed [m/s]</span>
+<span class="sd">    rs: pandas.Series, optional</span>
+<span class="sd">        incoming solar radiation [MJ m-2 d-1]</span>
+<span class="sd">    rn: pandas.Series, optional</span>
+<span class="sd">        net radiation [MJ m-2 d-1]</span>
+<span class="sd">    g: pandas.Series/int, optional</span>
+<span class="sd">        soil heat flux [MJ m-2 d-1]</span>
+<span class="sd">    tmean: pandas.Series, optional</span>
+<span class="sd">        average day temperature [°C]</span>
+<span class="sd">    tmax: pandas.Series, optional</span>
+<span class="sd">        maximum day temperature [°C]</span>
+<span class="sd">    tmin: pandas.Series, optional</span>
+<span class="sd">        minimum day temperature [°C]</span>
+<span class="sd">    rhmax: pandas.Series, optional</span>
+<span class="sd">        maximum daily relative humidity [%]</span>
+<span class="sd">    rhmin: pandas.Series, optional</span>
+<span class="sd">        mainimum daily relative humidity [%]</span>
+<span class="sd">    rh: pandas.Series, optional</span>
+<span class="sd">        mean daily relative humidity [%]</span>
+<span class="sd">    pressure: float, optional</span>
+<span class="sd">        atmospheric pressure [kPa]</span>
+<span class="sd">    elevation: float, optional</span>
+<span class="sd">        the site elevation [m]</span>
+<span class="sd">    lat: float, optional</span>
+<span class="sd">        the site latitude [rad]</span>
+<span class="sd">    n: pandas.Series/float, optional</span>
+<span class="sd">        actual duration of sunshine [hour]</span>
+<span class="sd">    nn: pandas.Series/float, optional</span>
+<span class="sd">        maximum possible duration of sunshine or daylight hours [hour]</span>
+<span class="sd">    rso: pandas.Series/float, optional</span>
+<span class="sd">        clear-sky solar radiation [MJ m-2 day-1]</span>
+<span class="sd">    aw: float, optional</span>
+<span class="sd">        wind coefficient [-]</span>
+<span class="sd">    bw: float, optional</span>
+<span class="sd">        wind coefficient [-]</span>
+<span class="sd">    a: float, optional</span>
+<span class="sd">        empirical coefficient for Net Long-Wave radiation [-]</span>
+<span class="sd">    b: float, optional</span>
+<span class="sd">        empirical coefficient for Net Long-Wave radiation [-]</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    pandas.Series containing the calculated evaporation</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; et_penman = penman(wind, rn=rn, tmean=tmean, rh=rh)</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    Following [penman_1948]_ and [valiantzas_2006]_.</span>
+
+<span class="sd">    .. math:: ET = \\frac{\\Delta (R_n-G) + \\gamma 2.6 (1 + 0.536 u_2)</span>
+<span class="sd">        (e_s-e_a)}{\\lambda (\\Delta +\\gamma)}</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    .. [penman_1948] Penman, H. L. (1948). Natural evaporation from open water,</span>
+<span class="sd">       bare soil and grass. Proceedings of the Royal Society of London. Series</span>
+<span class="sd">       A. Mathematical and Physical Sciences, 193, 120-145.</span>
+<span class="sd">    .. [valiantzas_2006] Valiantzas, J. D. (2006). Simplified versions for the</span>
+<span class="sd">       Penman evaporation equation using routine weather data. Journal of</span>
+<span class="sd">       Hydrology, 331(3-4), 690-702.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">tmean</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">tmean</span> <span class="o">=</span> <span class="p">(</span><span class="n">tmax</span> <span class="o">+</span> <span class="n">tmin</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span>
+    <span class="k">if</span> <span class="n">pressure</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">pressure</span> <span class="o">=</span> <span class="n">calc_press</span><span class="p">(</span><span class="n">elevation</span><span class="p">)</span>
+    <span class="n">gamma</span> <span class="o">=</span> <span class="n">calc_psy</span><span class="p">(</span><span class="n">pressure</span><span class="p">)</span>
+    <span class="n">dlt</span> <span class="o">=</span> <span class="n">calc_vpc</span><span class="p">(</span><span class="n">tmean</span><span class="p">)</span>
+    <span class="n">lambd</span> <span class="o">=</span> <span class="n">calc_lambda</span><span class="p">(</span><span class="n">tmean</span><span class="p">)</span>
+
+    <span class="n">ea</span> <span class="o">=</span> <span class="n">calc_ea</span><span class="p">(</span><span class="n">tmean</span><span class="o">=</span><span class="n">tmean</span><span class="p">,</span> <span class="n">tmax</span><span class="o">=</span><span class="n">tmax</span><span class="p">,</span> <span class="n">tmin</span><span class="o">=</span><span class="n">tmin</span><span class="p">,</span> <span class="n">rhmax</span><span class="o">=</span><span class="n">rhmax</span><span class="p">,</span> <span class="n">rhmin</span><span class="o">=</span><span class="n">rhmin</span><span class="p">,</span>
+                 <span class="n">rh</span><span class="o">=</span><span class="n">rh</span><span class="p">)</span>
+    <span class="n">es</span> <span class="o">=</span> <span class="n">calc_es</span><span class="p">(</span><span class="n">tmean</span><span class="o">=</span><span class="n">tmean</span><span class="p">,</span> <span class="n">tmax</span><span class="o">=</span><span class="n">tmax</span><span class="p">,</span> <span class="n">tmin</span><span class="o">=</span><span class="n">tmin</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">rn</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">rns</span> <span class="o">=</span> <span class="n">calc_rad_short</span><span class="p">(</span><span class="n">rs</span><span class="o">=</span><span class="n">rs</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="n">n</span><span class="p">,</span> <span class="n">nn</span><span class="o">=</span><span class="n">nn</span><span class="p">)</span>  <span class="c1"># [MJ/m2/d]</span>
+        <span class="n">rnl</span> <span class="o">=</span> <span class="n">calc_rad_long</span><span class="p">(</span><span class="n">rs</span><span class="o">=</span><span class="n">rs</span><span class="p">,</span> <span class="n">tmean</span><span class="o">=</span><span class="n">tmean</span><span class="p">,</span> <span class="n">tmax</span><span class="o">=</span><span class="n">tmax</span><span class="p">,</span> <span class="n">tmin</span><span class="o">=</span><span class="n">tmin</span><span class="p">,</span>
+                            <span class="n">rhmax</span><span class="o">=</span><span class="n">rhmax</span><span class="p">,</span> <span class="n">rhmin</span><span class="o">=</span><span class="n">rhmin</span><span class="p">,</span> <span class="n">rh</span><span class="o">=</span><span class="n">rh</span><span class="p">,</span>
+                            <span class="n">elevation</span><span class="o">=</span><span class="n">elevation</span><span class="p">,</span> <span class="n">lat</span><span class="o">=</span><span class="n">lat</span><span class="p">,</span> <span class="n">rso</span><span class="o">=</span><span class="n">rso</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="n">b</span><span class="p">,</span>
+                            <span class="n">ea</span><span class="o">=</span><span class="n">ea</span><span class="p">)</span>  <span class="c1"># [MJ/m2/d]</span>
+        <span class="n">rn</span> <span class="o">=</span> <span class="n">rns</span> <span class="o">-</span> <span class="n">rnl</span>
+
+    <span class="n">fu</span> <span class="o">=</span> <span class="n">aw</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">bw</span> <span class="o">*</span> <span class="n">wind</span><span class="p">)</span>
+
+    <span class="n">den</span> <span class="o">=</span> <span class="n">lambd</span> <span class="o">*</span> <span class="p">(</span><span class="n">dlt</span> <span class="o">+</span> <span class="n">gamma</span><span class="p">)</span>
+    <span class="n">num1</span> <span class="o">=</span> <span class="n">dlt</span> <span class="o">*</span> <span class="p">(</span><span class="n">rn</span> <span class="o">-</span> <span class="n">g</span><span class="p">)</span> <span class="o">/</span> <span class="n">den</span>
+    <span class="n">num2</span> <span class="o">=</span> <span class="n">gamma</span> <span class="o">*</span> <span class="p">(</span><span class="n">es</span> <span class="o">-</span> <span class="n">ea</span><span class="p">)</span> <span class="o">*</span> <span class="n">fu</span> <span class="o">/</span> <span class="n">den</span>
+    <span class="k">return</span> <span class="n">num1</span> <span class="o">+</span> <span class="n">num2</span></div>
+
+
+<div class="viewcode-block" id="pm"><a class="viewcode-back" href="../../api/generated/generated/pyet.combination.pm.html#pyet.combination.pm">[docs]</a><span class="k">def</span> <span class="nf">pm</span><span class="p">(</span><span class="n">wind</span><span class="p">,</span> <span class="n">rs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">rn</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">g</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">tmean</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">tmax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">tmin</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+       <span class="n">rhmax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">rhmin</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">rh</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">pressure</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">elevation</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+       <span class="n">lat</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">nn</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">rso</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="mf">1.35</span><span class="p">,</span> <span class="n">b</span><span class="o">=-</span><span class="mf">0.35</span><span class="p">,</span> <span class="n">lai</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+       <span class="n">croph</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">r_l</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">r_s</span><span class="o">=</span><span class="mi">70</span><span class="p">,</span> <span class="n">ra_method</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">a_sh</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">a_s</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">lai_eff</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+       <span class="n">srs</span><span class="o">=</span><span class="mf">0.0009</span><span class="p">,</span> <span class="n">co2</span><span class="o">=</span><span class="mi">300</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Evaporation calculated according to [monteith_1965]_.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    wind: pandas.Series</span>
+<span class="sd">        mean day wind speed [m/s]</span>
+<span class="sd">    rs: pandas.Series, optional</span>
+<span class="sd">        incoming solar radiation [MJ m-2 d-1]</span>
+<span class="sd">    rn: pandas.Series, optional</span>
+<span class="sd">        net radiation [MJ m-2 d-1]</span>
+<span class="sd">    g: pandas.Series/int, optional</span>
+<span class="sd">        soil heat flux [MJ m-2 d-1]</span>
+<span class="sd">    tmean: pandas.Series, optional</span>
+<span class="sd">        average day temperature [°C]</span>
+<span class="sd">    tmax: pandas.Series, optional</span>
+<span class="sd">        maximum day temperature [°C]</span>
+<span class="sd">    tmin: pandas.Series, optional</span>
+<span class="sd">        minimum day temperature [°C]</span>
+<span class="sd">    rhmax: pandas.Series, optional</span>
+<span class="sd">        maximum daily relative humidity [%]</span>
+<span class="sd">    rhmin: pandas.Series, optional</span>
+<span class="sd">        mainimum daily relative humidity [%]</span>
+<span class="sd">    rh: pandas.Series, optional</span>
+<span class="sd">        mean daily relative humidity [%]</span>
+<span class="sd">    pressure: float, optional</span>
+<span class="sd">        atmospheric pressure [kPa]</span>
+<span class="sd">    elevation: float, optional</span>
+<span class="sd">        the site elevation [m]</span>
+<span class="sd">    lat: float, optional</span>
+<span class="sd">        the site latitude [rad]</span>
+<span class="sd">    n: pandas.Series/float, optional</span>
+<span class="sd">        actual duration of sunshine [hour]</span>
+<span class="sd">    nn: pandas.Series/float, optional</span>
+<span class="sd">        maximum possible duration of sunshine or daylight hours [hour]</span>
+<span class="sd">    rso: pandas.Series/float, optional</span>
+<span class="sd">        clear-sky solar radiation [MJ m-2 day-1]</span>
+<span class="sd">    a: float, optional</span>
+<span class="sd">        empirical coefficient for Net Long-Wave radiation [-]</span>
+<span class="sd">    b: float, optional</span>
+<span class="sd">        empirical coefficient for Net Long-Wave radiation [-]</span>
+<span class="sd">    lai: pandas.Series/float, optional</span>
+<span class="sd">        leaf area index [-]</span>
+<span class="sd">    croph: pandas.series/float, optional</span>
+<span class="sd">        crop height [m]</span>
+<span class="sd">    r_l: pandas.series/float, optional</span>
+<span class="sd">        bulk stomatal resistance [s m-1]</span>
+<span class="sd">    r_s: pandas.series/float, optional</span>
+<span class="sd">        bulk surface resistance [s m-1]</span>
+<span class="sd">    ra_method: float, optional</span>
+<span class="sd">        1 =&gt; ra = 208/wind</span>
+<span class="sd">        2 =&gt; ra is calculated based on equation 36 in FAO (1990), ANNEX V.</span>
+<span class="sd">    a_s: float, optional</span>
+<span class="sd">        Fraction of one-sided leaf area covered by stomata (1 if stomata are 1</span>
+<span class="sd">        on one side only, 2 if they are on both sides)</span>
+<span class="sd">    a_sh: float, optional</span>
+<span class="sd">        Fraction of projected area exchanging sensible heat with the air (2)</span>
+<span class="sd">    lai_eff: float, optional</span>
+<span class="sd">        0 =&gt; LAI_eff = 0.5 * LAI</span>
+<span class="sd">        1 =&gt; LAI_eff = lai / (0.3 * lai + 1.2)</span>
+<span class="sd">        2 =&gt; LAI_eff = 0.5 * LAI; (LAI&gt;4=4)</span>
+<span class="sd">        3 =&gt; see [zhang_2008]_.</span>
+<span class="sd">    srs: float, optional</span>
+<span class="sd">        Relative sensitivity of rl to Δ[CO2]</span>
+<span class="sd">    co2: float</span>
+<span class="sd">        CO2 concentration [ppm]</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    pandas.Series containing the calculated evaporation</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; et_pm = pm(wind, rn=rn, tmean=tmean, rh=rh)</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    Following [monteith_1965]_, [allen_1998]_, [zhang_2008]_,</span>
+<span class="sd">        [schymanski_2016]_ and [yang_2019]_.</span>
+
+<span class="sd">    .. math:: ET = \\frac{\\Delta (R_{n}-G)+ \\rho_a c_p K_{min}</span>
+<span class="sd">        \\frac{e_s-e_a}{r_a}}{\\lambda(\\Delta +\\gamma(1+\\frac{r_s}{r_a}))}</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    .. [monteith_1965] Monteith, J. L. (1965). Evaporation and environment.</span>
+<span class="sd">       In Symposia of the society for experimental biology (Vol. 19, pp.</span>
+<span class="sd">       205-234). Cambridge University Press (CUP) Cambridge.</span>
+<span class="sd">    .. [schymanski_2016] Schymanski, S. J., &amp; Or, D. (2017). Leaf-scale</span>
+<span class="sd">       experiments reveal an important omission in the Penman–Monteith</span>
+<span class="sd">       equation. Hydrology and Earth System Sciences, 21(2), 685-706.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">tmean</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">tmean</span> <span class="o">=</span> <span class="p">(</span><span class="n">tmax</span> <span class="o">+</span> <span class="n">tmin</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span>
+    <span class="k">if</span> <span class="n">pressure</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">pressure</span> <span class="o">=</span> <span class="n">calc_press</span><span class="p">(</span><span class="n">elevation</span><span class="p">)</span>
+    <span class="n">gamma</span> <span class="o">=</span> <span class="n">calc_psy</span><span class="p">(</span><span class="n">pressure</span><span class="p">)</span>
+    <span class="n">dlt</span> <span class="o">=</span> <span class="n">calc_vpc</span><span class="p">(</span><span class="n">tmean</span><span class="p">)</span>
+    <span class="n">lambd</span> <span class="o">=</span> <span class="n">calc_lambda</span><span class="p">(</span><span class="n">tmean</span><span class="p">)</span>
+
+    <span class="n">ea</span> <span class="o">=</span> <span class="n">calc_ea</span><span class="p">(</span><span class="n">tmean</span><span class="o">=</span><span class="n">tmean</span><span class="p">,</span> <span class="n">tmax</span><span class="o">=</span><span class="n">tmax</span><span class="p">,</span> <span class="n">tmin</span><span class="o">=</span><span class="n">tmin</span><span class="p">,</span> <span class="n">rhmax</span><span class="o">=</span><span class="n">rhmax</span><span class="p">,</span> <span class="n">rhmin</span><span class="o">=</span><span class="n">rhmin</span><span class="p">,</span>
+                 <span class="n">rh</span><span class="o">=</span><span class="n">rh</span><span class="p">)</span>
+    <span class="n">es</span> <span class="o">=</span> <span class="n">calc_es</span><span class="p">(</span><span class="n">tmean</span><span class="o">=</span><span class="n">tmean</span><span class="p">,</span> <span class="n">tmax</span><span class="o">=</span><span class="n">tmax</span><span class="p">,</span> <span class="n">tmin</span><span class="o">=</span><span class="n">tmin</span><span class="p">)</span>
+
+    <span class="n">res_a</span> <span class="o">=</span> <span class="n">calc_res_aero</span><span class="p">(</span><span class="n">wind</span><span class="p">,</span> <span class="n">ra_method</span><span class="o">=</span><span class="n">ra_method</span><span class="p">,</span> <span class="n">croph</span><span class="o">=</span><span class="n">croph</span><span class="p">)</span>
+    <span class="n">res_s</span> <span class="o">=</span> <span class="n">calc_res_surf</span><span class="p">(</span><span class="n">lai</span><span class="o">=</span><span class="n">lai</span><span class="p">,</span> <span class="n">r_s</span><span class="o">=</span><span class="n">r_s</span><span class="p">,</span> <span class="n">r_l</span><span class="o">=</span><span class="n">r_l</span><span class="p">,</span> <span class="n">lai_eff</span><span class="o">=</span><span class="n">lai_eff</span><span class="p">,</span> <span class="n">srs</span><span class="o">=</span><span class="n">srs</span><span class="p">,</span>
+                          <span class="n">co2</span><span class="o">=</span><span class="n">co2</span><span class="p">)</span>
+    <span class="n">gamma1</span> <span class="o">=</span> <span class="n">gamma</span> <span class="o">*</span> <span class="n">a_sh</span> <span class="o">/</span> <span class="n">a_s</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">res_s</span> <span class="o">/</span> <span class="n">res_a</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">rn</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">rns</span> <span class="o">=</span> <span class="n">calc_rad_short</span><span class="p">(</span><span class="n">rs</span><span class="o">=</span><span class="n">rs</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="n">n</span><span class="p">,</span> <span class="n">nn</span><span class="o">=</span><span class="n">nn</span><span class="p">)</span>  <span class="c1"># [MJ/m2/d]</span>
+        <span class="n">rnl</span> <span class="o">=</span> <span class="n">calc_rad_long</span><span class="p">(</span><span class="n">rs</span><span class="o">=</span><span class="n">rs</span><span class="p">,</span> <span class="n">tmean</span><span class="o">=</span><span class="n">tmean</span><span class="p">,</span> <span class="n">tmax</span><span class="o">=</span><span class="n">tmax</span><span class="p">,</span> <span class="n">tmin</span><span class="o">=</span><span class="n">tmin</span><span class="p">,</span>
+                            <span class="n">rhmax</span><span class="o">=</span><span class="n">rhmax</span><span class="p">,</span> <span class="n">rhmin</span><span class="o">=</span><span class="n">rhmin</span><span class="p">,</span> <span class="n">rh</span><span class="o">=</span><span class="n">rh</span><span class="p">,</span>
+                            <span class="n">elevation</span><span class="o">=</span><span class="n">elevation</span><span class="p">,</span> <span class="n">lat</span><span class="o">=</span><span class="n">lat</span><span class="p">,</span> <span class="n">rso</span><span class="o">=</span><span class="n">rso</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="n">b</span><span class="p">,</span>
+                            <span class="n">ea</span><span class="o">=</span><span class="n">ea</span><span class="p">)</span>  <span class="c1"># [MJ/m2/d]</span>
+        <span class="n">rn</span> <span class="o">=</span> <span class="n">rns</span> <span class="o">-</span> <span class="n">rnl</span>
+
+    <span class="n">kmin</span> <span class="o">=</span> <span class="mi">86400</span>  <span class="c1"># unit conversion s d-1</span>
+    <span class="n">rho_a</span> <span class="o">=</span> <span class="n">calc_rho</span><span class="p">(</span><span class="n">pressure</span><span class="p">,</span> <span class="n">tmean</span><span class="p">,</span> <span class="n">ea</span><span class="p">)</span>
+
+    <span class="n">den</span> <span class="o">=</span> <span class="n">lambd</span> <span class="o">*</span> <span class="p">(</span><span class="n">dlt</span> <span class="o">+</span> <span class="n">gamma1</span><span class="p">)</span>
+    <span class="n">num1</span> <span class="o">=</span> <span class="n">dlt</span> <span class="o">*</span> <span class="p">(</span><span class="n">rn</span> <span class="o">-</span> <span class="n">g</span><span class="p">)</span> <span class="o">/</span> <span class="n">den</span>
+    <span class="n">num2</span> <span class="o">=</span> <span class="n">rho_a</span> <span class="o">*</span> <span class="n">CP</span> <span class="o">*</span> <span class="n">kmin</span> <span class="o">*</span> <span class="p">(</span><span class="n">es</span> <span class="o">-</span> <span class="n">ea</span><span class="p">)</span> <span class="o">*</span> <span class="n">a_sh</span> <span class="o">/</span> <span class="n">res_a</span> <span class="o">/</span> <span class="n">den</span>
+    <span class="k">return</span> <span class="n">num1</span> <span class="o">+</span> <span class="n">num2</span></div>
+
+
+<div class="viewcode-block" id="pm_fao56"><a class="viewcode-back" href="../../api/generated/generated/pyet.combination.pm_fao56.html#pyet.combination.pm_fao56">[docs]</a><span class="k">def</span> <span class="nf">pm_fao56</span><span class="p">(</span><span class="n">wind</span><span class="p">,</span> <span class="n">rs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">rn</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">g</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">tmean</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">tmax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">tmin</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+             <span class="n">rhmax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">rhmin</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">rh</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">pressure</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">elevation</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+             <span class="n">lat</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">nn</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">rso</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="mf">1.35</span><span class="p">,</span> <span class="n">b</span><span class="o">=-</span><span class="mf">0.35</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Evaporation calculated according to [allen_1998]_.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    wind: pandas.Series</span>
+<span class="sd">        mean day wind speed [m/s]</span>
+<span class="sd">    rs: pandas.Series, optional</span>
+<span class="sd">        incoming solar radiation [MJ m-2 d-1]</span>
+<span class="sd">    rn: pandas.Series, optional</span>
+<span class="sd">        net radiation [MJ m-2 d-1]</span>
+<span class="sd">    g: pandas.Series/int, optional</span>
+<span class="sd">        soil heat flux [MJ m-2 d-1]</span>
+<span class="sd">    tmean: pandas.Series, optional</span>
+<span class="sd">        average day temperature [°C]</span>
+<span class="sd">    tmax: pandas.Series, optional</span>
+<span class="sd">        maximum day temperature [°C]</span>
+<span class="sd">    tmin: pandas.Series, optional</span>
+<span class="sd">        minimum day temperature [°C]</span>
+<span class="sd">    rhmax: pandas.Series, optional</span>
+<span class="sd">        maximum daily relative humidity [%]</span>
+<span class="sd">    rhmin: pandas.Series, optional</span>
+<span class="sd">        mainimum daily relative humidity [%]</span>
+<span class="sd">    rh: pandas.Series, optional</span>
+<span class="sd">        mean daily relative humidity [%]</span>
+<span class="sd">    pressure: float, optional</span>
+<span class="sd">        atmospheric pressure [kPa]</span>
+<span class="sd">    elevation: float, optional</span>
+<span class="sd">        the site elevation [m]</span>
+<span class="sd">    lat: float, optional</span>
+<span class="sd">        the site latitude [rad]</span>
+<span class="sd">    n: pandas.Series/float, optional</span>
+<span class="sd">        actual duration of sunshine [hour]</span>
+<span class="sd">    nn: pandas.Series/float, optional</span>
+<span class="sd">        maximum possible duration of sunshine or daylight hours [hour]</span>
+<span class="sd">    rso: pandas.Series/float, optional</span>
+<span class="sd">        clear-sky solar radiation [MJ m-2 day-1]</span>
+<span class="sd">    a: float, optional</span>
+<span class="sd">        empirical coefficient for Net Long-Wave radiation [-]</span>
+<span class="sd">    b: float, optional</span>
+<span class="sd">        empirical coefficient for Net Long-Wave radiation [-]</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">        pandas.Series containing the calculated evaporation</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; et_fao56 = pm_fao56(wind, rn=rn, tmean=tmean, rh=rh)</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    .. math:: ET = \\frac{0.408 \\Delta (R_{n}-G)+\\gamma \\frac{900}{T+273}</span>
+<span class="sd">        (e_s-e_a) u_2}{\\Delta+\\gamma(1+0.34 u_2)}</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">tmean</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">tmean</span> <span class="o">=</span> <span class="p">(</span><span class="n">tmax</span> <span class="o">+</span> <span class="n">tmin</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span>
+    <span class="k">if</span> <span class="n">pressure</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">pressure</span> <span class="o">=</span> <span class="n">calc_press</span><span class="p">(</span><span class="n">elevation</span><span class="p">)</span>
+    <span class="n">gamma</span> <span class="o">=</span> <span class="n">calc_psy</span><span class="p">(</span><span class="n">pressure</span><span class="p">)</span>
+    <span class="n">dlt</span> <span class="o">=</span> <span class="n">calc_vpc</span><span class="p">(</span><span class="n">tmean</span><span class="p">)</span>
+
+    <span class="n">gamma1</span> <span class="o">=</span> <span class="p">(</span><span class="n">gamma</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="mf">0.34</span> <span class="o">*</span> <span class="n">wind</span><span class="p">))</span>
+
+    <span class="n">ea</span> <span class="o">=</span> <span class="n">calc_ea</span><span class="p">(</span><span class="n">tmean</span><span class="o">=</span><span class="n">tmean</span><span class="p">,</span> <span class="n">tmax</span><span class="o">=</span><span class="n">tmax</span><span class="p">,</span> <span class="n">tmin</span><span class="o">=</span><span class="n">tmin</span><span class="p">,</span> <span class="n">rhmax</span><span class="o">=</span><span class="n">rhmax</span><span class="p">,</span> <span class="n">rhmin</span><span class="o">=</span><span class="n">rhmin</span><span class="p">,</span>
+                 <span class="n">rh</span><span class="o">=</span><span class="n">rh</span><span class="p">)</span>
+    <span class="n">es</span> <span class="o">=</span> <span class="n">calc_es</span><span class="p">(</span><span class="n">tmean</span><span class="o">=</span><span class="n">tmean</span><span class="p">,</span> <span class="n">tmax</span><span class="o">=</span><span class="n">tmax</span><span class="p">,</span> <span class="n">tmin</span><span class="o">=</span><span class="n">tmin</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">rn</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">rns</span> <span class="o">=</span> <span class="n">calc_rad_short</span><span class="p">(</span><span class="n">rs</span><span class="o">=</span><span class="n">rs</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="n">n</span><span class="p">,</span> <span class="n">nn</span><span class="o">=</span><span class="n">nn</span><span class="p">)</span>  <span class="c1"># [MJ/m2/d]</span>
+        <span class="n">rnl</span> <span class="o">=</span> <span class="n">calc_rad_long</span><span class="p">(</span><span class="n">rs</span><span class="o">=</span><span class="n">rs</span><span class="p">,</span> <span class="n">tmean</span><span class="o">=</span><span class="n">tmean</span><span class="p">,</span> <span class="n">tmax</span><span class="o">=</span><span class="n">tmax</span><span class="p">,</span> <span class="n">tmin</span><span class="o">=</span><span class="n">tmin</span><span class="p">,</span>
+                            <span class="n">rhmax</span><span class="o">=</span><span class="n">rhmax</span><span class="p">,</span> <span class="n">rhmin</span><span class="o">=</span><span class="n">rhmin</span><span class="p">,</span> <span class="n">rh</span><span class="o">=</span><span class="n">rh</span><span class="p">,</span>
+                            <span class="n">elevation</span><span class="o">=</span><span class="n">elevation</span><span class="p">,</span> <span class="n">lat</span><span class="o">=</span><span class="n">lat</span><span class="p">,</span> <span class="n">rso</span><span class="o">=</span><span class="n">rso</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="n">b</span><span class="p">,</span>
+                            <span class="n">ea</span><span class="o">=</span><span class="n">ea</span><span class="p">)</span>  <span class="c1"># [MJ/m2/d]</span>
+        <span class="n">rn</span> <span class="o">=</span> <span class="n">rns</span> <span class="o">-</span> <span class="n">rnl</span>
+
+    <span class="n">den</span> <span class="o">=</span> <span class="n">dlt</span> <span class="o">+</span> <span class="n">gamma1</span>
+    <span class="n">num1</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.408</span> <span class="o">*</span> <span class="n">dlt</span> <span class="o">*</span> <span class="p">(</span><span class="n">rn</span> <span class="o">-</span> <span class="n">g</span><span class="p">))</span> <span class="o">/</span> <span class="n">den</span>
+    <span class="n">num2</span> <span class="o">=</span> <span class="p">(</span><span class="n">gamma</span> <span class="o">*</span> <span class="p">(</span><span class="n">es</span> <span class="o">-</span> <span class="n">ea</span><span class="p">)</span> <span class="o">*</span> <span class="mi">900</span> <span class="o">*</span> <span class="n">wind</span> <span class="o">/</span> <span class="p">(</span><span class="n">tmean</span> <span class="o">+</span> <span class="mi">273</span><span class="p">))</span> <span class="o">/</span> <span class="n">den</span>
+    <span class="k">return</span> <span class="n">num1</span> <span class="o">+</span> <span class="n">num2</span></div>
+
+
+<div class="viewcode-block" id="priestley_taylor"><a class="viewcode-back" href="../../api/generated/generated/pyet.combination.priestley_taylor.html#pyet.combination.priestley_taylor">[docs]</a><span class="k">def</span> <span class="nf">priestley_taylor</span><span class="p">(</span><span class="n">wind</span><span class="p">,</span> <span class="n">rs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">rn</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">g</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">tmean</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">tmax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                     <span class="n">tmin</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">rhmax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">rhmin</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">rh</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">pressure</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                     <span class="n">elevation</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">lat</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">nn</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">rso</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                     <span class="n">a</span><span class="o">=</span><span class="mf">1.35</span><span class="p">,</span> <span class="n">b</span><span class="o">=-</span><span class="mf">0.35</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">1.26</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Evaporation calculated according to [priestley_and_taylor_1965]_.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    wind: pandas.Series</span>
+<span class="sd">        mean day wind speed [m/s]</span>
+<span class="sd">    rs: pandas.Series, optional</span>
+<span class="sd">        incoming solar radiation [MJ m-2 d-1]</span>
+<span class="sd">    rn: pandas.Series, optional</span>
+<span class="sd">        net radiation [MJ m-2 d-1]</span>
+<span class="sd">    g: pandas.Series/int, optional</span>
+<span class="sd">        soil heat flux [MJ m-2 d-1]</span>
+<span class="sd">    tmean: pandas.Series, optional</span>
+<span class="sd">        average day temperature [°C]</span>
+<span class="sd">    tmax: pandas.Series, optional</span>
+<span class="sd">        maximum day temperature [°C]</span>
+<span class="sd">    tmin: pandas.Series, optional</span>
+<span class="sd">        minimum day temperature [°C]</span>
+<span class="sd">    rhmax: pandas.Series, optional</span>
+<span class="sd">        maximum daily relative humidity [%]</span>
+<span class="sd">    rhmin: pandas.Series, optional</span>
+<span class="sd">        mainimum daily relative humidity [%]</span>
+<span class="sd">    rh: pandas.Series, optional</span>
+<span class="sd">        mean daily relative humidity [%]</span>
+<span class="sd">    pressure: float, optional</span>
+<span class="sd">        atmospheric pressure [kPa]</span>
+<span class="sd">    elevation: float, optional</span>
+<span class="sd">        the site elevation [m]</span>
+<span class="sd">    lat: float, optional</span>
+<span class="sd">        the site latitude [rad]</span>
+<span class="sd">    n: pandas.Series/float, optional</span>
+<span class="sd">        actual duration of sunshine [hour]</span>
+<span class="sd">    nn: pandas.Series/float, optional</span>
+<span class="sd">        maximum possible duration of sunshine or daylight hours [hour]</span>
+<span class="sd">    rso: pandas.Series/float, optional</span>
+<span class="sd">        clear-sky solar radiation [MJ m-2 day-1]</span>
+<span class="sd">    a: float, optional</span>
+<span class="sd">        empirical coefficient for Net Long-Wave radiation [-]</span>
+<span class="sd">    b: float, optional</span>
+<span class="sd">        empirical coefficient for Net Long-Wave radiation [-]</span>
+<span class="sd">    alpha: float, optional</span>
+<span class="sd">        calibration coeffiecient [-]</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">        pandas.Series containing the calculated evaporation</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; pt = priestley_taylor(wind, rn=rn, tmean=tmean, rh=rh)</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+
+<span class="sd">    .. math:: ET = \\frac{\\alpha_{PT} \\Delta (R_n-G)}</span>
+<span class="sd">        {\\lambda(\\Delta +\\gamma)}</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    .. [priestley_and_taylor_1965] Priestley, C. H. B., &amp; TAYLOR, R. J. (1972).</span>
+<span class="sd">       On the assessment of surface heat flux and evaporation using large-scale</span>
+<span class="sd">       parameters. Monthly weather review, 100(2), 81-92.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">tmean</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">tmean</span> <span class="o">=</span> <span class="p">(</span><span class="n">tmax</span> <span class="o">+</span> <span class="n">tmin</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span>
+    <span class="k">if</span> <span class="n">pressure</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">pressure</span> <span class="o">=</span> <span class="n">calc_press</span><span class="p">(</span><span class="n">elevation</span><span class="p">)</span>
+    <span class="n">gamma</span> <span class="o">=</span> <span class="n">calc_psy</span><span class="p">(</span><span class="n">pressure</span><span class="p">)</span>
+    <span class="n">dlt</span> <span class="o">=</span> <span class="n">calc_vpc</span><span class="p">(</span><span class="n">tmean</span><span class="p">)</span>
+    <span class="n">lambd</span> <span class="o">=</span> <span class="n">calc_lambda</span><span class="p">(</span><span class="n">tmean</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">rn</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">rns</span> <span class="o">=</span> <span class="n">calc_rad_short</span><span class="p">(</span><span class="n">rs</span><span class="o">=</span><span class="n">rs</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="n">n</span><span class="p">,</span> <span class="n">nn</span><span class="o">=</span><span class="n">nn</span><span class="p">)</span>  <span class="c1"># [MJ/m2/d]</span>
+        <span class="n">rnl</span> <span class="o">=</span> <span class="n">calc_rad_long</span><span class="p">(</span><span class="n">rs</span><span class="o">=</span><span class="n">rs</span><span class="p">,</span> <span class="n">tmean</span><span class="o">=</span><span class="n">tmean</span><span class="p">,</span> <span class="n">tmax</span><span class="o">=</span><span class="n">tmax</span><span class="p">,</span> <span class="n">tmin</span><span class="o">=</span><span class="n">tmin</span><span class="p">,</span>
+                            <span class="n">rhmax</span><span class="o">=</span><span class="n">rhmax</span><span class="p">,</span> <span class="n">rhmin</span><span class="o">=</span><span class="n">rhmin</span><span class="p">,</span> <span class="n">rh</span><span class="o">=</span><span class="n">rh</span><span class="p">,</span>
+                            <span class="n">elevation</span><span class="o">=</span><span class="n">elevation</span><span class="p">,</span> <span class="n">lat</span><span class="o">=</span><span class="n">lat</span><span class="p">,</span> <span class="n">rso</span><span class="o">=</span><span class="n">rso</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="n">b</span><span class="p">)</span>
+        <span class="n">rn</span> <span class="o">=</span> <span class="n">rns</span> <span class="o">-</span> <span class="n">rnl</span>
+
+    <span class="k">return</span> <span class="p">(</span><span class="n">alpha</span> <span class="o">*</span> <span class="n">dlt</span> <span class="o">*</span> <span class="p">(</span><span class="n">rn</span> <span class="o">-</span> <span class="n">g</span><span class="p">))</span> <span class="o">/</span> <span class="p">(</span><span class="n">lambd</span> <span class="o">*</span> <span class="p">(</span><span class="n">dlt</span> <span class="o">+</span> <span class="n">gamma</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="kimberly_penman"><a class="viewcode-back" href="../../api/generated/generated/pyet.combination.kimberly_penman.html#pyet.combination.kimberly_penman">[docs]</a><span class="k">def</span> <span class="nf">kimberly_penman</span><span class="p">(</span><span class="n">wind</span><span class="p">,</span> <span class="n">rs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">rn</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">g</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">tmean</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">tmax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                    <span class="n">tmin</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">rhmax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">rhmin</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">rh</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">pressure</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                    <span class="n">elevation</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">lat</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">nn</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">rso</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                    <span class="n">a</span><span class="o">=</span><span class="mf">1.35</span><span class="p">,</span> <span class="n">b</span><span class="o">=-</span><span class="mf">0.35</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Evaporation calculated according to [wright_1982]_.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    wind: pandas.Series</span>
+<span class="sd">        mean day wind speed [m/s]</span>
+<span class="sd">    rs: pandas.Series, optional</span>
+<span class="sd">        incoming solar radiation [MJ m-2 d-1]</span>
+<span class="sd">    rn: pandas.Series, optional</span>
+<span class="sd">        net radiation [MJ m-2 d-1]</span>
+<span class="sd">    g: pandas.Series/int, optional</span>
+<span class="sd">        soil heat flux [MJ m-2 d-1]</span>
+<span class="sd">    tmean: pandas.Series, optional</span>
+<span class="sd">        average day temperature [°C]</span>
+<span class="sd">    tmax: pandas.Series, optional</span>
+<span class="sd">        maximum day temperature [°C]</span>
+<span class="sd">    tmin: pandas.Series, optional</span>
+<span class="sd">        minimum day temperature [°C]</span>
+<span class="sd">    rhmax: pandas.Series, optional</span>
+<span class="sd">        maximum daily relative humidity [%]</span>
+<span class="sd">    rhmin: pandas.Series, optional</span>
+<span class="sd">        mainimum daily relative humidity [%]</span>
+<span class="sd">    rh: pandas.Series, optional</span>
+<span class="sd">        mean daily relative humidity [%]</span>
+<span class="sd">    pressure: float, optional</span>
+<span class="sd">        atmospheric pressure [kPa]</span>
+<span class="sd">    elevation: float, optional</span>
+<span class="sd">        the site elevation [m]</span>
+<span class="sd">    lat: float, optional</span>
+<span class="sd">        the site latitude [rad]</span>
+<span class="sd">    n: pandas.Series/float, optional</span>
+<span class="sd">        actual duration of sunshine [hour]</span>
+<span class="sd">    nn: pandas.Series/float, optional</span>
+<span class="sd">        maximum possible duration of sunshine or daylight hours [hour]</span>
+<span class="sd">    rso: pandas.Series/float, optional</span>
+<span class="sd">        clear-sky solar radiation [MJ m-2 day-1]</span>
+<span class="sd">    a: float, optional</span>
+<span class="sd">        empirical coefficient for Net Long-Wave radiation [-]</span>
+<span class="sd">    b: float, optional</span>
+<span class="sd">        empirical coefficient for Net Long-Wave radiation [-]</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    pandas.Series containing the calculated evaporation</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    Following [oudin_2005]_.</span>
+
+<span class="sd">    .. math:: ET = \\frac{\\Delta (R_n-G)+ \\gamma (e_s-e_a) w}</span>
+<span class="sd">        {\\lambda(\\Delta +\\gamma)}</span>
+<span class="sd">    .. math:: w =  u_2 * (0.4 + 0.14 * exp(-(\\frac{J_D-173}{58})^2)) +</span>
+<span class="sd">            (0.605 + 0.345 * exp(-(\\frac{J_D-243}{80})^2))</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    .. [wright_1982] Wright, J. L. (1982). New evapotranspiration crop</span>
+<span class="sd">       coefficients. Proceedings of the American Society of Civil Engineers,</span>
+<span class="sd">       Journal of the Irrigation and Drainage Division, 108(IR2), 57-74.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">tmean</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">tmean</span> <span class="o">=</span> <span class="p">(</span><span class="n">tmax</span> <span class="o">+</span> <span class="n">tmin</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span>
+    <span class="k">if</span> <span class="n">pressure</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">pressure</span> <span class="o">=</span> <span class="n">calc_press</span><span class="p">(</span><span class="n">elevation</span><span class="p">)</span>
+    <span class="n">gamma</span> <span class="o">=</span> <span class="n">calc_psy</span><span class="p">(</span><span class="n">pressure</span><span class="p">)</span>
+    <span class="n">dlt</span> <span class="o">=</span> <span class="n">calc_vpc</span><span class="p">(</span><span class="n">tmean</span><span class="p">)</span>
+    <span class="n">lambd</span> <span class="o">=</span> <span class="n">calc_lambda</span><span class="p">(</span><span class="n">tmean</span><span class="p">)</span>
+
+    <span class="n">ea</span> <span class="o">=</span> <span class="n">calc_ea</span><span class="p">(</span><span class="n">tmean</span><span class="o">=</span><span class="n">tmean</span><span class="p">,</span> <span class="n">tmax</span><span class="o">=</span><span class="n">tmax</span><span class="p">,</span> <span class="n">tmin</span><span class="o">=</span><span class="n">tmin</span><span class="p">,</span> <span class="n">rhmax</span><span class="o">=</span><span class="n">rhmax</span><span class="p">,</span> <span class="n">rhmin</span><span class="o">=</span><span class="n">rhmin</span><span class="p">,</span>
+                 <span class="n">rh</span><span class="o">=</span><span class="n">rh</span><span class="p">)</span>
+    <span class="n">es</span> <span class="o">=</span> <span class="n">calc_es</span><span class="p">(</span><span class="n">tmean</span><span class="o">=</span><span class="n">tmean</span><span class="p">,</span> <span class="n">tmax</span><span class="o">=</span><span class="n">tmax</span><span class="p">,</span> <span class="n">tmin</span><span class="o">=</span><span class="n">tmin</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">rn</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">rns</span> <span class="o">=</span> <span class="n">calc_rad_short</span><span class="p">(</span><span class="n">rs</span><span class="o">=</span><span class="n">rs</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="n">n</span><span class="p">,</span> <span class="n">nn</span><span class="o">=</span><span class="n">nn</span><span class="p">)</span>  <span class="c1"># [MJ/m2/d]</span>
+        <span class="n">rnl</span> <span class="o">=</span> <span class="n">calc_rad_long</span><span class="p">(</span><span class="n">rs</span><span class="o">=</span><span class="n">rs</span><span class="p">,</span> <span class="n">tmean</span><span class="o">=</span><span class="n">tmean</span><span class="p">,</span> <span class="n">tmax</span><span class="o">=</span><span class="n">tmax</span><span class="p">,</span> <span class="n">tmin</span><span class="o">=</span><span class="n">tmin</span><span class="p">,</span>
+                            <span class="n">rhmax</span><span class="o">=</span><span class="n">rhmax</span><span class="p">,</span> <span class="n">rhmin</span><span class="o">=</span><span class="n">rhmin</span><span class="p">,</span> <span class="n">rh</span><span class="o">=</span><span class="n">rh</span><span class="p">,</span>
+                            <span class="n">elevation</span><span class="o">=</span><span class="n">elevation</span><span class="p">,</span> <span class="n">lat</span><span class="o">=</span><span class="n">lat</span><span class="p">,</span> <span class="n">rso</span><span class="o">=</span><span class="n">rso</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="n">b</span><span class="p">,</span>
+                            <span class="n">ea</span><span class="o">=</span><span class="n">ea</span><span class="p">)</span>  <span class="c1"># [MJ/m2/d]</span>
+        <span class="n">rn</span> <span class="o">=</span> <span class="n">rns</span> <span class="o">-</span> <span class="n">rnl</span>
+
+    <span class="n">j</span> <span class="o">=</span> <span class="n">day_of_year</span><span class="p">(</span><span class="n">tmean</span><span class="o">.</span><span class="n">index</span><span class="p">)</span>
+    <span class="n">w</span> <span class="o">=</span> <span class="n">wind</span> <span class="o">*</span> <span class="p">(</span><span class="mf">0.4</span> <span class="o">+</span> <span class="mf">0.14</span> <span class="o">*</span> <span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="p">((</span><span class="n">j</span> <span class="o">-</span> <span class="mi">173</span><span class="p">)</span> <span class="o">/</span> <span class="mi">58</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span>
+            <span class="mf">0.605</span> <span class="o">+</span> <span class="mf">0.345</span> <span class="o">*</span> <span class="n">exp</span><span class="p">((</span><span class="n">j</span> <span class="o">-</span> <span class="mi">243</span><span class="p">)</span> <span class="o">/</span> <span class="mi">80</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">))</span>
+
+    <span class="n">den</span> <span class="o">=</span> <span class="n">lambd</span> <span class="o">*</span> <span class="p">(</span><span class="n">dlt</span> <span class="o">+</span> <span class="n">gamma</span><span class="p">)</span>
+    <span class="n">num1</span> <span class="o">=</span> <span class="n">dlt</span> <span class="o">*</span> <span class="p">(</span><span class="n">rn</span> <span class="o">-</span> <span class="n">g</span><span class="p">)</span> <span class="o">/</span> <span class="n">den</span>
+    <span class="n">num2</span> <span class="o">=</span> <span class="n">gamma</span> <span class="o">*</span> <span class="p">(</span><span class="n">es</span> <span class="o">-</span> <span class="n">ea</span><span class="p">)</span> <span class="o">*</span> <span class="n">w</span> <span class="o">/</span> <span class="n">den</span>
+    <span class="k">return</span> <span class="n">num1</span> <span class="o">+</span> <span class="n">num2</span></div>
+
+
+<div class="viewcode-block" id="thom_oliver"><a class="viewcode-back" href="../../api/generated/generated/pyet.combination.thom_oliver.html#pyet.combination.thom_oliver">[docs]</a><span class="k">def</span> <span class="nf">thom_oliver</span><span class="p">(</span><span class="n">wind</span><span class="p">,</span> <span class="n">rs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">rn</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">g</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">tmean</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">tmax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">tmin</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                <span class="n">rhmax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">rhmin</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">rh</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">pressure</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">elevation</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                <span class="n">lat</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">nn</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">rso</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">aw</span><span class="o">=</span><span class="mf">2.6</span><span class="p">,</span> <span class="n">bw</span><span class="o">=</span><span class="mf">0.536</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="mf">1.35</span><span class="p">,</span>
+                <span class="n">b</span><span class="o">=-</span><span class="mf">0.35</span><span class="p">,</span> <span class="n">lai</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">croph</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">r_l</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">r_s</span><span class="o">=</span><span class="mi">70</span><span class="p">,</span> <span class="n">ra_method</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                <span class="n">lai_eff</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">srs</span><span class="o">=</span><span class="mf">0.0009</span><span class="p">,</span> <span class="n">co2</span><span class="o">=</span><span class="mi">300</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Evaporation calculated according to [thom_1977]_.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    wind: pandas.Series</span>
+<span class="sd">        mean day wind speed [m/s]</span>
+<span class="sd">    rs: pandas.Series, optional</span>
+<span class="sd">        incoming solar radiation [MJ m-2 d-1]</span>
+<span class="sd">    rn: pandas.Series, optional</span>
+<span class="sd">        net radiation [MJ m-2 d-1]</span>
+<span class="sd">    g: pandas.Series/int, optional</span>
+<span class="sd">        soil heat flux [MJ m-2 d-1]</span>
+<span class="sd">    tmean: pandas.Series, optional</span>
+<span class="sd">        average day temperature [°C]</span>
+<span class="sd">    tmax: pandas.Series, optional</span>
+<span class="sd">        maximum day temperature [°C]</span>
+<span class="sd">    tmin: pandas.Series, optional</span>
+<span class="sd">        minimum day temperature [°C]</span>
+<span class="sd">    rhmax: pandas.Series, optional</span>
+<span class="sd">        maximum daily relative humidity [%]</span>
+<span class="sd">    rhmin: pandas.Series, optional</span>
+<span class="sd">        mainimum daily relative humidity [%]</span>
+<span class="sd">    rh: pandas.Series, optional</span>
+<span class="sd">        mean daily relative humidity [%]</span>
+<span class="sd">    pressure: float, optional</span>
+<span class="sd">        atmospheric pressure [kPa]</span>
+<span class="sd">    elevation: float, optional</span>
+<span class="sd">        the site elevation [m]</span>
+<span class="sd">    lat: float, optional</span>
+<span class="sd">        the site latitude [rad]</span>
+<span class="sd">    n: pandas.Series/float, optional</span>
+<span class="sd">        actual duration of sunshine [hour]</span>
+<span class="sd">    nn: pandas.Series/float, optional</span>
+<span class="sd">        maximum possible duration of sunshine or daylight hours [hour]</span>
+<span class="sd">    rso: pandas.Series/float, optional</span>
+<span class="sd">        clear-sky solar radiation [MJ m-2 day-1]</span>
+<span class="sd">    aw: float, optional</span>
+<span class="sd">        wind coefficient [-]</span>
+<span class="sd">    bw: float, optional</span>
+<span class="sd">        wind coefficient [-]</span>
+<span class="sd">    a: float, optional</span>
+<span class="sd">        empirical coefficient for Net Long-Wave radiation [-]</span>
+<span class="sd">    b: float, optional</span>
+<span class="sd">        empirical coefficient for Net Long-Wave radiation [-]</span>
+<span class="sd">    lai: pandas.Series/float, optional</span>
+<span class="sd">        leaf area index [-]</span>
+<span class="sd">    croph: pandas.series/float, optional</span>
+<span class="sd">        crop height [m]</span>
+<span class="sd">    r_l: pandas.series/float, optional</span>
+<span class="sd">        bulk stomatal resistance [s m-1]</span>
+<span class="sd">    r_s: pandas.series/float, optional</span>
+<span class="sd">        bulk surface resistance [s m-1]</span>
+<span class="sd">    ra_method: float, optional</span>
+<span class="sd">        1 =&gt; ra = 208/wind</span>
+<span class="sd">        2 =&gt; ra is calculated based on equation 36 in FAO (1990), ANNEX V.</span>
+<span class="sd">    lai_eff: float, optional</span>
+<span class="sd">        0 =&gt; LAI_eff = 0.5 * LAI</span>
+<span class="sd">        1 =&gt; LAI_eff = lai / (0.3 * lai + 1.2)</span>
+<span class="sd">        2 =&gt; LAI_eff = 0.5 * LAI; (LAI&gt;4=4)</span>
+<span class="sd">        3 =&gt; see [zhang_2008]_.</span>
+<span class="sd">    srs: float, optional</span>
+<span class="sd">        Relative sensitivity of rl to Δ[CO2]</span>
+<span class="sd">    co2: float</span>
+<span class="sd">        CO2 concentration [ppm]</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">        pandas.Series containing the calculated evaporation</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    Following [oudin_2005]_.</span>
+
+<span class="sd">    .. math:: ET = \\frac{\\Delta (R_{n}-G)+ 2.5 \\gamma (e_s-e_a) w}</span>
+<span class="sd">        {\\lambda(\\Delta +\\gamma(1+\\frac{r_s}{r_a}))}$</span>
+<span class="sd">        $w=2.6(1+0.53u_2)</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    .. [thom_1977] Thom, A. S., &amp; Oliver, H. R. (1977). On Penman&#39;s equation</span>
+<span class="sd">       for estimating regional evaporation. Quarterly Journal of the Royal</span>
+<span class="sd">       Meteorological Society, 103(436), 345-357.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">tmean</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">tmean</span> <span class="o">=</span> <span class="p">(</span><span class="n">tmax</span> <span class="o">+</span> <span class="n">tmin</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span>
+    <span class="k">if</span> <span class="n">pressure</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">pressure</span> <span class="o">=</span> <span class="n">calc_press</span><span class="p">(</span><span class="n">elevation</span><span class="p">)</span>
+    <span class="n">gamma</span> <span class="o">=</span> <span class="n">calc_psy</span><span class="p">(</span><span class="n">pressure</span><span class="p">)</span>
+    <span class="n">dlt</span> <span class="o">=</span> <span class="n">calc_vpc</span><span class="p">(</span><span class="n">tmean</span><span class="p">)</span>
+    <span class="n">lambd</span> <span class="o">=</span> <span class="n">calc_lambda</span><span class="p">(</span><span class="n">tmean</span><span class="p">)</span>
+
+    <span class="n">ea</span> <span class="o">=</span> <span class="n">calc_ea</span><span class="p">(</span><span class="n">tmean</span><span class="o">=</span><span class="n">tmean</span><span class="p">,</span> <span class="n">tmax</span><span class="o">=</span><span class="n">tmax</span><span class="p">,</span> <span class="n">tmin</span><span class="o">=</span><span class="n">tmin</span><span class="p">,</span> <span class="n">rhmax</span><span class="o">=</span><span class="n">rhmax</span><span class="p">,</span> <span class="n">rhmin</span><span class="o">=</span><span class="n">rhmin</span><span class="p">,</span>
+                 <span class="n">rh</span><span class="o">=</span><span class="n">rh</span><span class="p">)</span>
+    <span class="n">es</span> <span class="o">=</span> <span class="n">calc_es</span><span class="p">(</span><span class="n">tmean</span><span class="o">=</span><span class="n">tmean</span><span class="p">,</span> <span class="n">tmax</span><span class="o">=</span><span class="n">tmax</span><span class="p">,</span> <span class="n">tmin</span><span class="o">=</span><span class="n">tmin</span><span class="p">)</span>
+
+    <span class="n">res_a</span> <span class="o">=</span> <span class="n">calc_res_aero</span><span class="p">(</span><span class="n">wind</span><span class="p">,</span> <span class="n">ra_method</span><span class="o">=</span><span class="n">ra_method</span><span class="p">,</span> <span class="n">croph</span><span class="o">=</span><span class="n">croph</span><span class="p">)</span>
+    <span class="n">res_s</span> <span class="o">=</span> <span class="n">calc_res_surf</span><span class="p">(</span><span class="n">lai</span><span class="o">=</span><span class="n">lai</span><span class="p">,</span> <span class="n">r_s</span><span class="o">=</span><span class="n">r_s</span><span class="p">,</span> <span class="n">r_l</span><span class="o">=</span><span class="n">r_l</span><span class="p">,</span> <span class="n">lai_eff</span><span class="o">=</span><span class="n">lai_eff</span><span class="p">,</span> <span class="n">srs</span><span class="o">=</span><span class="n">srs</span><span class="p">,</span>
+                          <span class="n">co2</span><span class="o">=</span><span class="n">co2</span><span class="p">)</span>
+    <span class="n">gamma1</span> <span class="o">=</span> <span class="n">gamma</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">res_s</span> <span class="o">/</span> <span class="n">res_a</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">rn</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">rns</span> <span class="o">=</span> <span class="n">calc_rad_short</span><span class="p">(</span><span class="n">rs</span><span class="o">=</span><span class="n">rs</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="n">n</span><span class="p">,</span> <span class="n">nn</span><span class="o">=</span><span class="n">nn</span><span class="p">)</span>  <span class="c1"># [MJ/m2/d]</span>
+        <span class="n">rnl</span> <span class="o">=</span> <span class="n">calc_rad_long</span><span class="p">(</span><span class="n">rs</span><span class="o">=</span><span class="n">rs</span><span class="p">,</span> <span class="n">tmean</span><span class="o">=</span><span class="n">tmean</span><span class="p">,</span> <span class="n">tmax</span><span class="o">=</span><span class="n">tmax</span><span class="p">,</span> <span class="n">tmin</span><span class="o">=</span><span class="n">tmin</span><span class="p">,</span>
+                            <span class="n">rhmax</span><span class="o">=</span><span class="n">rhmax</span><span class="p">,</span> <span class="n">rhmin</span><span class="o">=</span><span class="n">rhmin</span><span class="p">,</span> <span class="n">rh</span><span class="o">=</span><span class="n">rh</span><span class="p">,</span>
+                            <span class="n">elevation</span><span class="o">=</span><span class="n">elevation</span><span class="p">,</span> <span class="n">lat</span><span class="o">=</span><span class="n">lat</span><span class="p">,</span> <span class="n">rso</span><span class="o">=</span><span class="n">rso</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="n">b</span><span class="p">,</span>
+                            <span class="n">ea</span><span class="o">=</span><span class="n">ea</span><span class="p">)</span>  <span class="c1"># [MJ/m2/d]</span>
+        <span class="n">rn</span> <span class="o">=</span> <span class="n">rns</span> <span class="o">-</span> <span class="n">rnl</span>
+
+    <span class="n">w</span> <span class="o">=</span> <span class="n">aw</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">bw</span> <span class="o">*</span> <span class="n">wind</span><span class="p">)</span>
+
+    <span class="n">den</span> <span class="o">=</span> <span class="n">lambd</span> <span class="o">*</span> <span class="p">(</span><span class="n">dlt</span> <span class="o">+</span> <span class="n">gamma1</span><span class="p">)</span>
+    <span class="n">num1</span> <span class="o">=</span> <span class="n">dlt</span> <span class="o">*</span> <span class="p">(</span><span class="n">rn</span> <span class="o">-</span> <span class="n">g</span><span class="p">)</span> <span class="o">/</span> <span class="n">den</span>
+    <span class="n">num2</span> <span class="o">=</span> <span class="mf">2.5</span> <span class="o">*</span> <span class="n">gamma</span> <span class="o">*</span> <span class="p">(</span><span class="n">es</span> <span class="o">-</span> <span class="n">ea</span><span class="p">)</span> <span class="o">*</span> <span class="n">w</span> <span class="o">/</span> <span class="n">den</span>
+    <span class="k">return</span> <span class="n">num1</span> <span class="o">+</span> <span class="n">num2</span></div>
+</pre></div>
+
+              </div>
+              
+              
+              <div class='prev-next-bottom'>
+                
+
+              </div>
+              
+          </main>
+          
+
+      </div>
+    </div>
+    
+  <script src="../../_static/js/index.c86189f1ce1b71a67eb6.js"></script>
+
+
+    <footer class="footer mt-5 mt-md-0">
+  <div class="container">
+    
+    <div class="footer-item">
+      <p class="copyright">
+    &copy; Copyright 2021, M. Vremec, R.A. Collenteur.<br/>
+</p>
+    </div>
+    
+    <div class="footer-item">
+      <p class="sphinx-version">
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 3.5.4.<br/>
+</p>
+    </div>
+    
+  </div>
+</footer>
+  </body>
+</html>

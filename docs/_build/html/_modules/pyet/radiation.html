@@ -1,0 +1,556 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>pyet.radiation &#8212; pyet 2020 documentation</title>
+    
+  <link href="../../_static/css/theme.css" rel="stylesheet" />
+  <link href="../../_static/css/index.ee6fb81b276d6fba8a971ad8e9b95dd9.css" rel="stylesheet" />
+
+    
+  <link rel="stylesheet"
+    href="../../_static/vendor/fontawesome/5.13.0/css/all.min.css">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="../../_static/vendor/fontawesome/5.13.0/webfonts/fa-solid-900.woff2">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="../../_static/vendor/fontawesome/5.13.0/webfonts/fa-brands-400.woff2">
+
+    
+      
+
+    
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/basic.css" type="text/css" />
+    
+  <link rel="preload" as="script" href="../../_static/js/index.c86189f1ce1b71a67eb6.js">
+
+    <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="docsearch:language" content="en" />
+    
+  </head>
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="80">
+    
+    <div class="container-fluid" id="banner"></div>
+
+    
+    <nav class="navbar navbar-light navbar-expand-lg bg-light fixed-top bd-navbar" id="navbar-main"><div class="container-xl">
+
+  <div id="navbar-start">
+    
+    
+<a class="navbar-brand" href="../../index.html">
+<p class="title">pyet</p>
+</a>
+
+    
+  </div>
+
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbar-collapsible" aria-controls="navbar-collapsible" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+
+  
+  <div id="navbar-collapsible" class="col-lg-9 collapse navbar-collapse">
+    <div id="navbar-center" class="mr-auto">
+      
+      <div class="navbar-center-item">
+        <ul id="navbar-main-elements" class="navbar-nav">
+    <li class="toctree-l1 nav-item">
+ <a class="reference internal nav-link" href="../../getting_started/index.html">
+  Getting started
+ </a>
+</li>
+
+<li class="toctree-l1 nav-item">
+ <a class="reference internal nav-link" href="../../methods/index.html">
+  Methods
+ </a>
+</li>
+
+<li class="toctree-l1 nav-item">
+ <a class="reference internal nav-link" href="../../api/index.html">
+  API-docs
+ </a>
+</li>
+
+<li class="toctree-l1 nav-item">
+ <a class="reference internal nav-link" href="../../references.html">
+  References
+ </a>
+</li>
+
+    
+</ul>
+      </div>
+      
+    </div>
+
+    <div id="navbar-end">
+      
+      <div class="navbar-end-item">
+        <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
+      </ul>
+      </div>
+      
+    </div>
+  </div>
+</div>
+    </nav>
+    
+
+    <div class="container-xl">
+      <div class="row">
+          
+            
+            <!-- Only show if we have sidebars configured, else just a small margin  -->
+            <div class="col-12 col-md-3 bd-sidebar"><form class="bd-search d-flex align-items-center" action="../../search.html" method="get">
+  <i class="icon fas fa-search"></i>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search the docs ..." aria-label="Search the docs ..." autocomplete="off" >
+</form><nav class="bd-links" id="bd-docs-nav" aria-label="Main navigation">
+  <div class="bd-toc-item active">
+    
+  </div>
+</nav>
+            </div>
+            
+          
+
+          
+          <div class="d-none d-xl-block col-xl-2 bd-toc">
+            
+              
+              <div class="toc-item">
+                
+
+<nav id="bd-toc-nav">
+    
+</nav>
+              </div>
+              
+              <div class="toc-item">
+                
+              </div>
+              
+            
+          </div>
+          
+
+          
+          
+            
+          
+          <main class="col-12 col-md-9 col-xl-7 py-md-5 pl-md-5 pr-md-4 bd-content" role="main">
+              
+              <div>
+                
+  <h1>Source code for pyet.radiation</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;The radiation module contains functions of radiation PET methods</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">numpy</span> <span class="kn">import</span> <span class="n">sqrt</span>
+
+<span class="kn">from</span> <span class="nn">.combination</span> <span class="kn">import</span> <span class="n">calc_lambda</span>
+
+<span class="kn">from</span> <span class="nn">.meteo_utils</span> <span class="kn">import</span> <span class="n">extraterrestrial_r</span><span class="p">,</span> <span class="n">calc_press</span><span class="p">,</span> <span class="n">calc_psy</span><span class="p">,</span> <span class="n">calc_vpc</span>
+
+
+<div class="viewcode-block" id="turc"><a class="viewcode-back" href="../../api/generated/generated/pyet.radiation.turc.html#pyet.radiation.turc">[docs]</a><span class="k">def</span> <span class="nf">turc</span><span class="p">(</span><span class="n">tmean</span><span class="p">,</span> <span class="n">rs</span><span class="p">,</span> <span class="n">rh</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="mf">0.31</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Evaporation calculated according to [turc_1961]_.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    tmean: pandas.Series</span>
+<span class="sd">        average day temperature [°C]</span>
+<span class="sd">    rs: pandas.Series</span>
+<span class="sd">        incoming solar radiation [MJ m-2 d-1]</span>
+<span class="sd">    rh: pandas.Series</span>
+<span class="sd">        mean daily relative humidity [%]</span>
+<span class="sd">    k: float, optional</span>
+<span class="sd">        calibration coefficient [-]</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    pandas.Series containing the calculated evaporation.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; et_turc = turc(tmean, rs, rh)</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    Based on equation 2 and 3 in [xu_2000]_.</span>
+
+<span class="sd">    .. math:: ET=k(\\frac{T_a}{T_a+15})(R_s/4.184 + 50)*4.184; for RH&gt;50</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    .. [turc_1961] Xu, C‐Y., and V. P. Singh. &quot;Evaluation and generalization of</span>
+<span class="sd">       radiation‐based methods for calculating evaporation.&quot; Hydrological</span>
+<span class="sd">       processes 14.2 (2000): 339-349.</span>
+<span class="sd">    .. [xu_2000] Xu, C. Y., &amp; Singh, V. P. (2000). Evaluation and</span>
+<span class="sd">       generalization of radiation‐based methods for calculating evaporation.</span>
+<span class="sd">       Hydrological processes, 14(2), 339-349.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">c</span> <span class="o">=</span> <span class="n">tmean</span> <span class="o">/</span> <span class="n">tmean</span>
+    <span class="n">c</span><span class="p">[</span><span class="n">rh</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">-</span> <span class="p">(</span><span class="mi">50</span> <span class="o">-</span> <span class="n">rh</span><span class="p">)</span> <span class="o">/</span> <span class="mi">70</span>
+    <span class="n">et</span> <span class="o">=</span> <span class="n">k</span> <span class="o">*</span> <span class="n">c</span> <span class="o">*</span> <span class="n">tmean</span> <span class="o">/</span> <span class="p">(</span><span class="n">tmean</span> <span class="o">+</span> <span class="mi">15</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">rs</span> <span class="o">+</span> <span class="mf">2.094</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">et</span></div>
+
+
+<div class="viewcode-block" id="jensen_haise"><a class="viewcode-back" href="../../api/generated/generated/pyet.radiation.jensen_haise.html#pyet.radiation.jensen_haise">[docs]</a><span class="k">def</span> <span class="nf">jensen_haise</span><span class="p">(</span><span class="n">tmean</span><span class="p">,</span> <span class="n">rs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">cr</span><span class="o">=</span><span class="mf">0.025</span><span class="p">,</span> <span class="n">tx</span><span class="o">=-</span><span class="mi">3</span><span class="p">,</span> <span class="n">lat</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Evaporation calculated accordinf to [jensen_haise_1963]_.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    tmean: pandas.Series, optional</span>
+<span class="sd">        average day temperature [°C]</span>
+<span class="sd">    rs: pandas.Series, optional</span>
+<span class="sd">        incoming solar radiation [MJ m-2 d-1]</span>
+<span class="sd">    cr: float, optional</span>
+<span class="sd">        temperature coefficient [-]</span>
+<span class="sd">    tx: float, optional</span>
+<span class="sd">        intercept of the temperature axis [°C]</span>
+<span class="sd">    lat: float</span>
+<span class="sd">        the site latitude [rad]</span>
+<span class="sd">    method: float, optional</span>
+<span class="sd">        1 =&gt; after [jensen_allen_2016]</span>
+<span class="sd">        2 =&gt; after [oudin_2005]</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    pandas.Series containing the calculated evaporation.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; jh_et = jensen_haise(tmean, rs)</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    Based on equation (K-15) in [jensen_allen_2016]_.</span>
+
+<span class="sd">    .. math:: ET = \\frac{C_r(T-T_x)R_s}{\\lambda}</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    .. [jensen_haise_1963] Jensen, M.E., Haise, H.R., 1963. Estimating</span>
+<span class="sd">       evapotranspiration from solar radiation. Journal of Irrigation and</span>
+<span class="sd">       Drainage Division, ASCE 89 (LR4), 15–41.</span>
+<span class="sd">    .. [jensen_allen_2016] Task Committee on Revision of Manual 70. (2016).</span>
+<span class="sd">       Evaporation, evapotranspiration, and irrigation water requirements.</span>
+<span class="sd">       American Society of Civil Engineers.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">lambd</span> <span class="o">=</span> <span class="n">calc_lambda</span><span class="p">(</span><span class="n">tmean</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">method</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">rs</span> <span class="o">/</span> <span class="n">lambd</span> <span class="o">*</span> <span class="n">cr</span> <span class="o">*</span> <span class="p">(</span><span class="n">tmean</span> <span class="o">-</span> <span class="n">tx</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">ra</span> <span class="o">=</span> <span class="n">extraterrestrial_r</span><span class="p">(</span><span class="n">tmean</span><span class="o">.</span><span class="n">index</span><span class="p">,</span> <span class="n">lat</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">ra</span> <span class="o">*</span> <span class="p">(</span><span class="n">tmean</span> <span class="o">+</span> <span class="mi">5</span><span class="p">)</span> <span class="o">/</span> <span class="mi">68</span> <span class="o">/</span> <span class="n">lambd</span></div>
+
+
+<div class="viewcode-block" id="mcguinness_bordne"><a class="viewcode-back" href="../../api/generated/generated/pyet.radiation.mcguinness_bordne.html#pyet.radiation.mcguinness_bordne">[docs]</a><span class="k">def</span> <span class="nf">mcguinness_bordne</span><span class="p">(</span><span class="n">tmean</span><span class="p">,</span> <span class="n">lat</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="mf">0.0147</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Evaporation calculated according to [mcguinness_bordne_1972]_.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    tmean: pandas.Series, optional</span>
+<span class="sd">        average day temperature [°C]</span>
+<span class="sd">    lat: float, optional</span>
+<span class="sd">        the site latitude [rad]</span>
+<span class="sd">    k: float, optional</span>
+<span class="sd">        calibration coefficient [-]</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    pandas.Series containing the calculated evaporation.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; et_mcguinness_bordne = mcguinness_bordne(tmean, lat)</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    Based on equation 13 in [xu_2000]_.</span>
+
+<span class="sd">    .. math:: ET = \\frac{0.0147 R_a (T_a + 5)}{\\lambda}</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    .. [mcguinness_bordne_1972] McGuinness, J. L., &amp; Bordne, E. F. (1972).</span>
+<span class="sd">       A comparison of lysimeter derived potential evapotranspiration with</span>
+<span class="sd">       computed values, Tech. Bull., 1452. Agric. Res. Serv., US Dep. of</span>
+<span class="sd">       Agric., Washington, DC.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">lambd</span> <span class="o">=</span> <span class="n">calc_lambda</span><span class="p">(</span><span class="n">tmean</span><span class="p">)</span>
+    <span class="n">ra</span> <span class="o">=</span> <span class="n">extraterrestrial_r</span><span class="p">(</span><span class="n">tmean</span><span class="o">.</span><span class="n">index</span><span class="p">,</span> <span class="n">lat</span><span class="p">)</span>
+    <span class="n">et</span> <span class="o">=</span> <span class="n">k</span> <span class="o">*</span> <span class="n">ra</span> <span class="o">*</span> <span class="p">(</span><span class="n">tmean</span> <span class="o">+</span> <span class="mi">5</span><span class="p">)</span> <span class="o">/</span> <span class="n">lambd</span>
+    <span class="k">return</span> <span class="n">et</span></div>
+
+
+<div class="viewcode-block" id="hargreaves"><a class="viewcode-back" href="../../api/generated/generated/pyet.radiation.hargreaves.html#pyet.radiation.hargreaves">[docs]</a><span class="k">def</span> <span class="nf">hargreaves</span><span class="p">(</span><span class="n">tindex</span><span class="p">,</span> <span class="n">tmax</span><span class="p">,</span> <span class="n">tmin</span><span class="p">,</span> <span class="n">lat</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Evaporation calculated according to [hargreaves_samani_1982]_.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        tindex: pandas.DatetimeIndex</span>
+<span class="sd">        tmax: pandas.Series, optional</span>
+<span class="sd">            maximum day temperature [°C]</span>
+<span class="sd">        tmin: pandas.Series, optional</span>
+<span class="sd">            minimum day temperature [°C]</span>
+<span class="sd">        lat: float, optional</span>
+<span class="sd">            the site latitude [rad]</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        pandas.Series containing the calculated evaporation.</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; et_har = hargreaves(tindex, tmax, tmin, lat)</span>
+
+<span class="sd">        Notes</span>
+<span class="sd">        -----</span>
+<span class="sd">        Based on equation (8-16) in [jensen_allen_2016]_.</span>
+
+<span class="sd">        .. math:: ET = 0.0023 \\frac{R_a (T_a+17.8)\\sqrt{(T_{max}-T_{min})}}\</span>
+<span class="sd">            {\\lambda}</span>
+
+<span class="sd">        References</span>
+<span class="sd">        ----------</span>
+<span class="sd">        .. [hargreaves_samani_1982] Hargreaves, G. H., &amp; Samani, Z. A. (1982).</span>
+<span class="sd">           Estimating potential evapotranspiration. Journal of the irrigation</span>
+<span class="sd">           and Drainage Division, 108(3), 225-230.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+    <span class="n">tmean</span> <span class="o">=</span> <span class="p">(</span><span class="n">tmax</span> <span class="o">+</span> <span class="n">tmin</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span>
+    <span class="n">lambd</span> <span class="o">=</span> <span class="n">calc_lambda</span><span class="p">(</span><span class="n">tmean</span><span class="p">)</span>
+    <span class="n">ra</span> <span class="o">=</span> <span class="n">extraterrestrial_r</span><span class="p">(</span><span class="n">tindex</span><span class="o">=</span><span class="n">tindex</span><span class="p">,</span> <span class="n">lat</span><span class="o">=</span><span class="n">lat</span><span class="p">)</span>
+    <span class="k">return</span> <span class="mf">0.0023</span> <span class="o">*</span> <span class="p">(</span><span class="n">tmean</span> <span class="o">+</span> <span class="mf">17.8</span><span class="p">)</span> <span class="o">*</span> <span class="n">sqrt</span><span class="p">(</span><span class="n">tmax</span> <span class="o">-</span> <span class="n">tmin</span><span class="p">)</span> <span class="o">*</span> <span class="n">ra</span> <span class="o">/</span> <span class="n">lambd</span></div>
+
+
+<div class="viewcode-block" id="fao_24"><a class="viewcode-back" href="../../api/generated/generated/pyet.radiation.fao_24.html#pyet.radiation.fao_24">[docs]</a><span class="k">def</span> <span class="nf">fao_24</span><span class="p">(</span><span class="n">wind</span><span class="p">,</span> <span class="n">rs</span><span class="p">,</span> <span class="n">rh</span><span class="p">,</span> <span class="n">tmean</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">tmax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">tmin</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">pressure</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+           <span class="n">elevation</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">albedo</span><span class="o">=</span><span class="mf">0.23</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Evaporation calculated according to [jensen_1990]_.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    wind: pandas.Series</span>
+<span class="sd">        mean day wind speed [m/s]</span>
+<span class="sd">    rs: pandas.Series, optional</span>
+<span class="sd">        incoming solar radiation [MJ m-2 d-1]</span>
+<span class="sd">    rh: pandas.Series, optional</span>
+<span class="sd">        mean daily relative humidity [%]</span>
+<span class="sd">    tmean: pandas.Series, optional</span>
+<span class="sd">        average day temperature [°C]</span>
+<span class="sd">    tmax: pandas.Series, optional</span>
+<span class="sd">        maximum day temperature [°C]</span>
+<span class="sd">    tmin: pandas.Series, optional</span>
+<span class="sd">        minimum day temperature [°C]</span>
+<span class="sd">    pressure: float, optional</span>
+<span class="sd">        atmospheric pressure [kPa]</span>
+<span class="sd">    elevation: float, optional</span>
+<span class="sd">        the site elevation [m]</span>
+<span class="sd">    albedo: float, optional</span>
+<span class="sd">        surface albedo [-]</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">        pandas.Series containing the calculated evaporation</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; et_fao24 = fao_24(wind, rs, rh, tmean=tmean, pressure=pressure)</span>
+
+<span class="sd">    .. math:: ET = \\frac{- 0.3 \\Delta + R_s (1-\\alpha) w}\</span>
+<span class="sd">        {\\lambda(\\Delta +\\gamma)}</span>
+<span class="sd">    .. math:: w = 1.066-0.13*\\frac{rh}{100}+0.045*u_2-0.02*\\frac{rh}{100}\</span>
+<span class="sd">        *u_2-3.15*(\\frac{rh}{100})^2-0.0011*u_2$</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    .. [jensen_1990] Jensen, M. E., Burman, R. D., &amp; Allen, R. G. (1990).</span>
+<span class="sd">       Evapotranspiration and irrigation water requirements. ASCE.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">tmean</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">tmean</span> <span class="o">=</span> <span class="p">(</span><span class="n">tmax</span> <span class="o">+</span> <span class="n">tmin</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span>
+    <span class="k">if</span> <span class="n">pressure</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">pressure</span> <span class="o">=</span> <span class="n">calc_press</span><span class="p">(</span><span class="n">elevation</span><span class="p">)</span>
+    <span class="n">gamma</span> <span class="o">=</span> <span class="n">calc_psy</span><span class="p">(</span><span class="n">pressure</span><span class="p">)</span>
+    <span class="n">dlt</span> <span class="o">=</span> <span class="n">calc_vpc</span><span class="p">(</span><span class="n">tmean</span><span class="p">)</span>
+    <span class="n">lambd</span> <span class="o">=</span> <span class="n">calc_lambda</span><span class="p">(</span><span class="n">tmean</span><span class="p">)</span>
+
+    <span class="n">w</span> <span class="o">=</span> <span class="mf">1.066</span> <span class="o">-</span> <span class="mf">0.13</span> <span class="o">*</span> <span class="n">rh</span> <span class="o">/</span> <span class="mi">100</span> <span class="o">+</span> <span class="mf">0.045</span> <span class="o">*</span> <span class="n">wind</span> <span class="o">-</span> <span class="mf">0.02</span> <span class="o">*</span> <span class="n">rh</span> <span class="o">/</span> <span class="mi">100</span> <span class="o">*</span> <span class="n">wind</span> <span class="o">-</span> \
+        <span class="mf">0.315</span> <span class="o">*</span> <span class="p">(</span><span class="n">rh</span> <span class="o">/</span> <span class="mi">100</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">-</span> <span class="mf">0.0011</span> <span class="o">*</span> <span class="n">wind</span>
+
+    <span class="k">return</span> <span class="o">-</span><span class="mf">0.3</span> <span class="o">+</span> <span class="n">dlt</span> <span class="o">/</span> <span class="p">(</span><span class="n">dlt</span> <span class="o">+</span> <span class="n">gamma</span><span class="p">)</span> <span class="o">*</span> <span class="n">rs</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">albedo</span><span class="p">)</span> <span class="o">*</span> <span class="n">w</span> <span class="o">/</span> <span class="n">lambd</span></div>
+
+
+<div class="viewcode-block" id="abtew"><a class="viewcode-back" href="../../api/generated/generated/pyet.radiation.abtew.html#pyet.radiation.abtew">[docs]</a><span class="k">def</span> <span class="nf">abtew</span><span class="p">(</span><span class="n">tmean</span><span class="p">,</span> <span class="n">rs</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="mf">0.53</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Evaporation calculated according to [abtew_1996]_.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    tmean: pandas.Series, optional</span>
+<span class="sd">        average day temperature [°C]</span>
+<span class="sd">    rs: pandas.Series, optional</span>
+<span class="sd">        incoming solar radiation [MJ m-2 d-1]</span>
+<span class="sd">    k: float, optional</span>
+<span class="sd">        calibration coefficient [-]</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    pandas.Series containing the calculated evaporation.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; et_abtew = abtew(tmean, rs)</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    Based on equation 14 in [xu_2000]_.</span>
+
+<span class="sd">    .. math:: ET = \\frac{k R_s}{\\lambda}</span>
+
+<span class="sd">    References</span>
+<span class="sd">    -----</span>
+<span class="sd">    .. [abtew_1996] Abtew, W. (1996). Evapotranspiration measurements and</span>
+<span class="sd">       modeling for three wetland systems in South Florida 1. JAWRA Journal of</span>
+<span class="sd">       the American Water Resources Association, 32(3), 465-473.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">lambd</span> <span class="o">=</span> <span class="n">calc_lambda</span><span class="p">(</span><span class="n">tmean</span><span class="p">)</span>
+    <span class="n">et</span> <span class="o">=</span> <span class="n">k</span> <span class="o">*</span> <span class="n">rs</span> <span class="o">/</span> <span class="n">lambd</span>
+    <span class="k">return</span> <span class="n">et</span></div>
+
+
+<div class="viewcode-block" id="makkink"><a class="viewcode-back" href="../../api/generated/generated/pyet.radiation.makkink.html#pyet.radiation.makkink">[docs]</a><span class="k">def</span> <span class="nf">makkink</span><span class="p">(</span><span class="n">rs</span><span class="p">,</span> <span class="n">tmean</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">tmax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">tmin</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">pressure</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">elevation</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;&quot;Evaporation calculated according to [makkink1957]_.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    rs: pandas.Series, optional</span>
+<span class="sd">        incoming solar radiation [MJ m-2 d-1]</span>
+<span class="sd">    tmean: pandas.Series, optional</span>
+<span class="sd">        average day temperature [°C]</span>
+<span class="sd">    tmax: pandas.Series, optional</span>
+<span class="sd">        maximum day temperature [°C]</span>
+<span class="sd">    tmin: pandas.Series, optional</span>
+<span class="sd">        minimum day temperature [°C]</span>
+<span class="sd">    pressure: float, optional</span>
+<span class="sd">        atmospheric pressure [kPa]</span>
+<span class="sd">    elevation: float, optional</span>
+<span class="sd">        the site elevation [m]</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">        pandas.Series containing the calculated evaporation</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; mak = makkink(rs=rs, tmean=tmean)</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+
+<span class="sd">    .. math:: ET = \\frac{0.65 \\Delta (R_s)}{\\lambda(\\Delta +\\gamma)}</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    .. [makkink1957] Makkink, G.F., 1957. Testing the Penman formula by means</span>
+<span class="sd">        of lysimeters. Journal of the Institution of Water Engineers 11,</span>
+<span class="sd">        277–288.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">tmean</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">tmean</span> <span class="o">=</span> <span class="p">(</span><span class="n">tmax</span> <span class="o">+</span> <span class="n">tmin</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span>
+    <span class="k">if</span> <span class="n">pressure</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">pressure</span> <span class="o">=</span> <span class="n">calc_press</span><span class="p">(</span><span class="n">elevation</span><span class="p">)</span>
+    <span class="n">gamma</span> <span class="o">=</span> <span class="n">calc_psy</span><span class="p">(</span><span class="n">pressure</span><span class="p">)</span>
+    <span class="n">dlt</span> <span class="o">=</span> <span class="n">calc_vpc</span><span class="p">(</span><span class="n">tmean</span><span class="p">)</span>
+    <span class="n">lambd</span> <span class="o">=</span> <span class="n">calc_lambda</span><span class="p">(</span><span class="n">tmean</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="mf">0.65</span> <span class="o">*</span> <span class="n">dlt</span> <span class="o">/</span> <span class="p">(</span><span class="n">dlt</span> <span class="o">+</span> <span class="n">gamma</span><span class="p">)</span> <span class="o">*</span> <span class="n">rs</span> <span class="o">/</span> <span class="n">lambd</span></div>
+
+
+<div class="viewcode-block" id="oudin"><a class="viewcode-back" href="../../api/generated/generated/pyet.radiation.oudin.html#pyet.radiation.oudin">[docs]</a><span class="k">def</span> <span class="nf">oudin</span><span class="p">(</span><span class="n">tmean</span><span class="p">,</span> <span class="n">lat</span><span class="p">,</span> <span class="n">k1</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">k2</span><span class="o">=</span><span class="mi">5</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Evaporation calculated according to [oudin_2005]_.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    tmean: pandas.Series, optional</span>
+<span class="sd">        average day temperature [°C]</span>
+<span class="sd">    lat: float, optional</span>
+<span class="sd">        the site latitude [rad]</span>
+<span class="sd">    k1: float, optional</span>
+<span class="sd">        calibration coefficient [-]</span>
+<span class="sd">    k2: float, optional</span>
+<span class="sd">        calibration coefficient [-]</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    pandas.Series containing the calculated evaporation.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; et_oudin = oudin(tmean, lat)</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    Based on equation 3 in [oudin_2005]_.</span>
+
+<span class="sd">    .. math:: ET = \\frac{R_a (T_a +5)}{\\lambda 100}; if T_a+5&gt;0</span>
+<span class="sd">        else: P = 0</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">lambd</span> <span class="o">=</span> <span class="n">calc_lambda</span><span class="p">(</span><span class="n">tmean</span><span class="p">)</span>
+    <span class="n">ra</span> <span class="o">=</span> <span class="n">extraterrestrial_r</span><span class="p">(</span><span class="n">tmean</span><span class="o">.</span><span class="n">index</span><span class="p">,</span> <span class="n">lat</span><span class="p">)</span>
+    <span class="n">et</span> <span class="o">=</span> <span class="n">ra</span> <span class="o">*</span> <span class="p">(</span><span class="n">tmean</span> <span class="o">+</span> <span class="n">k2</span><span class="p">)</span> <span class="o">/</span> <span class="n">lambd</span> <span class="o">/</span> <span class="n">k1</span>
+    <span class="n">et</span><span class="p">[(</span><span class="n">tmean</span> <span class="o">+</span> <span class="n">k2</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">return</span> <span class="n">et</span></div>
+</pre></div>
+
+              </div>
+              
+              
+              <div class='prev-next-bottom'>
+                
+
+              </div>
+              
+          </main>
+          
+
+      </div>
+    </div>
+    
+  <script src="../../_static/js/index.c86189f1ce1b71a67eb6.js"></script>
+
+
+    <footer class="footer mt-5 mt-md-0">
+  <div class="container">
+    
+    <div class="footer-item">
+      <p class="copyright">
+    &copy; Copyright 2021, M. Vremec, R.A. Collenteur.<br/>
+</p>
+    </div>
+    
+    <div class="footer-item">
+      <p class="sphinx-version">
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 3.5.4.<br/>
+</p>
+    </div>
+    
+  </div>
+</footer>
+  </body>
+</html>

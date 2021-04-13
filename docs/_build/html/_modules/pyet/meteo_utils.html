@@ -1,0 +1,747 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>pyet.meteo_utils &#8212; pyet 2020 documentation</title>
+    
+  <link href="../../_static/css/theme.css" rel="stylesheet" />
+  <link href="../../_static/css/index.ee6fb81b276d6fba8a971ad8e9b95dd9.css" rel="stylesheet" />
+
+    
+  <link rel="stylesheet"
+    href="../../_static/vendor/fontawesome/5.13.0/css/all.min.css">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="../../_static/vendor/fontawesome/5.13.0/webfonts/fa-solid-900.woff2">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="../../_static/vendor/fontawesome/5.13.0/webfonts/fa-brands-400.woff2">
+
+    
+      
+
+    
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/basic.css" type="text/css" />
+    
+  <link rel="preload" as="script" href="../../_static/js/index.c86189f1ce1b71a67eb6.js">
+
+    <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="docsearch:language" content="en" />
+    
+  </head>
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="80">
+    
+    <div class="container-fluid" id="banner"></div>
+
+    
+    <nav class="navbar navbar-light navbar-expand-lg bg-light fixed-top bd-navbar" id="navbar-main"><div class="container-xl">
+
+  <div id="navbar-start">
+    
+    
+<a class="navbar-brand" href="../../index.html">
+<p class="title">pyet</p>
+</a>
+
+    
+  </div>
+
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbar-collapsible" aria-controls="navbar-collapsible" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+
+  
+  <div id="navbar-collapsible" class="col-lg-9 collapse navbar-collapse">
+    <div id="navbar-center" class="mr-auto">
+      
+      <div class="navbar-center-item">
+        <ul id="navbar-main-elements" class="navbar-nav">
+    <li class="toctree-l1 nav-item">
+ <a class="reference internal nav-link" href="../../getting_started/index.html">
+  Getting started
+ </a>
+</li>
+
+<li class="toctree-l1 nav-item">
+ <a class="reference internal nav-link" href="../../methods/index.html">
+  Methods
+ </a>
+</li>
+
+<li class="toctree-l1 nav-item">
+ <a class="reference internal nav-link" href="../../api/index.html">
+  API-docs
+ </a>
+</li>
+
+<li class="toctree-l1 nav-item">
+ <a class="reference internal nav-link" href="../../references.html">
+  References
+ </a>
+</li>
+
+    
+</ul>
+      </div>
+      
+    </div>
+
+    <div id="navbar-end">
+      
+      <div class="navbar-end-item">
+        <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
+      </ul>
+      </div>
+      
+    </div>
+  </div>
+</div>
+    </nav>
+    
+
+    <div class="container-xl">
+      <div class="row">
+          
+            
+            <!-- Only show if we have sidebars configured, else just a small margin  -->
+            <div class="col-12 col-md-3 bd-sidebar"><form class="bd-search d-flex align-items-center" action="../../search.html" method="get">
+  <i class="icon fas fa-search"></i>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search the docs ..." aria-label="Search the docs ..." autocomplete="off" >
+</form><nav class="bd-links" id="bd-docs-nav" aria-label="Main navigation">
+  <div class="bd-toc-item active">
+    
+  </div>
+</nav>
+            </div>
+            
+          
+
+          
+          <div class="d-none d-xl-block col-xl-2 bd-toc">
+            
+              
+              <div class="toc-item">
+                
+
+<nav id="bd-toc-nav">
+    
+</nav>
+              </div>
+              
+              <div class="toc-item">
+                
+              </div>
+              
+            
+          </div>
+          
+
+          
+          
+            
+          
+          <main class="col-12 col-md-9 col-xl-7 py-md-5 pl-md-5 pr-md-4 bd-content" role="main">
+              
+              <div>
+                
+  <h1>Source code for pyet.meteo_utils</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;The meteo_utils module contains utility functions for meteorological data</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">numpy</span> <span class="kn">import</span> <span class="n">tan</span><span class="p">,</span> <span class="n">cos</span><span class="p">,</span> <span class="n">pi</span><span class="p">,</span> <span class="n">sin</span><span class="p">,</span> <span class="n">arccos</span><span class="p">,</span> <span class="n">clip</span><span class="p">,</span> <span class="n">maximum</span><span class="p">,</span> <span class="n">exp</span>
+<span class="kn">from</span> <span class="nn">pandas</span> <span class="kn">import</span> <span class="n">to_numeric</span>
+
+<span class="c1"># Specific heat of air [MJ kg-1 °C-1]</span>
+<span class="n">CP</span> <span class="o">=</span> <span class="mf">1.013</span> <span class="o">*</span> <span class="mi">10</span> <span class="o">**</span> <span class="o">-</span><span class="mi">3</span>
+
+
+<div class="viewcode-block" id="calc_psy"><a class="viewcode-back" href="../../api/generated/generated/pyet.meteo_utils.calc_psy.html#pyet.meteo_utils.calc_psy">[docs]</a><span class="k">def</span> <span class="nf">calc_psy</span><span class="p">(</span><span class="n">pressure</span><span class="p">,</span> <span class="n">tmean</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Psychrometric constant [kPa °C-1].</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    pressure: float</span>
+<span class="sd">        atmospheric pressure [kPa].</span>
+<span class="sd">    tmean: float, optional</span>
+<span class="sd">        average day temperature [°C].</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">        pandas.Series containing the Psychrometric constant [kPa °C-1].</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; psy = calc_psy(pressure, tmean)</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    if tmean is none:</span>
+<span class="sd">        Based on equation 8 in [allen_1998]_.</span>
+<span class="sd">    elif rh is None:</span>
+<span class="sd">        From FAO (1990), ANNEX V, eq. 4.</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    .. [allen_1998] Allen, R. G., Pereira, L. S., Raes, D., &amp; Smith, M. (1998).</span>
+<span class="sd">       Crop evapotranspiration-Guidelines for computing crop water</span>
+<span class="sd">       requirements-FAO Irrigation and drainage paper 56. Fao, Rome, 300.</span>
+<span class="sd">       (http://www.fao.org/3/x0490e/x0490e06.htm#TopOfPage).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">tmean</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mf">0.000665</span> <span class="o">*</span> <span class="n">pressure</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">lambd</span> <span class="o">=</span> <span class="n">calc_lambda</span><span class="p">(</span><span class="n">tmean</span><span class="p">)</span>  <span class="c1"># MJ kg-1</span>
+        <span class="k">return</span> <span class="n">CP</span> <span class="o">*</span> <span class="n">pressure</span> <span class="o">/</span> <span class="p">(</span><span class="mf">0.622</span> <span class="o">*</span> <span class="n">lambd</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="calc_vpc"><a class="viewcode-back" href="../../api/generated/generated/pyet.meteo_utils.calc_vpc.html#pyet.meteo_utils.calc_vpc">[docs]</a><span class="k">def</span> <span class="nf">calc_vpc</span><span class="p">(</span><span class="n">tmean</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Slope of saturation vapour pressure curve at air Temperature [kPa °C-1].</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    tmean: pandas.Series, optional</span>
+<span class="sd">        average day temperature [°C]</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">        pandas.Series containing the calculated Saturation vapour pressure</span>
+<span class="sd">        [kPa °C-1].</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; vpc = calc_vpc(tmean)</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    Based on equation 13. in [allen_1998]_.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">es</span> <span class="o">=</span> <span class="n">calc_e0</span><span class="p">(</span><span class="n">tmean</span><span class="p">)</span>
+    <span class="k">return</span> <span class="mi">4098</span> <span class="o">*</span> <span class="n">es</span> <span class="o">/</span> <span class="p">(</span><span class="n">tmean</span> <span class="o">+</span> <span class="mf">237.3</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span></div>
+
+
+<div class="viewcode-block" id="calc_lambda"><a class="viewcode-back" href="../../api/generated/generated/pyet.meteo_utils.calc_lambda.html#pyet.meteo_utils.calc_lambda">[docs]</a><span class="k">def</span> <span class="nf">calc_lambda</span><span class="p">(</span><span class="n">tmean</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Latent Heat of Vaporization [MJ kg-1].</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    tmean: pandas.Series/float, optional</span>
+<span class="sd">        average day temperature [°C]</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    pandas.Series containing the calculated Latent Heat of Vaporization</span>
+<span class="sd">        [MJ kg-1].</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; lambd = calc_lambda(tmean)</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    Based on equation (3-1) in [allen_1998]_.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="mf">2.501</span> <span class="o">-</span> <span class="mf">0.002361</span> <span class="o">*</span> <span class="n">tmean</span></div>
+
+
+<div class="viewcode-block" id="calc_press"><a class="viewcode-back" href="../../api/generated/generated/pyet.meteo_utils.calc_press.html#pyet.meteo_utils.calc_press">[docs]</a><span class="k">def</span> <span class="nf">calc_press</span><span class="p">(</span><span class="n">elevation</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Atmospheric pressure [kPa].</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    elevation: float, optional</span>
+<span class="sd">        the site elevation [m]</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    pandas.Series containing the calculated atmospheric pressure [kPa].</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; pressure = calc_press(elevation)</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    Based on equation 7 in [allen_1998]_.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="mf">101.3</span> <span class="o">*</span> <span class="p">((</span><span class="mi">293</span> <span class="o">-</span> <span class="mf">0.0065</span> <span class="o">*</span> <span class="n">elevation</span><span class="p">)</span> <span class="o">/</span> <span class="mi">293</span><span class="p">)</span> <span class="o">**</span> <span class="mf">5.26</span></div>
+
+
+<div class="viewcode-block" id="calc_rho"><a class="viewcode-back" href="../../api/generated/generated/pyet.meteo_utils.calc_rho.html#pyet.meteo_utils.calc_rho">[docs]</a><span class="k">def</span> <span class="nf">calc_rho</span><span class="p">(</span><span class="n">pressure</span><span class="p">,</span> <span class="n">tmean</span><span class="p">,</span> <span class="n">ea</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;atmospheric air density calculated according to [allen_1998]_..</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    pressure: pandas.Series/float</span>
+<span class="sd">        atmospheric pressure [kPa]</span>
+<span class="sd">    tmean: pandas.Series/float, optional</span>
+<span class="sd">        average day temperature [°C]</span>
+<span class="sd">    ea: pandas.Series/float, optional</span>
+<span class="sd">        actual vapour pressure [kPa]</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    pandas.Series containing the calculated mean air density</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; rho = calc_rho(pressure, tmean, ea)</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    Based on equation (3-5) in [allen_1998]_.</span>
+
+<span class="sd">    .. math:: rho = 3.486 \\frac{P}{T_{KV}}</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">tkv</span> <span class="o">=</span> <span class="p">(</span><span class="mf">273.16</span> <span class="o">+</span> <span class="n">tmean</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="mf">0.378</span> <span class="o">*</span> <span class="n">ea</span> <span class="o">/</span> <span class="n">pressure</span><span class="p">)</span> <span class="o">**</span> <span class="o">-</span><span class="mi">1</span>
+    <span class="k">return</span> <span class="mf">3.486</span> <span class="o">*</span> <span class="n">pressure</span> <span class="o">/</span> <span class="n">tkv</span></div>
+
+
+<div class="viewcode-block" id="calc_e0"><a class="viewcode-back" href="../../api/generated/generated/pyet.meteo_utils.calc_e0.html#pyet.meteo_utils.calc_e0">[docs]</a><span class="k">def</span> <span class="nf">calc_e0</span><span class="p">(</span><span class="n">tmean</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Saturation vapor pressure at the air temperature T [kPa].</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    tmean: pandas.Series, optional</span>
+<span class="sd">        average day temperature [°C]</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    pandas.Series containing the calculated saturation vapor pressure at the</span>
+<span class="sd">        air temperature tmean [kPa].</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; e0 = calc_e0(tmean)</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    Based on equation 11 in [allen_1998]_.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="mf">0.6108</span> <span class="o">*</span> <span class="n">exp</span><span class="p">(</span><span class="mf">17.27</span> <span class="o">*</span> <span class="n">tmean</span> <span class="o">/</span> <span class="p">(</span><span class="n">tmean</span> <span class="o">+</span> <span class="mf">237.3</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="calc_es"><a class="viewcode-back" href="../../api/generated/generated/pyet.meteo_utils.calc_es.html#pyet.meteo_utils.calc_es">[docs]</a><span class="k">def</span> <span class="nf">calc_es</span><span class="p">(</span><span class="n">tmean</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">tmax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">tmin</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Saturation vapor pressure [kPa].</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    tmean: pandas.Series, optional</span>
+<span class="sd">        average day temperature [°C]</span>
+<span class="sd">    tmax: pandas.Series, optional</span>
+<span class="sd">        maximum day temperature [°C]</span>
+<span class="sd">    tmin: pandas.Series, optional</span>
+<span class="sd">        minimum day temperature [°C]</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    pandas.Series containing the calculated saturation vapor pressure [kPa].</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; es = calc_es(tmean)</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    Based on equation 11, 12 in [allen_1998]_.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">tmax</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">eamax</span> <span class="o">=</span> <span class="n">calc_e0</span><span class="p">(</span><span class="n">tmax</span><span class="p">)</span>
+        <span class="n">eamin</span> <span class="o">=</span> <span class="n">calc_e0</span><span class="p">(</span><span class="n">tmin</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">eamax</span> <span class="o">+</span> <span class="n">eamin</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">calc_e0</span><span class="p">(</span><span class="n">tmean</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="calc_ea"><a class="viewcode-back" href="../../api/generated/generated/pyet.meteo_utils.calc_ea.html#pyet.meteo_utils.calc_ea">[docs]</a><span class="k">def</span> <span class="nf">calc_ea</span><span class="p">(</span><span class="n">tmean</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">tmax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">tmin</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">rhmax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">rhmin</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">rh</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Actual vapor pressure [kPa].</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    tmean: pandas.Series, optional</span>
+<span class="sd">        average day temperature [°C]</span>
+<span class="sd">    tmax: pandas.Series, optional</span>
+<span class="sd">        maximum day temperature [°C]</span>
+<span class="sd">    tmin: pandas.Series, optional</span>
+<span class="sd">        minimum day temperature [°C]</span>
+<span class="sd">    rhmax: pandas.Series, optional</span>
+<span class="sd">        maximum daily relative humidity [%]</span>
+<span class="sd">    rhmin: pandas.Series, optional</span>
+<span class="sd">        mainimum daily relative humidity [%]</span>
+<span class="sd">    rh: pandas.Series, optional</span>
+<span class="sd">        mean daily relative humidity [%]</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    pandas.Series containing the calculated actual vapor pressure [kPa].</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; ea = calc_ea(tmean, rh)</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    Based on equation 17, 19 in [allen_1998]_.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">rhmax</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>  <span class="c1"># eq. 11</span>
+        <span class="n">esmax</span> <span class="o">=</span> <span class="n">calc_e0</span><span class="p">(</span><span class="n">tmax</span><span class="p">)</span>
+        <span class="n">esmin</span> <span class="o">=</span> <span class="n">calc_e0</span><span class="p">(</span><span class="n">tmin</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">esmin</span> <span class="o">*</span> <span class="n">rhmax</span> <span class="o">/</span> <span class="mi">200</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="n">esmax</span> <span class="o">*</span> <span class="n">rhmin</span> <span class="o">/</span> <span class="mi">200</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>  <span class="c1"># eq. 14</span>
+        <span class="k">if</span> <span class="n">tmax</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">es</span> <span class="o">=</span> <span class="n">calc_es</span><span class="p">(</span><span class="n">tmax</span><span class="o">=</span><span class="n">tmax</span><span class="p">,</span> <span class="n">tmin</span><span class="o">=</span><span class="n">tmin</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">es</span> <span class="o">=</span> <span class="n">calc_e0</span><span class="p">(</span><span class="n">tmean</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">rh</span> <span class="o">/</span> <span class="mi">100</span> <span class="o">*</span> <span class="n">es</span></div>
+
+
+<div class="viewcode-block" id="day_of_year"><a class="viewcode-back" href="../../api/generated/generated/pyet.meteo_utils.day_of_year.html#pyet.meteo_utils.day_of_year">[docs]</a><span class="k">def</span> <span class="nf">day_of_year</span><span class="p">(</span><span class="n">tindex</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Day of the year (1-365) based on pandas.Index</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    tindex: pandas.Index</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    array of with ints specifying day of year.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">to_numeric</span><span class="p">(</span><span class="n">tindex</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%j&#39;</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="daylight_hours"><a class="viewcode-back" href="../../api/generated/generated/pyet.meteo_utils.daylight_hours.html#pyet.meteo_utils.daylight_hours">[docs]</a><span class="k">def</span> <span class="nf">daylight_hours</span><span class="p">(</span><span class="n">tindex</span><span class="p">,</span> <span class="n">lat</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Daylight hours [hour].</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    tindex: pandas.Index</span>
+<span class="sd">    lat: float</span>
+<span class="sd">        the site latitude [rad]</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    pandas.Series containing the calculated daylight hours [hour]</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    Based on equation 34 in [allen_1998]_.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">j</span> <span class="o">=</span> <span class="n">day_of_year</span><span class="p">(</span><span class="n">tindex</span><span class="p">)</span>
+    <span class="n">sol_dec</span> <span class="o">=</span> <span class="n">solar_declination</span><span class="p">(</span><span class="n">j</span><span class="p">)</span>
+    <span class="n">sangle</span> <span class="o">=</span> <span class="n">sunset_angle</span><span class="p">(</span><span class="n">sol_dec</span><span class="p">,</span> <span class="n">lat</span><span class="p">)</span>
+    <span class="k">return</span> <span class="mi">24</span> <span class="o">/</span> <span class="n">pi</span> <span class="o">*</span> <span class="n">sangle</span></div>
+
+
+<div class="viewcode-block" id="sunset_angle"><a class="viewcode-back" href="../../api/generated/generated/pyet.meteo_utils.sunset_angle.html#pyet.meteo_utils.sunset_angle">[docs]</a><span class="k">def</span> <span class="nf">sunset_angle</span><span class="p">(</span><span class="n">sol_dec</span><span class="p">,</span> <span class="n">lat</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Sunset hour angle from latitude and solar declination - daily [rad].</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    sol_dec: pandas.Series</span>
+<span class="sd">        solar declination [rad]</span>
+<span class="sd">    lat: float</span>
+<span class="sd">        the site latitude [rad]</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    pandas.Series containing the calculated sunset hour angle - daily [rad]</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    Based on equations 25 in [allen_1998]_.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">arccos</span><span class="p">(</span><span class="o">-</span><span class="n">tan</span><span class="p">(</span><span class="n">sol_dec</span><span class="p">)</span> <span class="o">*</span> <span class="n">tan</span><span class="p">(</span><span class="n">lat</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="sunset_angle_hour"><a class="viewcode-back" href="../../api/generated/generated/pyet.meteo_utils.sunset_angle_hour.html#pyet.meteo_utils.sunset_angle_hour">[docs]</a><span class="k">def</span> <span class="nf">sunset_angle_hour</span><span class="p">(</span><span class="n">tindex</span><span class="p">,</span> <span class="n">sol_dec</span><span class="p">,</span> <span class="n">lat</span><span class="p">,</span> <span class="n">lz</span><span class="p">,</span> <span class="n">lm</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Sunset hour angle from latitude and solar declination - hourly [rad].</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    tindex: pandas.Index</span>
+<span class="sd">    sol_dec: pandas.Series</span>
+<span class="sd">        solar declination [rad]</span>
+<span class="sd">    lat: float</span>
+<span class="sd">        the site latitude [rad]</span>
+<span class="sd">    lz: float</span>
+<span class="sd">        longitude of the local time zone [°]</span>
+<span class="sd">    lm: float</span>
+<span class="sd">        longitude of the measurement site [°]</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    pandas.Series containing the calculated sunset hour angle - hourly [rad]</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    Based on equations 29, 30, 31, 32, 33 in [allen_1998]_.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">j</span> <span class="o">=</span> <span class="n">day_of_year</span><span class="p">(</span><span class="n">tindex</span><span class="p">)</span>
+    <span class="n">b</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">pi</span> <span class="o">*</span> <span class="p">(</span><span class="n">j</span> <span class="o">-</span> <span class="mi">81</span><span class="p">)</span> <span class="o">/</span> <span class="mi">364</span>
+    <span class="n">sc</span> <span class="o">=</span> <span class="mf">0.1645</span> <span class="o">*</span> <span class="n">sin</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">b</span><span class="p">)</span> <span class="o">-</span> <span class="mf">0.1255</span> <span class="o">*</span> <span class="n">cos</span><span class="p">(</span><span class="n">b</span><span class="p">)</span> <span class="o">-</span> <span class="mf">0.025</span> <span class="o">*</span> <span class="n">sin</span><span class="p">(</span><span class="n">b</span><span class="p">)</span>
+    <span class="n">t</span> <span class="o">=</span> <span class="n">tindex</span><span class="o">.</span><span class="n">hour</span> <span class="o">+</span> <span class="mf">0.5</span>
+    <span class="n">sol_t</span> <span class="o">=</span> <span class="n">t</span> <span class="o">+</span> <span class="mf">0.06667</span> <span class="o">*</span> <span class="p">(</span><span class="n">lz</span> <span class="o">-</span> <span class="n">lm</span><span class="p">)</span> <span class="o">+</span> <span class="n">sc</span> <span class="o">-</span> <span class="mi">12</span>  <span class="c1"># equation 31</span>
+    <span class="n">omega</span> <span class="o">=</span> <span class="n">pi</span> <span class="o">/</span> <span class="mi">12</span> <span class="o">*</span> <span class="n">sol_t</span>
+
+    <span class="n">omega1</span> <span class="o">=</span> <span class="n">omega</span> <span class="o">-</span> <span class="n">pi</span> <span class="o">/</span> <span class="mi">24</span>
+    <span class="n">omega2</span> <span class="o">=</span> <span class="n">omega</span> <span class="o">+</span> <span class="n">pi</span> <span class="o">/</span> <span class="mi">24</span>
+
+    <span class="n">omegas</span> <span class="o">=</span> <span class="n">arccos</span><span class="p">(</span><span class="o">-</span><span class="n">tan</span><span class="p">(</span><span class="n">lat</span><span class="p">)</span> <span class="o">*</span> <span class="n">tan</span><span class="p">(</span><span class="n">sol_dec</span><span class="p">))</span>
+
+    <span class="n">omega1</span> <span class="o">=</span> <span class="n">clip</span><span class="p">(</span><span class="n">omega1</span><span class="p">,</span> <span class="o">-</span><span class="n">omegas</span><span class="p">,</span> <span class="n">omegas</span><span class="p">)</span>
+    <span class="n">omega2</span> <span class="o">=</span> <span class="n">clip</span><span class="p">(</span><span class="n">omega2</span><span class="p">,</span> <span class="o">-</span><span class="n">omegas</span><span class="p">,</span> <span class="n">omegas</span><span class="p">)</span>
+    <span class="n">omega1</span> <span class="o">=</span> <span class="n">maximum</span><span class="p">(</span><span class="n">omega1</span><span class="p">,</span> <span class="n">omega1</span><span class="p">,</span> <span class="p">)</span>
+    <span class="n">omega1</span> <span class="o">=</span> <span class="n">clip</span><span class="p">(</span><span class="n">omega1</span><span class="p">,</span> <span class="o">-</span><span class="mi">100000000</span><span class="p">,</span> <span class="n">omega2</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">omega2</span><span class="p">,</span> <span class="n">omega1</span></div>
+
+
+<div class="viewcode-block" id="solar_declination"><a class="viewcode-back" href="../../api/generated/generated/pyet.meteo_utils.solar_declination.html#pyet.meteo_utils.solar_declination">[docs]</a><span class="k">def</span> <span class="nf">solar_declination</span><span class="p">(</span><span class="n">j</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Solar declination from day of year [rad].</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    j: array.py</span>
+<span class="sd">        day of the year (1-365)</span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    array.py of solar declination [rad].</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -------</span>
+<span class="sd">    Based on equations 24 in [allen_1998]_.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="mf">0.409</span> <span class="o">*</span> <span class="n">sin</span><span class="p">(</span><span class="mf">2.</span> <span class="o">*</span> <span class="n">pi</span> <span class="o">/</span> <span class="mf">365.</span> <span class="o">*</span> <span class="n">j</span> <span class="o">-</span> <span class="mf">1.39</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="relative_distance"><a class="viewcode-back" href="../../api/generated/generated/pyet.meteo_utils.relative_distance.html#pyet.meteo_utils.relative_distance">[docs]</a><span class="k">def</span> <span class="nf">relative_distance</span><span class="p">(</span><span class="n">j</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Inverse relative distance between earth and sun from day of the year.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    j: array.py</span>
+<span class="sd">        day of the year (1-365)</span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    array.py specifyng relative distance between earth and sun.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -------</span>
+<span class="sd">    Based on equations 23 in [allen_1998]_.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="mi">1</span> <span class="o">+</span> <span class="mf">0.033</span> <span class="o">*</span> <span class="n">cos</span><span class="p">(</span><span class="mf">2.</span> <span class="o">*</span> <span class="n">pi</span> <span class="o">/</span> <span class="mf">365.</span> <span class="o">*</span> <span class="n">j</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="extraterrestrial_r"><a class="viewcode-back" href="../../api/generated/generated/pyet.meteo_utils.extraterrestrial_r.html#pyet.meteo_utils.extraterrestrial_r">[docs]</a><span class="k">def</span> <span class="nf">extraterrestrial_r</span><span class="p">(</span><span class="n">tindex</span><span class="p">,</span> <span class="n">lat</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Extraterrestrial daily radiation [MJ m-2 d-1].</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    tindex: pandas.Index</span>
+<span class="sd">    lat: float</span>
+<span class="sd">        the site latitude [rad]</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    pandas.Series containing the calculated extraterrestrial radiation</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    Based on equation 21 in [allen_1998]_.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">j</span> <span class="o">=</span> <span class="n">day_of_year</span><span class="p">(</span><span class="n">tindex</span><span class="p">)</span>
+    <span class="n">dr</span> <span class="o">=</span> <span class="n">relative_distance</span><span class="p">(</span><span class="n">j</span><span class="p">)</span>
+    <span class="n">sol_dec</span> <span class="o">=</span> <span class="n">solar_declination</span><span class="p">(</span><span class="n">j</span><span class="p">)</span>
+
+    <span class="n">omega</span> <span class="o">=</span> <span class="n">sunset_angle</span><span class="p">(</span><span class="n">sol_dec</span><span class="p">,</span> <span class="n">lat</span><span class="p">)</span>
+    <span class="n">xx</span> <span class="o">=</span> <span class="n">sin</span><span class="p">(</span><span class="n">sol_dec</span><span class="p">)</span> <span class="o">*</span> <span class="n">sin</span><span class="p">(</span><span class="n">lat</span><span class="p">)</span>
+    <span class="n">yy</span> <span class="o">=</span> <span class="n">cos</span><span class="p">(</span><span class="n">sol_dec</span><span class="p">)</span> <span class="o">*</span> <span class="n">cos</span><span class="p">(</span><span class="n">lat</span><span class="p">)</span>
+    <span class="k">return</span> <span class="mf">118.08</span> <span class="o">/</span> <span class="mf">3.141592654</span> <span class="o">*</span> <span class="n">dr</span> <span class="o">*</span> <span class="p">(</span><span class="n">omega</span> <span class="o">*</span> <span class="n">xx</span> <span class="o">+</span> <span class="n">yy</span> <span class="o">*</span> <span class="n">sin</span><span class="p">(</span><span class="n">omega</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="extraterrestrial_r_hour"><a class="viewcode-back" href="../../api/generated/generated/pyet.meteo_utils.extraterrestrial_r_hour.html#pyet.meteo_utils.extraterrestrial_r_hour">[docs]</a><span class="k">def</span> <span class="nf">extraterrestrial_r_hour</span><span class="p">(</span><span class="n">tindex</span><span class="p">,</span> <span class="n">lat</span><span class="p">,</span> <span class="n">lz</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">lm</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Extraterrestrial hourly radiation [MJ m-2 h-1].</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    tindex: pandas.Index</span>
+<span class="sd">    lat: float</span>
+<span class="sd">        the site latitude [rad]</span>
+<span class="sd">    lz: float, optional</span>
+<span class="sd">        longitude of the centre of the local time zone (0° for Greenwich) [°]</span>
+<span class="sd">    lm: float, optional</span>
+<span class="sd">        longitude of the measurement site [degrees west of Greenwich] [°]</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    pandas.Series containing the calculated extraterrestrial radiation</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    Based on equation 28 in [allen_1998]_.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">j</span> <span class="o">=</span> <span class="n">day_of_year</span><span class="p">(</span><span class="n">tindex</span><span class="p">)</span>
+    <span class="n">dr</span> <span class="o">=</span> <span class="n">relative_distance</span><span class="p">(</span><span class="n">j</span><span class="p">)</span>
+    <span class="n">sol_dec</span> <span class="o">=</span> <span class="n">solar_declination</span><span class="p">(</span><span class="n">j</span><span class="p">)</span>
+
+    <span class="n">omega2</span><span class="p">,</span> <span class="n">omega1</span> <span class="o">=</span> <span class="n">sunset_angle_hour</span><span class="p">(</span><span class="n">tindex</span><span class="p">,</span> <span class="n">lz</span><span class="o">=</span><span class="n">lz</span><span class="p">,</span> <span class="n">lm</span><span class="o">=</span><span class="n">lm</span><span class="p">,</span> <span class="n">lat</span><span class="o">=</span><span class="n">lat</span><span class="p">,</span>
+                                       <span class="n">sol_dec</span><span class="o">=</span><span class="n">sol_dec</span><span class="p">)</span>
+    <span class="n">xx</span> <span class="o">=</span> <span class="n">sin</span><span class="p">(</span><span class="n">sol_dec</span><span class="p">)</span> <span class="o">*</span> <span class="n">sin</span><span class="p">(</span><span class="n">lat</span><span class="p">)</span>
+    <span class="n">yy</span> <span class="o">=</span> <span class="n">cos</span><span class="p">(</span><span class="n">sol_dec</span><span class="p">)</span> <span class="o">*</span> <span class="n">cos</span><span class="p">(</span><span class="n">lat</span><span class="p">)</span>
+    <span class="n">gsc</span> <span class="o">=</span> <span class="mf">4.92</span>
+    <span class="k">return</span> <span class="mi">12</span> <span class="o">/</span> <span class="n">pi</span> <span class="o">*</span> <span class="n">gsc</span> <span class="o">*</span> <span class="n">dr</span> <span class="o">*</span> <span class="p">((</span><span class="n">omega2</span> <span class="o">-</span> <span class="n">omega1</span><span class="p">)</span> <span class="o">*</span> <span class="n">xx</span> <span class="o">+</span> <span class="n">yy</span> <span class="o">*</span>
+                                 <span class="p">(</span><span class="n">sin</span><span class="p">(</span><span class="n">omega2</span><span class="p">)</span> <span class="o">-</span> <span class="n">sin</span><span class="p">(</span><span class="n">omega1</span><span class="p">)))</span></div>
+
+
+<div class="viewcode-block" id="calc_res_surf"><a class="viewcode-back" href="../../api/generated/generated/pyet.meteo_utils.calc_res_surf.html#pyet.meteo_utils.calc_res_surf">[docs]</a><span class="k">def</span> <span class="nf">calc_res_surf</span><span class="p">(</span><span class="n">lai</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">r_s</span><span class="o">=</span><span class="mi">70</span><span class="p">,</span> <span class="n">r_l</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">lai_eff</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">srs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">co2</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Surface resistance [s m-1].</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    lai: pandas.Series/float, optional</span>
+<span class="sd">        leaf area index [-]</span>
+<span class="sd">    r_s: pandas.series/float, optional</span>
+<span class="sd">        surface resistance [s m-1]</span>
+<span class="sd">    r_l: float, optional</span>
+<span class="sd">        bulk stomatal resistance [s m-1]</span>
+<span class="sd">    lai_eff: float, optional</span>
+<span class="sd">        1 =&gt; LAI_eff = 0.5 * LAI</span>
+<span class="sd">        2 =&gt; LAI_eff = lai / (0.3 * lai + 1.2)</span>
+<span class="sd">        3 =&gt; LAI_eff = 0.5 * LAI; (LAI&gt;4=4)</span>
+<span class="sd">        4 =&gt; see [zhang_2008]_.</span>
+<span class="sd">    srs: float, optional</span>
+<span class="sd">        Relative sensitivity of rl to Δ[CO2] [yang_2019]_</span>
+<span class="sd">    co2: float</span>
+<span class="sd">        CO2 concentration [ppm]</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    pandas.Series containing the calculated surface resistance</span>
+
+<span class="sd">    References</span>
+<span class="sd">    -----</span>
+<span class="sd">    .. [zhang_2008] Zhang, B., Kang, S., Li, F., &amp; Zhang, L. (2008). Comparison</span>
+<span class="sd">       of three evapotranspiration models to Bowen ratio-energy balance method</span>
+<span class="sd">       for a vineyard in an arid desert region of northwest China. Agricultural</span>
+<span class="sd">       and Forest Meteorology, 148(10), 1629-1640.</span>
+<span class="sd">    .. [yang_2019] Yang, Y., Roderick, M. L., Zhang, S., McVicar, T. R., &amp;</span>
+<span class="sd">       Donohue, R. J. (2019). Hydrologic implications of vegetation response to</span>
+<span class="sd">       elevated CO 2 in climate projections. Nature Climate Change, 9, 44-48.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">lai</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">r_s</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">fco2</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">srs</span> <span class="o">*</span> <span class="p">(</span><span class="n">co2</span> <span class="o">-</span> <span class="mi">300</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">fco2</span> <span class="o">*</span> <span class="n">r_l</span> <span class="o">/</span> <span class="n">calc_laieff</span><span class="p">(</span><span class="n">lai</span><span class="o">=</span><span class="n">lai</span><span class="p">,</span> <span class="n">lai_eff</span><span class="o">=</span><span class="n">lai_eff</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="calc_laieff"><a class="viewcode-back" href="../../api/generated/generated/pyet.meteo_utils.calc_laieff.html#pyet.meteo_utils.calc_laieff">[docs]</a><span class="k">def</span> <span class="nf">calc_laieff</span><span class="p">(</span><span class="n">lai</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">lai_eff</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Effective leaf area index [-].</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    lai: pandas.Series/float, optional</span>
+<span class="sd">        leaf area index [-]</span>
+<span class="sd">    lai_eff: float, optional</span>
+<span class="sd">        0 =&gt; LAI_eff = 0.5 * LAI</span>
+<span class="sd">        1 =&gt; LAI_eff = lai / (0.3 * lai + 1.2)</span>
+<span class="sd">        2 =&gt; LAI_eff = 0.5 * LAI; (LAI&gt;4=4)</span>
+<span class="sd">        3 =&gt; see [zhang_2008]_.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    pandas.Series containing the calculated effective leaf area index</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">lai_eff</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">lai</span>
+    <span class="k">if</span> <span class="n">lai_eff</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">lai</span> <span class="o">/</span> <span class="p">(</span><span class="mf">0.3</span> <span class="o">*</span> <span class="n">lai</span> <span class="o">+</span> <span class="mf">1.2</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">lai_eff</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="n">laie</span> <span class="o">=</span> <span class="n">lai</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">laie</span><span class="p">[(</span><span class="n">lai</span> <span class="o">&gt;</span> <span class="mi">2</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">lai</span> <span class="o">&lt;</span> <span class="mi">4</span><span class="p">)]</span> <span class="o">=</span> <span class="mi">2</span>
+        <span class="n">laie</span><span class="p">[</span><span class="n">lai</span> <span class="o">&gt;</span> <span class="mi">4</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">lai</span>
+        <span class="k">return</span> <span class="n">laie</span>
+    <span class="k">if</span> <span class="n">lai_eff</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+        <span class="n">laie</span> <span class="o">=</span> <span class="n">lai</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">laie</span><span class="p">[</span><span class="n">lai</span> <span class="o">&gt;</span> <span class="mi">4</span><span class="p">]</span> <span class="o">=</span> <span class="mi">4</span>
+        <span class="k">return</span> <span class="n">laie</span> <span class="o">*</span> <span class="mf">0.5</span></div>
+
+
+<div class="viewcode-block" id="calc_res_aero"><a class="viewcode-back" href="../../api/generated/generated/pyet.meteo_utils.calc_res_aero.html#pyet.meteo_utils.calc_res_aero">[docs]</a><span class="k">def</span> <span class="nf">calc_res_aero</span><span class="p">(</span><span class="n">wind</span><span class="p">,</span> <span class="n">croph</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">zw</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">zh</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">ra_method</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Aerodynamic resistance [s m-1].</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    wind: pandas.Series</span>
+<span class="sd">        mean day wind speed [m/s]</span>
+<span class="sd">    croph: pandas.series/float, optional</span>
+<span class="sd">        crop height [m]</span>
+<span class="sd">    zw: float, optional</span>
+<span class="sd">        height of wind measurement [m]</span>
+<span class="sd">    zh: float, optional</span>
+<span class="sd">         height of humidity and or air temperature measurement [m]</span>
+<span class="sd">    ra_method: float, optional</span>
+<span class="sd">        1 =&gt; ra = 208/wind</span>
+<span class="sd">        2 =&gt; ra is calculated based on equation 36 in FAO (1990), ANNEX V.</span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    pandas.Series containing the calculated aerodynamic resistance</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">ra_method</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mi">208</span> <span class="o">/</span> <span class="n">wind</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">d</span> <span class="o">=</span> <span class="mf">0.667</span> <span class="o">*</span> <span class="n">croph</span>
+        <span class="n">zom</span> <span class="o">=</span> <span class="mf">0.123</span> <span class="o">*</span> <span class="n">croph</span>
+        <span class="n">zoh</span> <span class="o">=</span> <span class="mf">0.0123</span> <span class="o">*</span> <span class="n">croph</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">log</span><span class="p">((</span><span class="n">zw</span> <span class="o">-</span> <span class="n">d</span><span class="p">)</span> <span class="o">/</span> <span class="n">zom</span><span class="p">))</span> <span class="o">*</span> <span class="p">(</span><span class="n">log</span><span class="p">((</span><span class="n">zh</span> <span class="o">-</span> <span class="n">d</span><span class="p">)</span> <span class="o">/</span> <span class="n">zoh</span><span class="p">)</span> <span class="o">/</span>
+                                        <span class="p">(</span><span class="mf">0.41</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="n">wind</span><span class="p">)</span></div>
+</pre></div>
+
+              </div>
+              
+              
+              <div class='prev-next-bottom'>
+                
+
+              </div>
+              
+          </main>
+          
+
+      </div>
+    </div>
+    
+  <script src="../../_static/js/index.c86189f1ce1b71a67eb6.js"></script>
+
+
+    <footer class="footer mt-5 mt-md-0">
+  <div class="container">
+    
+    <div class="footer-item">
+      <p class="copyright">
+    &copy; Copyright 2021, M. Vremec, R.A. Collenteur.<br/>
+</p>
+    </div>
+    
+    <div class="footer-item">
+      <p class="sphinx-version">
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 3.5.4.<br/>
+</p>
+    </div>
+    
+  </div>
+</footer>
+  </body>
+</html>
