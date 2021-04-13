@@ -38,7 +38,7 @@ T, Temperature; U, Wind Speed; D, Radiation; RH, Relative Humidity. Adapted from
 
 Examples of using pyet can be found in the example folder. This folder also 
 contains a number of Jupyter Notebooks that thoroughly explain the use of the 
-software. Documentation is hosted on [ReadTheDocs](pyet.readthedocs.io.).
+software. Documentation is hosted on [ReadTheDocs](https://pyet.readthedocs.io).
 
 After defining the input data, evaporation is estimated using only one 
 line of python code:
