@@ -7,4 +7,5 @@ pyet is an open source Python package for estimating reference and potential eva
    :maxdepth: 2
    :caption: Contents:
 
-   methods
+   Getting Started <getting_started/index>
+   Methods <methods/index>
