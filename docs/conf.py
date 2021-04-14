@@ -44,7 +44,6 @@ extensions = [
     'sphinx.ext.autosectionlabel',
     'nbsphinx',
     'nbsphinx_link',
-    'sphinxcontrib.bibtex'
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -70,5 +69,3 @@ html_static_path = ['_static']
 
 autosummary_generate = True
 numpydoc_show_class_members = False
-
-bibtex_bibfiles = ['refs.bib']
