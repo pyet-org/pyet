@@ -1,14 +1,18 @@
-from setuptools import setup
+from setuptools import setup, find_packages
+
+with open("README.md", "r") as fh:
+    long_description = fh.read()
 
 setup(
     name='pyet',
-    version='0.1.0',
-    packages=[''],
+    version='3.2',
     url='https://github.com/phydrus/pyet',
     license='MIT License',
     author='Matevz Vremec, Raoul Collenteur',
     author_email='matevz.vremec@uni-graz.at, raoul.collenteur@uni-graz.at',
-    description='pyet',
+    description='pyet - Estimation of Potential Evaporation',
+    long_description=long_description,
+    long_description_content_type="text/markdown",
     test_suite='tests',
     project_urls={
             'Source': 'https://github.com/phydrus/pyet',
@@ -27,4 +31,5 @@ setup(
     ],
     install_requires=['numpy>=1.15', 'matplotlib>=2.0', 'pandas>=1.0',
                       'scipy>=1.1'],
+    packages=find_packages(exclude=[]),
 )
