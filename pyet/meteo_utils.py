@@ -2,7 +2,7 @@
 
 """
 
-from numpy import tan, cos, pi, sin, arccos, clip, maximum, exp
+from numpy import tan, cos, pi, sin, arccos, clip, maximum, exp, log
 from pandas import to_numeric
 
 # Specific heat of air [MJ kg-1 °C-1]
