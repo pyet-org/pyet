@@ -27,7 +27,15 @@ matrix
       sudo: true
       services:
         - xvfb
-
+    - python: 3.9
+      dist: xenial
+      sudo: true
+      services:
+        - xvfb
+        
+allow_failures:
+  - python: 3.9
+  
 install:
   - pip install numpy
   - pip install pandas

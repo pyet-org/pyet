@@ -13,7 +13,7 @@ STEFAN_BOLTZMANN_HOUR = 2.042 * 10 ** -10
 STEFAN_BOLTZMANN_DAY = 4.903 * 10 ** -9
 
 
-def penman(wind, rs=None, rn=None, g=0, tmean=None, tmax=None, tmin=None,
+def penman(wind, tmean, rs=None, rn=None, g=0, tmax=None, tmin=None,
            rhmax=None, rhmin=None, rh=None, pressure=None, elevation=None,
            lat=None, n=None, nn=None, rso=None, aw=2.6, bw=0.536, a=1.35,
            b=-0.35):
@@ -23,14 +23,14 @@ def penman(wind, rs=None, rn=None, g=0, tmean=None, tmax=None, tmin=None,
     ----------
     wind: pandas.Series
         mean day wind speed [m/s]
+    tmean: pandas.Series
+        average day temperature [°C]
     rs: pandas.Series, optional
         incoming solar radiation [MJ m-2 d-1]
     rn: pandas.Series, optional
         net radiation [MJ m-2 d-1]
     g: pandas.Series/int, optional
         soil heat flux [MJ m-2 d-1]
-    tmean: pandas.Series, optional
-        average day temperature [°C]
     tmax: pandas.Series, optional
         maximum day temperature [°C]
     tmin: pandas.Series, optional
@@ -68,7 +68,7 @@ def penman(wind, rs=None, rn=None, g=0, tmean=None, tmax=None, tmin=None,
 
     Examples
     --------
-    >>> et_penman = penman(wind, rn=rn, tmean=tmean, rh=rh)
+    >>> et_penman = penman(wind, tmean, rn=rn, rh=rh)
 
     Notes
     -----
@@ -87,8 +87,6 @@ def penman(wind, rs=None, rn=None, g=0, tmean=None, tmax=None, tmin=None,
        Hydrology, 331(3-4), 690-702.
 
     """
-    if tmean is None:
-        tmean = (tmax + tmin) / 2
     if pressure is None:
         pressure = calc_press(elevation)
     gamma = calc_psy(pressure)
@@ -115,25 +113,24 @@ def penman(wind, rs=None, rn=None, g=0, tmean=None, tmax=None, tmin=None,
     return num1 + num2
 
 
-def pm(wind, rs=None, rn=None, g=0, tmean=None, tmax=None, tmin=None,
-       rhmax=None, rhmin=None, rh=None, pressure=None, elevation=None,
-       lat=None, n=None, nn=None, rso=None, a=1.35, b=-0.35, lai=None,
-       croph=None, r_l=100, r_s=70, ra_method=1, a_sh=1, a_s=1, lai_eff=1,
-       srs=0.0009, co2=300):
+def pm(wind, tmean, rs=None, rn=None, g=0, tmax=None, tmin=None, rhmax=None,
+       rhmin=None, rh=None, pressure=None, elevation=None, lat=None, n=None,
+       nn=None, rso=None, a=1.35, b=-0.35, lai=None, croph=None, r_l=100,
+       r_s=70, ra_method=1, a_sh=1, a_s=1, lai_eff=1, srs=0.0009, co2=300):
     """Evaporation calculated according to [monteith_1965]_.
 
     Parameters
     ----------
     wind: pandas.Series
         mean day wind speed [m/s]
+    tmean: pandas.Series
+        average day temperature [°C]
     rs: pandas.Series, optional
         incoming solar radiation [MJ m-2 d-1]
     rn: pandas.Series, optional
         net radiation [MJ m-2 d-1]
     g: pandas.Series/int, optional
         soil heat flux [MJ m-2 d-1]
-    tmean: pandas.Series, optional
-        average day temperature [°C]
     tmax: pandas.Series, optional
         maximum day temperature [°C]
     tmin: pandas.Series, optional
@@ -192,7 +189,7 @@ def pm(wind, rs=None, rn=None, g=0, tmean=None, tmax=None, tmin=None,
 
     Examples
     --------
-    >>> et_pm = pm(wind, rn=rn, tmean=tmean, rh=rh)
+    >>> et_pm = pm(wind, tmean, rn=rn, rh=rh)
 
     Notes
     -----
@@ -211,8 +208,6 @@ def pm(wind, rs=None, rn=None, g=0, tmean=None, tmax=None, tmin=None,
        experiments reveal an important omission in the Penman–Monteith
        equation. Hydrology and Earth System Sciences, 21(2), 685-706.
     """
-    if tmean is None:
-        tmean = (tmax + tmin) / 2
     if pressure is None:
         pressure = calc_press(elevation)
     gamma = calc_psy(pressure)
@@ -245,7 +240,7 @@ def pm(wind, rs=None, rn=None, g=0, tmean=None, tmax=None, tmin=None,
     return num1 + num2
 
 
-def pm_fao56(wind, rs=None, rn=None, g=0, tmean=None, tmax=None, tmin=None,
+def pm_fao56(wind, tmean, rs=None, rn=None, g=0, tmax=None, tmin=None,
              rhmax=None, rhmin=None, rh=None, pressure=None, elevation=None,
              lat=None, n=None, nn=None, rso=None, a=1.35, b=-0.35):
     """Evaporation calculated according to [allen_1998]_.
@@ -254,14 +249,14 @@ def pm_fao56(wind, rs=None, rn=None, g=0, tmean=None, tmax=None, tmin=None,
     ----------
     wind: pandas.Series
         mean day wind speed [m/s]
+    tmean: pandas.Series
+        average day temperature [°C]
     rs: pandas.Series, optional
         incoming solar radiation [MJ m-2 d-1]
     rn: pandas.Series, optional
         net radiation [MJ m-2 d-1]
     g: pandas.Series/int, optional
         soil heat flux [MJ m-2 d-1]
-    tmean: pandas.Series, optional
-        average day temperature [°C]
     tmax: pandas.Series, optional
         maximum day temperature [°C]
     tmin: pandas.Series, optional
@@ -330,8 +325,8 @@ def pm_fao56(wind, rs=None, rn=None, g=0, tmean=None, tmax=None, tmin=None,
     return num1 + num2
 
 
-def priestley_taylor(wind, rs=None, rn=None, g=0, tmean=None, tmax=None,
-                     tmin=None, rhmax=None, rhmin=None, rh=None, pressure=None,
+def priestley_taylor(wind, tmean, rs=None, rn=None, g=0, tmax=None, tmin=None,
+                     rhmax=None, rhmin=None, rh=None, pressure=None,
                      elevation=None, lat=None, n=None, nn=None, rso=None,
                      a=1.35, b=-0.35, alpha=1.26):
     """Evaporation calculated according to [priestley_and_taylor_1965]_.
@@ -340,14 +335,14 @@ def priestley_taylor(wind, rs=None, rn=None, g=0, tmean=None, tmax=None,
     ----------
     wind: pandas.Series
         mean day wind speed [m/s]
+    tmean: pandas.Series
+        average day temperature [°C]
     rs: pandas.Series, optional
         incoming solar radiation [MJ m-2 d-1]
     rn: pandas.Series, optional
         net radiation [MJ m-2 d-1]
     g: pandas.Series/int, optional
         soil heat flux [MJ m-2 d-1]
-    tmean: pandas.Series, optional
-        average day temperature [°C]
     tmax: pandas.Series, optional
         maximum day temperature [°C]
     tmin: pandas.Series, optional
@@ -398,8 +393,6 @@ def priestley_taylor(wind, rs=None, rn=None, g=0, tmean=None, tmax=None,
        parameters. Monthly weather review, 100(2), 81-92.
 
     """
-    if tmean is None:
-        tmean = (tmax + tmin) / 2
     if pressure is None:
         pressure = calc_press(elevation)
     gamma = calc_psy(pressure)
@@ -416,8 +409,8 @@ def priestley_taylor(wind, rs=None, rn=None, g=0, tmean=None, tmax=None,
     return (alpha * dlt * (rn - g)) / (lambd * (dlt + gamma))
 
 
-def kimberly_penman(wind, rs=None, rn=None, g=0, tmean=None, tmax=None,
-                    tmin=None, rhmax=None, rhmin=None, rh=None, pressure=None,
+def kimberly_penman(wind, tmean, rs=None, rn=None, g=0, tmax=None, tmin=None,
+                    rhmax=None, rhmin=None, rh=None, pressure=None,
                     elevation=None, lat=None, n=None, nn=None, rso=None,
                     a=1.35, b=-0.35):
     """Evaporation calculated according to [wright_1982]_.
@@ -426,14 +419,14 @@ def kimberly_penman(wind, rs=None, rn=None, g=0, tmean=None, tmax=None,
     ----------
     wind: pandas.Series
         mean day wind speed [m/s]
+    tmean: pandas.Series
+        average day temperature [°C]
     rs: pandas.Series, optional
         incoming solar radiation [MJ m-2 d-1]
     rn: pandas.Series, optional
         net radiation [MJ m-2 d-1]
     g: pandas.Series/int, optional
         soil heat flux [MJ m-2 d-1]
-    tmean: pandas.Series, optional
-        average day temperature [°C]
     tmax: pandas.Series, optional
         maximum day temperature [°C]
     tmin: pandas.Series, optional
@@ -480,8 +473,6 @@ def kimberly_penman(wind, rs=None, rn=None, g=0, tmean=None, tmax=None,
        coefficients. Proceedings of the American Society of Civil Engineers,
        Journal of the Irrigation and Drainage Division, 108(IR2), 57-74.
     """
-    if tmean is None:
-        tmean = (tmax + tmin) / 2
     if pressure is None:
         pressure = calc_press(elevation)
     gamma = calc_psy(pressure)
@@ -510,7 +501,7 @@ def kimberly_penman(wind, rs=None, rn=None, g=0, tmean=None, tmax=None,
     return num1 + num2
 
 
-def thom_oliver(wind, rs=None, rn=None, g=0, tmean=None, tmax=None, tmin=None,
+def thom_oliver(wind, tmean, rs=None, rn=None, g=0,tmax=None, tmin=None,
                 rhmax=None, rhmin=None, rh=None, pressure=None, elevation=None,
                 lat=None, n=None, nn=None, rso=None, aw=2.6, bw=0.536, a=1.35,
                 b=-0.35, lai=None, croph=None, r_l=100, r_s=70, ra_method=1,
@@ -521,14 +512,14 @@ def thom_oliver(wind, rs=None, rn=None, g=0, tmean=None, tmax=None, tmin=None,
     ----------
     wind: pandas.Series
         mean day wind speed [m/s]
+    tmean: pandas.Series
+        average day temperature [°C]
     rs: pandas.Series, optional
         incoming solar radiation [MJ m-2 d-1]
     rn: pandas.Series, optional
         net radiation [MJ m-2 d-1]
     g: pandas.Series/int, optional
         soil heat flux [MJ m-2 d-1]
-    tmean: pandas.Series, optional
-        average day temperature [°C]
     tmax: pandas.Series, optional
         maximum day temperature [°C]
     tmin: pandas.Series, optional
@@ -598,8 +589,6 @@ def thom_oliver(wind, rs=None, rn=None, g=0, tmean=None, tmax=None, tmin=None,
        for estimating regional evaporation. Quarterly Journal of the Royal
        Meteorological Society, 103(436), 345-357.
     """
-    if tmean is None:
-        tmean = (tmax + tmin) / 2
     if pressure is None:
         pressure = calc_press(elevation)
     gamma = calc_psy(pressure)

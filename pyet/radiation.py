@@ -141,12 +141,14 @@ def mcguinness_bordne(tmean, lat, k=0.0147):
     return et
 
 
-def hargreaves(tindex, tmax, tmin, lat):
+def hargreaves(tindex, tmean, tmax, tmin, lat):
     """Evaporation calculated according to [hargreaves_samani_1982]_.
 
         Parameters
         ----------
         tindex: pandas.DatetimeIndex
+        tmean: pandas.Series
+            average day temperature [°C]
         tmax: pandas.Series, optional
             maximum day temperature [°C]
         tmin: pandas.Series, optional
@@ -160,7 +162,7 @@ def hargreaves(tindex, tmax, tmin, lat):
 
         Examples
         --------
-        >>> et_har = hargreaves(tindex, tmax, tmin, lat)
+        >>> et_har = hargreaves(tindex, tmean, tmax, tmin, lat)
 
         Notes
         -----
@@ -175,30 +177,24 @@ def hargreaves(tindex, tmax, tmin, lat):
            Estimating potential evapotranspiration. Journal of the irrigation
            and Drainage Division, 108(3), 225-230.
         """
-    tmean = (tmax + tmin) / 2
     lambd = calc_lambda(tmean)
     ra = extraterrestrial_r(tindex=tindex, lat=lat)
     return 0.0023 * (tmean + 17.8) * sqrt(tmax - tmin) * ra / lambd
 
 
-def fao_24(wind, rs, rh, tmean=None, tmax=None, tmin=None, pressure=None,
-           elevation=None, albedo=0.23):
+def fao_24(wind, rs, rh, tmean, pressure=None, elevation=None, albedo=0.23):
     """Evaporation calculated according to [jensen_1990]_.
 
     Parameters
     ----------
     wind: pandas.Series
         mean day wind speed [m/s]
-    rs: pandas.Series, optional
+    rs: pandas.Series
         incoming solar radiation [MJ m-2 d-1]
-    rh: pandas.Series, optional
+    rh: pandas.Series
         mean daily relative humidity [%]
-    tmean: pandas.Series, optional
+    tmean: pandas.Series
         average day temperature [°C]
-    tmax: pandas.Series, optional
-        maximum day temperature [°C]
-    tmin: pandas.Series, optional
-        minimum day temperature [°C]
     pressure: float, optional
         atmospheric pressure [kPa]
     elevation: float, optional
@@ -225,8 +221,6 @@ def fao_24(wind, rs, rh, tmean=None, tmax=None, tmin=None, pressure=None,
        Evapotranspiration and irrigation water requirements. ASCE.
 
     """
-    if tmean is None:
-        tmean = (tmax + tmin) / 2
     if pressure is None:
         pressure = calc_press(elevation)
     gamma = calc_psy(pressure)
@@ -276,20 +270,15 @@ def abtew(tmean, rs, k=0.53):
     return et
 
 
-def makkink(rs, tmean=None, tmax=None, tmin=None, pressure=None,
-            elevation=None):
+def makkink(rs, tmean, pressure=None, elevation=None):
     """"Evaporation calculated according to [makkink1957]_.
 
     Parameters
     ----------
     rs: pandas.Series, optional
         incoming solar radiation [MJ m-2 d-1]
-    tmean: pandas.Series, optional
+    tmean: pandas.Series
         average day temperature [°C]
-    tmax: pandas.Series, optional
-        maximum day temperature [°C]
-    tmin: pandas.Series, optional
-        minimum day temperature [°C]
     pressure: float, optional
         atmospheric pressure [kPa]
     elevation: float, optional
@@ -301,7 +290,7 @@ def makkink(rs, tmean=None, tmax=None, tmin=None, pressure=None,
 
     Examples
     --------
-    >>> mak = makkink(rs=rs, tmean=tmean)
+    >>> mak = makkink(rs, tmean)
 
     Notes
     -----
@@ -314,8 +303,6 @@ def makkink(rs, tmean=None, tmax=None, tmin=None, pressure=None,
         of lysimeters. Journal of the Institution of Water Engineers 11,
         277–288.
     """
-    if tmean is None:
-        tmean = (tmax + tmin) / 2
     if pressure is None:
         pressure = calc_press(elevation)
     gamma = calc_psy(pressure)

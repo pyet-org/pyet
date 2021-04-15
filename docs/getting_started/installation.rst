@@ -34,7 +34,7 @@ Dependencies
 ------------
 pyet depends on a number of Python packages, which are all automatically
 installed when using the pip install manager. The following packages are
-necessary for the installation of Phydrus:
+necessary for the installation of pyet:
 
 .. include:: ../../requirements.txt
     :literal:
