@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='pyet',
-    version='0.2',
+    version='1.0',
     packages=[''],
     url='https://github.com/phydrus/pyet',
     license='MIT License',
