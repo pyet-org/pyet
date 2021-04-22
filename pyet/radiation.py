@@ -35,7 +35,7 @@ def turc(tmean, rs, rh, k=0.31):
     -----
     Based on equation 2 and 3 in [xu_2000]_.
 
-    .. math:: ET=k(\\frac{T_a}{T_a+15})(R_s/4.184 + 50)*4.184; for RH>50
+    .. math:: PE=k(\\frac{T_a}{T_a+15})(R_s/4.184 + 50)*4.184; for RH>50
 
     References
     ----------
@@ -83,7 +83,7 @@ def jensen_haise(tmean, rs=None, cr=0.025, tx=-3, lat=None, method=1):
     -----
     Based on equation (K-15) in [jensen_allen_2016]_.
 
-    .. math:: ET = \\frac{C_r(T-T_x)R_s}{\\lambda}
+    .. math:: PE = \\frac{C_r(T-T_x)R_s}{\\lambda}
 
     References
     ----------
@@ -126,7 +126,7 @@ def mcguinness_bordne(tmean, lat, k=0.0147):
     -----
     Based on equation 13 in [xu_2000]_.
 
-    .. math:: ET = \\frac{0.0147 R_a (T_a + 5)}{\\lambda}
+    .. math:: PE = \\frac{0.0147 R_a (T_a + 5)}{\\lambda}
 
     References
     ----------
@@ -141,12 +141,11 @@ def mcguinness_bordne(tmean, lat, k=0.0147):
     return et
 
 
-def hargreaves(tindex, tmean, tmax, tmin, lat):
+def hargreaves(tmean, tmax, tmin, lat):
     """Evaporation calculated according to [hargreaves_samani_1982]_.
 
         Parameters
         ----------
-        tindex: pandas.DatetimeIndex
         tmean: pandas.Series
             average day temperature [°C]
         tmax: pandas.Series, optional
@@ -162,13 +161,13 @@ def hargreaves(tindex, tmean, tmax, tmin, lat):
 
         Examples
         --------
-        >>> et_har = hargreaves(tindex, tmean, tmax, tmin, lat)
+        >>> et_har = hargreaves(tmean, tmax, tmin, lat)
 
         Notes
         -----
         Based on equation (8-16) in [jensen_allen_2016]_.
 
-        .. math:: ET = 0.0023 \\frac{R_a (T_a+17.8)\\sqrt{(T_{max}-T_{min})}}\
+        .. math:: PE = 0.0023 \\frac{R_a (T_a+17.8)\\sqrt{(T_{max}-T_{min})}}\
             {\\lambda}
 
         References
@@ -178,23 +177,23 @@ def hargreaves(tindex, tmean, tmax, tmin, lat):
            and Drainage Division, 108(3), 225-230.
         """
     lambd = calc_lambda(tmean)
-    ra = extraterrestrial_r(tindex=tindex, lat=lat)
+    ra = extraterrestrial_r(tindex=tmean.index, lat=lat)
     return 0.0023 * (tmean + 17.8) * sqrt(tmax - tmin) * ra / lambd
 
 
-def fao_24(wind, rs, rh, tmean, pressure=None, elevation=None, albedo=0.23):
+def fao_24(tmean, wind, rs, rh, pressure=None, elevation=None, albedo=0.23):
     """Evaporation calculated according to [jensen_1990]_.
 
     Parameters
     ----------
+    tmean: pandas.Series
+        average day temperature [°C]
     wind: pandas.Series
         mean day wind speed [m/s]
     rs: pandas.Series
         incoming solar radiation [MJ m-2 d-1]
     rh: pandas.Series
         mean daily relative humidity [%]
-    tmean: pandas.Series
-        average day temperature [°C]
     pressure: float, optional
         atmospheric pressure [kPa]
     elevation: float, optional
@@ -208,9 +207,9 @@ def fao_24(wind, rs, rh, tmean, pressure=None, elevation=None, albedo=0.23):
 
     Examples
     --------
-    >>> et_fao24 = fao_24(wind, rs, rh, tmean=tmean, pressure=pressure)
+    >>> et_fao24 = fao_24(tmean, wind, rs, rh, pressure=pressure)
 
-    .. math:: ET = \\frac{- 0.3 \\Delta + R_s (1-\\alpha) w}\
+    .. math:: PE = \\frac{- 0.3 \\Delta + R_s (1-\\alpha) w}\
         {\\lambda(\\Delta +\\gamma)}
     .. math:: w = 1.066-0.13*\\frac{rh}{100}+0.045*u_2-0.02*\\frac{rh}{100}\
         *u_2-3.15*(\\frac{rh}{100})^2-0.0011*u_2$
@@ -257,7 +256,7 @@ def abtew(tmean, rs, k=0.53):
     -----
     Based on equation 14 in [xu_2000]_.
 
-    .. math:: ET = \\frac{k R_s}{\\lambda}
+    .. math:: PE = \\frac{k R_s}{\\lambda}
 
     References
     -----
@@ -270,15 +269,15 @@ def abtew(tmean, rs, k=0.53):
     return et
 
 
-def makkink(rs, tmean, pressure=None, elevation=None):
+def makkink(tmean, rs, pressure=None, elevation=None):
     """"Evaporation calculated according to [makkink1957]_.
 
     Parameters
     ----------
-    rs: pandas.Series, optional
-        incoming solar radiation [MJ m-2 d-1]
     tmean: pandas.Series
         average day temperature [°C]
+    rs: pandas.Series, optional
+        incoming solar radiation [MJ m-2 d-1]
     pressure: float, optional
         atmospheric pressure [kPa]
     elevation: float, optional
@@ -290,12 +289,12 @@ def makkink(rs, tmean, pressure=None, elevation=None):
 
     Examples
     --------
-    >>> mak = makkink(rs, tmean)
+    >>> mak = makkink(tmean, rs)
 
     Notes
     -----
 
-    .. math:: ET = \\frac{0.65 \\Delta (R_s)}{\\lambda(\\Delta +\\gamma)}
+    .. math:: PE = \\frac{0.65 \\Delta (R_s)}{\\lambda(\\Delta +\\gamma)}
 
     References
     ----------
@@ -338,7 +337,7 @@ def oudin(tmean, lat, k1=100, k2=5):
     -----
     Based on equation 3 in [oudin_2005]_.
 
-    .. math:: ET = \\frac{R_a (T_a +5)}{\\lambda 100}; if T_a+5>0
+    .. math:: PE = \\frac{R_a (T_a +5)}{\\lambda 100}; if T_a+5>0
         else: P = 0
 
     """

@@ -13,7 +13,7 @@ STEFAN_BOLTZMANN_HOUR = 2.042 * 10 ** -10
 STEFAN_BOLTZMANN_DAY = 4.903 * 10 ** -9
 
 
-def penman(wind, tmean, rs=None, rn=None, g=0, tmax=None, tmin=None,
+def penman(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
            rhmax=None, rhmin=None, rh=None, pressure=None, elevation=None,
            lat=None, n=None, nn=None, rso=None, aw=2.6, bw=0.536, a=1.35,
            b=-0.35):
@@ -21,10 +21,10 @@ def penman(wind, tmean, rs=None, rn=None, g=0, tmax=None, tmin=None,
 
     Parameters
     ----------
-    wind: pandas.Series
-        mean day wind speed [m/s]
     tmean: pandas.Series
         average day temperature [°C]
+    wind: pandas.Series
+        mean day wind speed [m/s]
     rs: pandas.Series, optional
         incoming solar radiation [MJ m-2 d-1]
     rn: pandas.Series, optional
@@ -68,13 +68,13 @@ def penman(wind, tmean, rs=None, rn=None, g=0, tmax=None, tmin=None,
 
     Examples
     --------
-    >>> et_penman = penman(wind, tmean, rn=rn, rh=rh)
+    >>> et_penman = penman(tmean, wind, rn=rn, rh=rh)
 
     Notes
     -----
     Following [penman_1948]_ and [valiantzas_2006]_.
 
-    .. math:: ET = \\frac{\\Delta (R_n-G) + \\gamma 2.6 (1 + 0.536 u_2)
+    .. math:: PE = \\frac{\\Delta (R_n-G) + \\gamma 2.6 (1 + 0.536 u_2)
         (e_s-e_a)}{\\lambda (\\Delta +\\gamma)}
 
     References
@@ -113,7 +113,7 @@ def penman(wind, tmean, rs=None, rn=None, g=0, tmax=None, tmin=None,
     return num1 + num2
 
 
-def pm(wind, tmean, rs=None, rn=None, g=0, tmax=None, tmin=None, rhmax=None,
+def pm(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None, rhmax=None,
        rhmin=None, rh=None, pressure=None, elevation=None, lat=None, n=None,
        nn=None, rso=None, a=1.35, b=-0.35, lai=None, croph=None, r_l=100,
        r_s=70, ra_method=1, a_sh=1, a_s=1, lai_eff=1, srs=0.0009, co2=300):
@@ -121,10 +121,10 @@ def pm(wind, tmean, rs=None, rn=None, g=0, tmax=None, tmin=None, rhmax=None,
 
     Parameters
     ----------
-    wind: pandas.Series
-        mean day wind speed [m/s]
     tmean: pandas.Series
         average day temperature [°C]
+    wind: pandas.Series
+        mean day wind speed [m/s]
     rs: pandas.Series, optional
         incoming solar radiation [MJ m-2 d-1]
     rn: pandas.Series, optional
@@ -189,14 +189,14 @@ def pm(wind, tmean, rs=None, rn=None, g=0, tmax=None, tmin=None, rhmax=None,
 
     Examples
     --------
-    >>> et_pm = pm(wind, tmean, rn=rn, rh=rh)
+    >>> et_pm = pm(tmean, wind, rn=rn, rh=rh)
 
     Notes
     -----
     Following [monteith_1965]_, [allen_1998]_, [zhang_2008]_,
         [schymanski_2016]_ and [yang_2019]_.
 
-    .. math:: ET = \\frac{\\Delta (R_{n}-G)+ \\rho_a c_p K_{min}
+    .. math:: PE = \\frac{\\Delta (R_{n}-G)+ \\rho_a c_p K_{min}
         \\frac{e_s-e_a}{r_a}}{\\lambda(\\Delta +\\gamma(1+\\frac{r_s}{r_a}))}
 
     References
@@ -240,17 +240,17 @@ def pm(wind, tmean, rs=None, rn=None, g=0, tmax=None, tmin=None, rhmax=None,
     return num1 + num2
 
 
-def pm_fao56(wind, tmean, rs=None, rn=None, g=0, tmax=None, tmin=None,
+def pm_fao56(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
              rhmax=None, rhmin=None, rh=None, pressure=None, elevation=None,
              lat=None, n=None, nn=None, rso=None, a=1.35, b=-0.35):
     """Evaporation calculated according to [allen_1998]_.
 
     Parameters
     ----------
-    wind: pandas.Series
-        mean day wind speed [m/s]
     tmean: pandas.Series
         average day temperature [°C]
+    wind: pandas.Series
+        mean day wind speed [m/s]
     rs: pandas.Series, optional
         incoming solar radiation [MJ m-2 d-1]
     rn: pandas.Series, optional
@@ -290,11 +290,11 @@ def pm_fao56(wind, tmean, rs=None, rn=None, g=0, tmax=None, tmin=None,
 
     Examples
     --------
-    >>> et_fao56 = pm_fao56(wind, rn=rn, tmean=tmean, rh=rh)
+    >>> et_fao56 = pm_fao56(tmean, wind, rn=rn, rh=rh)
 
     Notes
     -----
-    .. math:: ET = \\frac{0.408 \\Delta (R_{n}-G)+\\gamma \\frac{900}{T+273}
+    .. math:: PE = \\frac{0.408 \\Delta (R_{n}-G)+\\gamma \\frac{900}{T+273}
         (e_s-e_a) u_2}{\\Delta+\\gamma(1+0.34 u_2)}
 
     """
@@ -325,7 +325,7 @@ def pm_fao56(wind, tmean, rs=None, rn=None, g=0, tmax=None, tmin=None,
     return num1 + num2
 
 
-def priestley_taylor(wind, tmean, rs=None, rn=None, g=0, tmax=None, tmin=None,
+def priestley_taylor(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
                      rhmax=None, rhmin=None, rh=None, pressure=None,
                      elevation=None, lat=None, n=None, nn=None, rso=None,
                      a=1.35, b=-0.35, alpha=1.26):
@@ -333,10 +333,10 @@ def priestley_taylor(wind, tmean, rs=None, rn=None, g=0, tmax=None, tmin=None,
 
     Parameters
     ----------
-    wind: pandas.Series
-        mean day wind speed [m/s]
     tmean: pandas.Series
         average day temperature [°C]
+    wind: pandas.Series
+        mean day wind speed [m/s]
     rs: pandas.Series, optional
         incoming solar radiation [MJ m-2 d-1]
     rn: pandas.Series, optional
@@ -378,12 +378,12 @@ def priestley_taylor(wind, tmean, rs=None, rn=None, g=0, tmax=None, tmin=None,
 
     Examples
     --------
-    >>> pt = priestley_taylor(wind, rn=rn, tmean=tmean, rh=rh)
+    >>> pt = priestley_taylor(tmean, wind, rn=rn, rh=rh)
 
     Notes
     -----
 
-    .. math:: ET = \\frac{\\alpha_{PT} \\Delta (R_n-G)}
+    .. math:: PE = \\frac{\\alpha_{PT} \\Delta (R_n-G)}
         {\\lambda(\\Delta +\\gamma)}
 
     References
@@ -409,7 +409,7 @@ def priestley_taylor(wind, tmean, rs=None, rn=None, g=0, tmax=None, tmin=None,
     return (alpha * dlt * (rn - g)) / (lambd * (dlt + gamma))
 
 
-def kimberly_penman(wind, tmean, rs=None, rn=None, g=0, tmax=None, tmin=None,
+def kimberly_penman(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
                     rhmax=None, rhmin=None, rh=None, pressure=None,
                     elevation=None, lat=None, n=None, nn=None, rso=None,
                     a=1.35, b=-0.35):
@@ -417,10 +417,10 @@ def kimberly_penman(wind, tmean, rs=None, rn=None, g=0, tmax=None, tmin=None,
 
     Parameters
     ----------
-    wind: pandas.Series
-        mean day wind speed [m/s]
     tmean: pandas.Series
         average day temperature [°C]
+    wind: pandas.Series
+        mean day wind speed [m/s]
     rs: pandas.Series, optional
         incoming solar radiation [MJ m-2 d-1]
     rn: pandas.Series, optional
@@ -462,7 +462,7 @@ def kimberly_penman(wind, tmean, rs=None, rn=None, g=0, tmax=None, tmin=None,
     -----
     Following [oudin_2005]_.
 
-    .. math:: ET = \\frac{\\Delta (R_n-G)+ \\gamma (e_s-e_a) w}
+    .. math:: PE = \\frac{\\Delta (R_n-G)+ \\gamma (e_s-e_a) w}
         {\\lambda(\\Delta +\\gamma)}
     .. math:: w =  u_2 * (0.4 + 0.14 * exp(-(\\frac{J_D-173}{58})^2)) +
             (0.605 + 0.345 * exp(-(\\frac{J_D-243}{80})^2))
@@ -501,7 +501,7 @@ def kimberly_penman(wind, tmean, rs=None, rn=None, g=0, tmax=None, tmin=None,
     return num1 + num2
 
 
-def thom_oliver(wind, tmean, rs=None, rn=None, g=0,tmax=None, tmin=None,
+def thom_oliver(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
                 rhmax=None, rhmin=None, rh=None, pressure=None, elevation=None,
                 lat=None, n=None, nn=None, rso=None, aw=2.6, bw=0.536, a=1.35,
                 b=-0.35, lai=None, croph=None, r_l=100, r_s=70, ra_method=1,
@@ -510,10 +510,10 @@ def thom_oliver(wind, tmean, rs=None, rn=None, g=0,tmax=None, tmin=None,
 
     Parameters
     ----------
-    wind: pandas.Series
-        mean day wind speed [m/s]
     tmean: pandas.Series
         average day temperature [°C]
+    wind: pandas.Series
+        mean day wind speed [m/s]
     rs: pandas.Series, optional
         incoming solar radiation [MJ m-2 d-1]
     rn: pandas.Series, optional
@@ -579,7 +579,7 @@ def thom_oliver(wind, tmean, rs=None, rn=None, g=0,tmax=None, tmin=None,
     -----
     Following [oudin_2005]_.
 
-    .. math:: ET = \\frac{\\Delta (R_{n}-G)+ 2.5 \\gamma (e_s-e_a) w}
+    .. math:: PE = \\frac{\\Delta (R_{n}-G)+ 2.5 \\gamma (e_s-e_a) w}
         {\\lambda(\\Delta +\\gamma(1+\\frac{r_s}{r_a}))}$
         $w=2.6(1+0.53u_2)
 
