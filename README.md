@@ -45,7 +45,7 @@ software. Documentation is hosted on [ReadTheDocs](https://pyet.readthedocs.io).
 After defining the input data, evaporation is estimated using only one 
 line of python code:
 
-`>>> pyet.pm_fao56(wind, elevation, latitude, solar=solar, tmax=tmax, tmin=tmin, rh=rh)`
+`>>> pyet.pm_fao56(tmean, wind, rn=rn, tmax=tmax, tmin=tmin, rh=rh, elevation=elevation)`
 
 ## Bug reports and Questions
 
