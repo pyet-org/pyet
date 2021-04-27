@@ -31,7 +31,7 @@ def blaney_criddle(tmean, p, k=0.85):
     -----
     Based on equation 6 in [xu_2001]_.
 
-    .. math:: ET=kp(0.46 * T_a + 8.13)
+    .. math:: PE=kp(0.46 * T_a + 8.13)
 
     References
     ----------
@@ -45,12 +45,11 @@ def blaney_criddle(tmean, p, k=0.85):
     return et
 
 
-def hamon(tindex, tmean, lat):
+def hamon(tmean, lat):
     """Evaporation calculated according to [hamon_1961]_.
 
     Parameters
     ----------
-    tindex: pandas.DatetimeIndex
     tmean: pandas.Series, optional
         average day temperature [°C]
     lat: float, optional
@@ -68,7 +67,7 @@ def hamon(tindex, tmean, lat):
     -----
     Following [hamon_1961]_ and [oudin_2005]_.
 
-    .. math:: ET = (\\frac{DL}{12})^2 exp(\\frac{T_a}{16})
+    .. math:: PE = (\\frac{DL}{12})^2 exp(\\frac{T_a}{16})
 
     References
     ----------
@@ -83,7 +82,7 @@ def hamon(tindex, tmean, lat):
 
     """
 
-    dl = daylight_hours(tindex, lat)
+    dl = daylight_hours(tmean.index, lat)
 
     return (dl / 12) ** 2 * exp(tmean / 16)
 
@@ -112,7 +111,7 @@ def romanenko(tmean, rh, k=4.5):
     -----
     Based on equation 11 in [xu_2001]_.
 
-    .. math:: ET=4.5(1 + (\\frac{T_a}{25})^2 (1  \\frac{e_a}{e_s})
+    .. math:: PE=4.5(1 + (\\frac{T_a}{25})^2 (1  \\frac{e_a}{e_s})
 
     References
     ----------
@@ -156,7 +155,7 @@ def linacre(tmean, elevation, lat, tdew=None, tmax=None, tmin=None):
     -----
     Based on equation 5 in [xu_2001]_.
 
-    .. math:: ET = \\frac{\\frac{500 T_m}{(100-A)}+15 (T_a-T_d)}{80-T_a}
+    .. math:: PE = \\frac{\\frac{500 T_m}{(100-A)}+15 (T_a-T_d)}{80-T_a}
 
     References
     -----

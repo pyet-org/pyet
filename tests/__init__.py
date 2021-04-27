@@ -1,3 +1,3 @@
 
-from . import testfao56
-from . import testhargreaves
+from tests import testfao56
+from tests import testhargreaves

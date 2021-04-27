@@ -11,6 +11,7 @@ class Testhargreaves(unittest.TestCase):
         # Based on example 18, p 78 TestFAO56
         tmax = pd.Series([26.6], index=pd.DatetimeIndex(["2015-07-15"]))
         tmin = pd.Series([14.8], index=pd.DatetimeIndex(["2015-07-15"]))
+        tmean = (tmax + tmin) / 2
         lat = 45.72 * np.pi / 180
-        har = et.hargreaves(tmax.index, tmax, tmin, lat)
+        har = et.hargreaves(tmean, tmax, tmin, lat)
         self.assertAlmostEqual(float(har), 5.0, 1)

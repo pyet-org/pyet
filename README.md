@@ -1,3 +1,5 @@
+<img src=https://raw.githubusercontent.com/phydrus/pyet/d7fdd87719588c00326e692f3b1a47b32161e533/docs/_static/logo.png width=120, align=left>
+
 # pyet: Estimation of Potential Evaporation
 
 <a href="http://www.gnu.org/licenses/gpl-3.0.txt"><img src=https://img.shields.io/github/license/phydrus/pyet> </a>
@@ -8,7 +10,7 @@
 
 
 pyet is an open source python package for calculating reference and potential 
-evaporation (PET). Currently eighteen methods for calculating PET are 
+evaporation (PE). Currently eighteen methods for calculating PE are 
 implemented:
 
 | Classification | Common method name        | Data needed | pyet Method        | Reference                   |
@@ -43,7 +45,7 @@ software. Documentation is hosted on [ReadTheDocs](https://pyet.readthedocs.io).
 After defining the input data, evaporation is estimated using only one 
 line of python code:
 
-`>>> pyet.pm_fao56(wind, elevation, latitude, solar=solar, tmax=tmax, tmin=tmin, rh=rh)`
+`>>> pyet.pm_fao56(tmean, wind, rn=rn, tmax=tmax, tmin=tmin, rh=rh, elevation=elevation)`
 
 ## Bug reports and Questions
 
