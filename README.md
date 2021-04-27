@@ -1,4 +1,4 @@
-<img src=https://github.com/phydrus/pyet/blob/master/docs/_static/logo.png width=120, align=left>
+<img src=https://github.com/phydrus/pyet/blob/dev/docs/_static/logo.png width=120, align=left>
 
 # pyet: Estimation of Potential Evaporation
 
