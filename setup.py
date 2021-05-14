@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setup(
     name='pyet',
-    version='0.2',
+    version='1.0',
     url='https://github.com/phydrus/pyet',
     license='MIT License',
     author='Matevz Vremec, Raoul Collenteur',
