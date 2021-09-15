@@ -118,7 +118,7 @@ def calc_rad_short(rs=None, tindex=None, lat=None, alpha=0.23, n=None,
     if rs is not None:
         return (1 - alpha) * rs
     else:
-        return (1 - alpha) * calc_rad_sol_in(tindex, lat, n=n, nn=nn)
+        return (1 - alpha) * calc_rad_sol_in(tindex, lat, n, nn=nn)
 
 
 def calc_rad_sol_in(tindex, lat, n, as1=0.25, bs1=0.5, nn=None):
