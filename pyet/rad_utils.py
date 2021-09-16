@@ -129,7 +129,7 @@ def calc_rad_sol_in(tindex, lat, n, as1=0.25, bs1=0.5, nn=None):
     tindex: pandas.DatetimeIndex
     lat: float, optional
         the site latitude [rad]
-    n: pandas.Series/float, optional
+    n: pandas.Series/float
         actual duration of sunshine [hour]
     as1: float, optional
         regression constant,  expressing the fraction of extraterrestrial
