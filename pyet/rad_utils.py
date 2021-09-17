@@ -118,10 +118,10 @@ def calc_rad_short(rs=None, tindex=None, lat=None, alpha=0.23, n=None,
     if rs is not None:
         return (1 - alpha) * rs
     else:
-        return (1 - alpha) * calc_rad_sol_in(tindex, lat, n=n, nn=nn)
+        return (1 - alpha) * calc_rad_sol_in(tindex, lat, n, nn=nn)
 
 
-def calc_rad_sol_in(tindex, lat, as1=0.25, bs1=0.5, n=None, nn=None):
+def calc_rad_sol_in(tindex, lat, n, as1=0.25, bs1=0.5, nn=None):
     """Incoming solar radiation [MJ m-2 d-1].
 
     Parameters
@@ -129,13 +129,13 @@ def calc_rad_sol_in(tindex, lat, as1=0.25, bs1=0.5, n=None, nn=None):
     tindex: pandas.DatetimeIndex
     lat: float, optional
         the site latitude [rad]
+    n: pandas.Series/float
+        actual duration of sunshine [hour]
     as1: float, optional
         regression constant,  expressing the fraction of extraterrestrial
         reaching the earth on overcast days (n = 0) [-]
     bs1: float, optional
         empirical coefficient for extraterrestrial radiation [-]
-    n: pandas.Series/float, optional
-        actual duration of sunshine [hour]
     nn: pandas.Series/float, optional
         maximum possible duration of sunshine or daylight hours [hour]
 
@@ -148,8 +148,8 @@ def calc_rad_sol_in(tindex, lat, as1=0.25, bs1=0.5, n=None, nn=None):
     Based on equation 35 in [allen_1998]_.
     """
     ra = extraterrestrial_r(tindex, lat)
-    if n is None:
-        n = daylight_hours(tindex, lat)
+    if nn is None:
+        nn = daylight_hours(tindex, lat)
     return (as1 + bs1 * n / nn) * ra
 
 
