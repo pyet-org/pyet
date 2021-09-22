@@ -14,7 +14,7 @@ def show_versions():
         f"Numpy version: {np_version}\n"
         f"Scipy version: {sc_version}\n"
         f"Pandas version: {pd_version}\n"
-        f"Matplotlib version: {mpl_version}"
-        f"Pyet version: {ps_version}\n"
+        f"Matplotlib version: {mpl_version}\n"
+        f"Pyet version: {ps_version}"
     )
     return print(msg)
