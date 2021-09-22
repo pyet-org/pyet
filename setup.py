@@ -3,9 +3,14 @@ from setuptools import setup, find_packages
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
+# Get the version.
+version = {}
+with open("pyet/version.py") as fp:
+    exec(fp.read(), version)
+
 setup(
     name='pyet',
-    version='1.1b',
+    version=version['__version__'],
     url='https://github.com/phydrus/pyet',
     license='MIT License',
     author='Matevz Vremec, Raoul Collenteur',
