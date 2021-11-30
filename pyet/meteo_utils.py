@@ -2,7 +2,8 @@
 
 """
 
-from numpy import tan, cos, pi, sin, arccos, clip, maximum, exp, log
+from numpy import tan, cos, pi, sin, arccos, clip, mod, minimum, exp, log, \
+    array
 from pandas import to_numeric
 
 # Specific heat of air [MJ kg-1 °C-1]
@@ -307,20 +308,23 @@ def sunset_angle(sol_dec, lat):
     return arccos(-tan(sol_dec) * tan(lat))
 
 
-def sunset_angle_hour(tindex, sol_dec, lat, lz, lm):
+def sunset_angle_hour(tindex, lat, lz, lon):
     """Sunset hour angle from latitude and solar declination - hourly [rad].
 
     Parameters
     ----------
     tindex: pandas.Index
-    sol_dec: pandas.Series
-        solar declination [rad]
     lat: float
         the site latitude [rad]
     lz: float
-        longitude of the local time zone [°]
-    lm: float
-        longitude of the measurement site [°]
+        longitude of the center of the local time zone [expressed as positive
+        degrees west of Greenwich, England]. In the United States, Lz = 75, 90,
+        105 and 120° for the Eastern, Central, Rocky Mountain and Pacific time
+        zones, respectively, and Lz = 0° for Greenwich, 345° for Paris
+        (France), and 255° for Bangkok (Thailand) [deg]
+    lon: float
+        longitude of the solar radiation measurement site [expressed as
+        positive degrees west of Greenwich, England]
 
     Returns
     -------
@@ -330,24 +334,43 @@ def sunset_angle_hour(tindex, sol_dec, lat, lz, lm):
     -----
     Based on equations 29, 30, 31, 32, 33 in [allen_1998]_.
     """
+    t = tindex.hour - 0.5
     j = day_of_year(tindex)
     b = 2 * pi * (j - 81) / 364
     sc = 0.1645 * sin(2 * b) - 0.1255 * cos(b) - 0.025 * sin(b)
-    t = tindex.hour + 0.5
-    sol_t = t + 0.06667 * (lz - lm) + sc - 12  # equation 31
-    omega = pi / 12 * sol_t
 
-    omega1 = omega - pi / 24
-    omega2 = omega + pi / 24
+    sol_t = t + 0.006667 * (lz - lon) + sc - 12
 
-    omegas = arccos(-tan(lat) * tan(sol_dec))
+    omega = array(pi / 12 * sol_t)
+    omega = _wrap(omega, -pi, pi)
+
+    sol_dec = solar_declination(j)
+    omegas = arccos(clip(-tan(lat) * tan(sol_dec), -1, 1))
+
+    omega1 = omega - (pi / 24)
+    omega2 = omega + (pi / 24)
 
     omega1 = clip(omega1, -omegas, omegas)
     omega2 = clip(omega2, -omegas, omegas)
-    omega1 = maximum(omega1, omega1, )
-    omega1 = clip(omega1, -100000000, omega2)
+    omega1 = minimum(omega1, omega2)
+    return array(omega1), array(omega2)
 
-    return omega2, omega1
+
+def _wrap(x, x_min, x_max):
+    """Wrap floating point values into range - github.com/WSWUP/RefET
+    Parameters
+    ----------
+    x : ndarray
+        Values to wrap.
+    x_min : float
+        Minimum value in output range.
+    x_max : float
+        Maximum value in output range.
+    Returns
+    -------
+    ndarray
+    """
+    return mod((x - x_min), (x_max - x_min)) + x_min
 
 
 def solar_declination(j):
@@ -413,7 +436,7 @@ def extraterrestrial_r(tindex, lat):
     return 118.08 / 3.141592654 * dr * (omega * xx + yy * sin(omega))
 
 
-def extraterrestrial_r_hour(tindex, lat, lz=0, lm=0):
+def extraterrestrial_r_hour(tindex, lat, lz, lon):
     """Extraterrestrial hourly radiation [MJ m-2 h-1].
 
     Parameters
@@ -421,10 +444,15 @@ def extraterrestrial_r_hour(tindex, lat, lz=0, lm=0):
     tindex: pandas.Index
     lat: float
         the site latitude [rad]
-    lz: float, optional
-        longitude of the centre of the local time zone (0° for Greenwich) [°]
-    lm: float, optional
-        longitude of the measurement site [degrees west of Greenwich] [°]
+    lz: float
+        longitude of the center of the local time zone [expressed as positive
+        degrees west of Greenwich, England]. In the United States, Lz = 75, 90,
+        105 and 120° for the Eastern, Central, Rocky Mountain and Pacific time
+        zones, respectively, and Lz = 0° for Greenwich, 345° for Paris
+        (France), and 255° for Bangkok (Thailand)
+    lon: float
+        longitude of the solar radiation measurement site [expressed as
+        positive degrees west of Greenwich, England]
 
     Returns
     -------
@@ -432,20 +460,19 @@ def extraterrestrial_r_hour(tindex, lat, lz=0, lm=0):
 
     Notes
     -----
-    Based on equation 28 in [allen_1998]_.
+    Based on equation 55 in [ASCE_2000]_.
 
     """
     j = day_of_year(tindex)
     dr = relative_distance(j)
     sol_dec = solar_declination(j)
 
-    omega2, omega1 = sunset_angle_hour(tindex, lz=lz, lm=lm, lat=lat,
-                                       sol_dec=sol_dec)
+    omega1, omega2 = sunset_angle_hour(tindex, lat, lz, lon)
     xx = sin(sol_dec) * sin(lat)
     yy = cos(sol_dec) * cos(lat)
     gsc = 4.92
-    return 12 / pi * gsc * dr * ((omega2 - omega1) * xx + yy *
-                                 (sin(omega2) - sin(omega1)))
+    return array(12 / pi * gsc * dr * ((omega2 - omega1) * xx + yy *
+                                       (sin(omega2) - sin(omega1))))
 
 
 def calc_res_surf(lai=None, r_s=70, r_l=100, lai_eff=0, srs=None, co2=None):
