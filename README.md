@@ -37,7 +37,7 @@ implemented:
 
 T, Temperature; U, Wind Speed; D, Radiation; RH, Relative Humidity. Adapted from [@oudin2005potential].
 
-Note: the Penman-Monteith ASCE method can be used on both hourly and daily time scale.
+Note: The Penman-Monteith ASCE method can be applied on the hourly and daily time scales.
 
 ## Examples and Documentation
 
