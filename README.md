@@ -68,6 +68,5 @@ To install in developer mode, use the following syntax:
 `>>> pip install -e .`
 
 ## Citing
-Vremec, M., Collenteur, R., (XXXX). PyEt-open source python package for calculating reference and potential 
-evaporation (Version X.X.X). Zenodo. 
-
+If you use pyet for one of your projects, we ask that you cite the code as follows:
+*Vremec, M., Collenteur, R., (XXXX). PyEt-open source python package for calculating reference and potential evaporation (Version X.X.X). Zenodo.* 
