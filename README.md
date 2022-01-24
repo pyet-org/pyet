@@ -2,20 +2,13 @@
 
 # pyet: Estimation of Potential Evaporation
 
-.. image:: https://travis-ci.org/phydrus/PyEt.svg?branch=master
-   :target: https://travis-ci.org/github/phydrus/PyEt
-.. image:: https://img.shields.io/pypi/v/pyet.svg
-   :target: https://pypi.python.org/pypi/pyet
-.. image:: https://img.shields.io/pypi/l/pyet.svg
-   :target: https://mit-license.org/
-.. image:: https://api.codacy.com/project/badge/Grade/7ed73a2e80784ccf90317c1af8c0cc17
-   :target: https://www.codacy.com/gh/phydrus/pyet
-.. image:: https://app.codacy.com/project/badge/Coverage/e49f23e356f441688422ec32cfcf6aaa
-   :target: https://www.codacy.com/gh/phydrus/pyet
-.. image:: https://zenodo.org/badge/DOI/10.5281/zenodo.5896800.svg
-   :target: https://doi.org/10.5281/zenodo.5896800
-.. image:: https://readthedocs.org/projects/pyet/badge/?version=latest
-   :target: https://pyet.readthedocs.io/en/latest/?badge=latest
+<a href="https://travis-ci.org/github/phydrus/PyEt"><img src="https://api.travis-ci.org/phydrus/PyEt.svg?branch=master"><a>
+<a href="https://mit-license.org/"><img src=https://img.shields.io/pypi/v/pyet.svg><a>
+<a href="https://travis-ci.org/github/phydrus/PyEt"><img src=https://img.shields.io/pypi/l/pyet.svg><a>
+[![Codacy Badge](https://app.codacy.com/project/badge/Grade/e49f23e356f441688422ec32cfcf6aaa)](https://www.codacy.com/gh/phydrus/pyet/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=phydrus/pyet&amp;utm_campaign=Badge_Grade)
+[![Codacy Badge](https://app.codacy.com/project/badge/Coverage/e49f23e356f441688422ec32cfcf6aaa)](https://www.codacy.com/gh/phydrus/pyet/dashboard?utm_source=github.com&utm_medium=referral&utm_content=phydrus/pyet&utm_campaign=Badge_Coverage)
+<a href="https://pyet.readthedocs.io/en/latest/?badge=latest"><img src="https://readthedocs.org/projects/pyet/badge/?version=latest"><a>   
+<a href="https://doi.org/10.5281/zenodo.5896800"><img src=https://zenodo.org/badge/DOI/10.5281/zenodo.5896800.svg><a>   
 
 pyet is an open source python package for calculating reference and potential 
 evaporation (PE). Currently eighteen methods for calculating daily PE are 
@@ -66,8 +59,9 @@ General questions or discussions are possible through
 [GitHub Discussions](https://github.com/phydrus/pyet/discussions).
 
 ## Installation
+
 The pyet package is available from the Pypi package index and can be installed 
-as follows:
+as follows::
 
 `>>> pip install pyet`
 
@@ -76,6 +70,7 @@ To install in developer mode, use the following syntax:
 `>>> pip install -e .`
 
 ## Citing
+
 If you use pyet for one of your projects, we ask that you cite the DOI provided for each official release through Zenodo. Click on the link to get a specific version and DOI, depending on the Pastas version.
 
 - *Vremec, M., Collenteur, R., (XXXX). PyEt: A Python package for estimating evaporation. (Version X.X.X). Zenodo. http://doi.org/10.5281/zenodo.5896800  
