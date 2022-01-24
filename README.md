@@ -2,12 +2,20 @@
 
 # pyet: Estimation of Potential Evaporation
 
-<a href="http://www.gnu.org/licenses/gpl-3.0.txt"><img src=https://img.shields.io/github/license/phydrus/pyet> </a>
-[![Build Status](https://travis-ci.org/phydrus/PyEt.svg?branch=master)](https://travis-ci.org/github/phydrus/PyEt)
-<a href="https://pypi.python.org/pypi/pyet"> <img src=https://img.shields.io/pypi/v/pyet.svg> </a>
-[![Documentation Status](https://readthedocs.org/projects/pyet/badge/?version=latest)](https://pyet.readthedocs.io/en/latest/?badge=latest)
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/7ed73a2e80784ccf90317c1af8c0cc17)](https://app.codacy.com/gh/phydrus/pyet?utm_source=github.com&utm_medium=referral&utm_content=phydrus/pyet&utm_campaign=Badge_Grade_Dashboard)
-[![Codacy Badge](https://app.codacy.com/project/badge/Coverage/e49f23e356f441688422ec32cfcf6aaa)](https://www.codacy.com/gh/phydrus/pyet/dashboard?utm_source=github.com&utm_medium=referral&utm_content=phydrus/pyet&utm_campaign=Badge_Coverage)
+.. image:: https://travis-ci.org/phydrus/PyEt.svg?branch=master
+   :target: https://travis-ci.org/github/phydrus/PyEt
+.. image:: https://img.shields.io/pypi/v/pyet.svg
+   :target: https://pypi.python.org/pypi/pyet
+.. image:: https://img.shields.io/pypi/l/pyet.svg
+   :target: https://mit-license.org/
+.. image:: https://api.codacy.com/project/badge/Grade/7ed73a2e80784ccf90317c1af8c0cc17
+   :target: https://www.codacy.com/gh/phydrus/pyet
+.. image:: https://app.codacy.com/project/badge/Coverage/e49f23e356f441688422ec32cfcf6aaa
+   :target: https://www.codacy.com/gh/phydrus/pyet
+.. image:: https://zenodo.org/badge/DOI/10.5281/zenodo.5896800.svg
+   :target: https://doi.org/10.5281/zenodo.5896800
+.. image:: https://readthedocs.org/projects/pyet/badge/?version=latest
+   :target: https://pyet.readthedocs.io/en/latest/?badge=latest
 
 pyet is an open source python package for calculating reference and potential 
 evaporation (PE). Currently eighteen methods for calculating daily PE are 
@@ -68,5 +76,6 @@ To install in developer mode, use the following syntax:
 `>>> pip install -e .`
 
 ## Citing
-If you use pyet for one of your projects, we ask that you cite the code as follows:
-*Vremec, M., Collenteur, R., (XXXX). PyEt-open source python package for calculating reference and potential evaporation (Version X.X.X). Zenodo.* 
+If you use pyet for one of your projects, we ask that you cite the DOI provided for each official release through Zenodo. Click on the link to get a specific version and DOI, depending on the Pastas version.
+
+- *Vremec, M., Collenteur, R., (XXXX). PyEt: A Python package for estimating evaporation. (Version X.X.X). Zenodo. http://doi.org/10.5281/zenodo.5896800  

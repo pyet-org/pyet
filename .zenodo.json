@@ -1,0 +1,26 @@
+{
+  "description": "",
+  "license": "MIT",
+  "title": "PyEt: A Python package for estimating evaporation",
+  "upload_type": "software",
+  "creators": [
+    {
+      "affiliation": "University of Graz, Graz, Austria.",
+      "name": "Matevz Vremec",
+      "orcid": "0000-0002-2730-494X"
+    },
+    {
+      "affiliation": "University of Graz, Graz, Austria.",
+      "name": "Raoul Collenteur",
+      "orcid": "0000-0001-7843-1538"
+    }
+  ],
+  "access_right": "open",
+  "keywords": [
+    "python",
+    "evaporation",
+    "hydrology",
+    "water balance",
+    "open source"
+  ]
+}
