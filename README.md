@@ -71,6 +71,6 @@ To install in developer mode, use the following syntax:
 
 ## Citing
 
-If you use pyet for one of your projects, we ask that you cite the DOI provided for each official release through Zenodo. Click on the link to get a specific version and DOI, depending on the Pastas version.
-
-- *Vremec, M., Collenteur, R., (XXXX). PyEt: A Python package for estimating evaporation. (Version X.X.X). Zenodo. http://doi.org/10.5281/zenodo.5896800  
+If you use pyet for one of your projects, we ask that you cite the DOI provided for each official release through Zenodo. Click on the link to get a specific version and DOI, depending on the Pastas version:
+  
+*Vremec, M., Collenteur, R., (XXXX). PyEt: A Python package for estimating evaporation. (Version X.X.X). Zenodo. http://doi.org/10.5281/zenodo.5896800*  
