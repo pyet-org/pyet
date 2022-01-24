@@ -10,13 +10,14 @@
 [![Codacy Badge](https://app.codacy.com/project/badge/Coverage/e49f23e356f441688422ec32cfcf6aaa)](https://www.codacy.com/gh/phydrus/pyet/dashboard?utm_source=github.com&utm_medium=referral&utm_content=phydrus/pyet&utm_campaign=Badge_Coverage)
 
 pyet is an open source python package for calculating reference and potential 
-evaporation (PE). Currently eighteen methods for calculating PE are 
+evaporation (PE). Currently eighteen methods for calculating daily PE are 
 implemented:
 
 | Classification | Common method name        | Data needed | pyet Method        | Reference                   |
 |----------------|---------------------------|-------------|--------------------|-----------------------------|
 | Combination    | Penman                    | RH, T, U, D |`penman`            |Penman (1948)                |
 |                | Penman-Monteith           | RH, T, U, D |`pm`                |Monteith (1965)              |
+|                | Penman-Monteith ASCE      | RH, T, U, D |`pm`                |ASCE (2005)                  |
 |                | FAO-56                    | RH, T, U, D |`pm_fao56`          |Allen et al. (1998)          |
 |                | Priestley-Taylor          | T, D        |`priestley_taylor`  |Priestley and Taylor (1972)  |
 |                | Kimberly-Penman           | RH, T, U, D |`kimberly_penman`   |Wright (1982)                |
@@ -35,6 +36,8 @@ implemented:
 |                | Oudin                     | T           |`oudin`             |Oudin (2005)                 |
 
 T, Temperature; U, Wind Speed; D, Radiation; RH, Relative Humidity. Adapted from [@oudin2005potential].
+
+Note: The Penman-Monteith ASCE method can be applied on the hourly and daily time scales.
 
 ## Examples and Documentation
 
@@ -65,4 +68,5 @@ To install in developer mode, use the following syntax:
 `>>> pip install -e .`
 
 ## Citing
-To be added...
+If you use pyet for one of your projects, we ask that you cite the code as follows:
+*Vremec, M., Collenteur, R., (XXXX). PyEt-open source python package for calculating reference and potential evaporation (Version X.X.X). Zenodo.* 

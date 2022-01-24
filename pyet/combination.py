@@ -2,6 +2,7 @@
 
 """
 
+from pandas import Series
 from .meteo_utils import *
 from .rad_utils import *
 
@@ -110,6 +111,154 @@ def penman(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
     den = lambd * (dlt + gamma)
     num1 = dlt * (rn - g) / den
     num2 = gamma * (es - ea) * fu / den
+    return num1 + num2
+
+
+def pm_asce(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
+            rhmax=None, rhmin=None, rh=None, pressure=None, elevation=None,
+            lat=None, n=None, nn=None, rso=None, a=1.35, b=-0.35, cn=900,
+            cd=0.34, ea=None, albedo=0.23, lz=0, lon=0, kab=None, as1=0.25,
+            bs1=0.5, freq="D", etype="os"):
+    """Evaporation calculated according to [monteith_1965]_.
+
+    Parameters
+    ----------
+    tmean: pandas.Series
+        average day temperature [°C]
+    wind: pandas.Series
+        mean day wind speed [m/s]
+    rs: pandas.Series, optional
+        incoming solar radiation [MJ m-2 d-1]
+    rn: pandas.Series, optional
+        net radiation [MJ m-2 d-1]
+    g: pandas.Series/int, optional
+        soil heat flux [MJ m-2 d-1]
+    tmax: pandas.Series, optional
+        maximum day temperature [°C]
+    tmin: pandas.Series, optional
+        minimum day temperature [°C]
+    rhmax: pandas.Series, optional
+        maximum daily relative humidity [%]
+    rhmin: pandas.Series, optional
+        mainimum daily relative humidity [%]
+    rh: pandas.Series, optional
+        mean daily relative humidity [%]
+    pressure: float, optional
+        atmospheric pressure [kPa]
+    elevation: float, optional
+        the site elevation [m]
+    lat: float, optional
+        the site latitude [rad]
+    n: pandas.Series/float, optional
+        actual duration of sunshine [hour]
+    nn: pandas.Series/float, optional
+        maximum possible duration of sunshine or daylight hours [hour]
+    rso: pandas.Series/float, optional
+        clear-sky solar radiation [MJ m-2 day-1]
+    a: float, optional
+        empirical coefficient for Net Long-Wave radiation [-]
+    b: float, optional
+        empirical coefficient for Net Long-Wave radiation [-]
+    cn: float, optional
+        numerator constant [K mm s3 Mg-1 d-1]
+    cd: float, optional
+        denominator constant [s m-1]
+    ea: pandas.Series/float, optional
+        actual vapor pressure [kPa]
+    albedo: float, optional
+        surface albedo [-]
+    lz: float, optional
+        longitude of the center of the local time zone [expressed as positive
+        dergrees west of Greenwich, England]. lz = 0 for Greenwich and 345 deg.
+        for Paris (France).
+    lon: float, optioonal
+        longitude [expressed as positive degrees west of Greenwich, England].
+    kab: float, optional
+        coefficient derived from as1, bs1 for estimating clear-sky radiation
+        [degrees].
+    as1: float, optional
+        regression constant,  expressing the fraction of extraterrestrial
+        reaching the earth on overcast days (n = 0) [-]
+    bs1: float, optional
+        empirical coefficient for extraterrestrial radiation [-]
+    freq: str, optional
+        time step of the input data - "D" for daily, "H" for hourly [-]
+        "D" => daily estimation
+        "H" => hourly estimation
+    etype: str, optional
+        "os" => ASCE-PM method is applied for a reference surfaces
+        representing clipped grass (a short, smooth crop)
+        "rs" => ASCE-PM method is applied for a reference surfaces
+        representing alfalfa (a taller, rougher agricultural crop),)
+
+    Returns
+    -------
+    pandas.Series containing the calculated evaporation
+
+    Examples
+    --------
+    >>> et_pm = pm_asce(tmean, wind, rn=rn, rh=rh)
+
+    Notes
+    -----
+    Following [monteith_1965]_ and [walter_2000]_
+
+    .. math:: PE = \\frac{\\Delta (R_{n}-G)+ \\rho_a c_p K_{min}
+        \\frac{e_s-e_a}{r_a}}{\\lambda(\\Delta +\\gamma(1+\\frac{r_s}{r_a}))}
+
+    References
+    ----------
+    .. [monteith_1965] Monteith, J. L. (1965). Evaporation and environment.
+       In Symposia of the society for experimental biology (Vol. 19, pp.
+       205-234). Cambridge University Press (CUP) Cambridge.
+    .. [walter_2000] Walter, I. A., Allen, R. G., Elliott, R., Jensen, M. E.,
+       Itenfisu, D., Mecham, B., ... & Martin, D. (2000). ASCE's standardized
+       reference evapotranspiration equation. In Watershed management and
+       operations management 2000 (pp. 1-11).
+    """
+    if pressure is None:
+        pressure = calc_press(elevation)
+    gamma = calc_psy(pressure)
+    dlt = calc_vpc(tmean)
+    if ea is None:
+        ea = calc_ea(tmean=tmean, tmax=tmax, tmin=tmin, rhmax=rhmax,
+                     rhmin=rhmin, rh=rh)
+    es = calc_es(tmean=tmean, tmax=tmax, tmin=tmin)
+
+    if rn is None:
+        rns = calc_rad_short(rs=rs, tindex=tmean.index, lat=lat, albedo=albedo,
+                             n=n, lz=lz, lon=lon, nn=nn, as1=as1,
+                             bs1=bs1, freq=freq)  # [MJ/m2/d]
+        rnl = calc_rad_long(rs=rs, tmean=tmean, tmax=tmax, tmin=tmin,
+                            rhmax=rhmax, rhmin=rhmin, rh=rh,
+                            elevation=elevation, lat=lat, rso=rso, a=a,
+                            b=b, ea=ea, lz=lz, lon=lon, kab=kab,
+                            freq=freq)  # [MJ/m2/d]
+        rn = rns - rnl
+    if etype == "rs":
+        cn = 1600
+        cd = 0.38
+    if freq == "H":
+        if etype == "os":
+            cdd = 0.24
+            cdn = 0.96
+            cn = 37
+            g_coefd = 0.1
+            g_coefn = 0.5
+        elif etype == "rs":
+            cdd = 0.25
+            cdn = 1.7
+            cn = 66
+            g_coefd = 0.04
+            g_coefn = 0.2
+        cd = Series(cdd, rn.index)
+        cd[rn < 0] = cdn
+        g = Series(g_coefd * rn, rn.index)
+        g[rn < 0] = g_coefn * rn
+
+    den = dlt + gamma * (1 + cd * wind)
+    num1 = (0.408 * dlt * (rn - g)) / den
+    num2 = gamma * cn / (tmean + 273) * wind * (es - ea) / den
     return num1 + num2
 
 
