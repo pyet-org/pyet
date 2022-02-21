@@ -71,6 +71,14 @@ To install in developer mode, use the following syntax:
 
 ## Citing
 
-If you use pyet for one of your projects, we ask that you cite the DOI provided for each official release through Zenodo. Click on the link to get a specific version and DOI, depending on the Pastas version:
-  
-*Vremec, M., Collenteur, R., (XXXX). PyEt: A Python package for estimating evaporation. (Version X.X.X). Zenodo. http://doi.org/10.5281/zenodo.5896800*  
+If you use PyEt in one of your studies, please cite the PyEt EGU abstract:
+- Vremec, M. and Collenteur, R.: PyEt - a Python package to estimate potential and reference evapotranspiration, EGU General Assembly 2021, online, 19–30 Apr 2021, EGU21-15008, https://doi.org/10.5194/egusphere-egu21-15008, 2021.
+```
+@inproceedings{vremec2021pyet,
+  title={PyEt-a Python package to estimate potential and reference evapotranspiration},
+  author={Vremec, Matev{\v{z}} and Collenteur, Raoul},
+  booktitle={EGU General Assembly Conference Abstracts},
+  pages={EGU21--15008},
+  year={2021}
+}
+```
