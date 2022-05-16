@@ -1,4 +1,4 @@
-import pandas as pd
+import pandas
 
 
 def show_versions():
@@ -28,11 +28,7 @@ def get_index_shape(df):
 
     """
     try:
-        index = pd.DatetimeIndex(df.index)
-<<<<<<< HEAD
+        index = pandas.DatetimeIndex(df.index)
     except AttributeError:
-=======
-    except:
->>>>>>> 9dd04566d670bf640b4a10154e8430ae75f9c615
-        index = pd.DatetimeIndex(df.time)
+        index = pandas.DatetimeIndex(df.time)
     return index, df.shape

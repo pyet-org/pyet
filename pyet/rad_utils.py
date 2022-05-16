@@ -6,22 +6,21 @@ from numpy import sqrt, clip
 
 from .meteo_utils import calc_ea, extraterrestrial_r, daylight_hours
 
-from .utils import get_index_shape
-
 # Stefan Boltzmann constant - hourly [MJm-2K-4h-1]
 STEFAN_BOLTZMANN_HOUR = 2.042 * 10 ** -10
 # Stefan Boltzmann constant - daily [MJm-2K-4d-1]
 STEFAN_BOLTZMANN_DAY = 4.903 * 10 ** -9
 
 
-def calc_rad_long(rs, tindex=None, shape=None, tmean=None, tmax=None, tmin=None,
+def calc_rad_long(rs, tindex=None, shape=None, tmean=None, tmax=None,
+                  tmin=None,
                   rhmax=None, rhmin=None, rh=None, elevation=None, lat=None,
                   rso=None, a=1.35, b=-0.35, ea=None, kab=None):
     """Net longwave radiation [MJ m-2 d-1].
 
     Parameters
     ----------
-    rs: pandas.Series
+    rs: pandas.Series, optional
         incoming solar radiation [MJ m-2 d-1]
     tindex: pandas.DatetimeIndex
     shape: tuple
@@ -79,19 +78,7 @@ def calc_rad_long(rs, tindex=None, shape=None, tmean=None, tmax=None, tmin=None,
         tmp1 = STEFAN_BOLTZMANN_DAY * ((tmax + 273.16) ** 4 +
                                        (tmin + 273.16) ** 4) / 2
     else:
-<<<<<<< HEAD
         tmp1 = STEFAN_BOLTZMANN_DAY * (tmean + 273.16) ** 4
-=======
-        if rso is None:
-            ra = extraterrestrial_r(tindex=rs.index, lat=lat, shape=rs.shape)
-            rso = calc_rso(ra=ra, elevation=elevation, kab=kab)
-        solar_rat = clip(rs / rso, 0.3, 1)
-        if tmax is not None:
-            tmp1 = STEFAN_BOLTZMANN_DAY * ((tmax + 273.16) ** 4 +
-                                           (tmin + 273.16) ** 4) / 2
-        else:
-            tmp1 = STEFAN_BOLTZMANN_DAY * (tmean + 273.16) ** 4
->>>>>>> 9dd04566d670bf640b4a10154e8430ae75f9c615
 
     tmp2 = 0.34 - 0.14 * sqrt(ea)  # OK
     tmp3 = a * solar_rat + b  # OK
@@ -99,13 +86,8 @@ def calc_rad_long(rs, tindex=None, shape=None, tmean=None, tmax=None, tmin=None,
     return tmp1 * tmp2 * tmp3
 
 
-<<<<<<< HEAD
 def calc_rad_short(rs=None, tindex=None, lat=None, shape=None, albedo=0.23,
                    n=None, nn=None, as1=0.25, bs1=0.5):
-=======
-def calc_rad_short(rs=None, tindex=None, shape=None, lat=None, albedo=0.23,
-                   n=None, lz=0, lon=0, nn=None, as1=0.25, bs1=0.5, freq="D"):
->>>>>>> 9dd04566d670bf640b4a10154e8430ae75f9c615
     """Net shortwave radiation [MJ m-2 d-1].
 
     Parameters
@@ -140,21 +122,11 @@ def calc_rad_short(rs=None, tindex=None, shape=None, lat=None, albedo=0.23,
     if rs is not None:
         return (1 - albedo) * rs
     else:
-<<<<<<< HEAD
         return (1 - albedo) * calc_rad_sol_in(tindex, lat, shape, n, as1=as1,
                                               bs1=bs1, nn=nn)
 
 
 def calc_rad_sol_in(tindex, lat, shape, n, as1=0.25, bs1=0.5, nn=None):
-=======
-        return (1 - albedo) * calc_rad_sol_in(tindex, lat, n, shape, lz=lz,
-                                              lon=lon, as1=as1, bs1=bs1, nn=nn,
-                                              freq=freq)
-
-
-def calc_rad_sol_in(index, lat, n, shape, lz=0, lon=0, as1=0.25, bs1=0.5,
-                    nn=None, freq="D"):
->>>>>>> 9dd04566d670bf640b4a10154e8430ae75f9c615
     """Incoming solar radiation [MJ m-2 d-1].
 
     Parameters
@@ -182,16 +154,9 @@ def calc_rad_sol_in(index, lat, n, shape, lz=0, lon=0, as1=0.25, bs1=0.5,
     -----
     Based on equation 35 in [allen_1998]_.
     """
-<<<<<<< HEAD
     ra = extraterrestrial_r(tindex, lat, shape)
-=======
-    if freq == "D":
-        ra = extraterrestrial_r(index, lat, shape)
-    else:
-        ra = extraterrestrial_r_hour(index, lat, lz, lon)
->>>>>>> 9dd04566d670bf640b4a10154e8430ae75f9c615
     if nn is None:
-        nn = daylight_hours(index, lat)
+        nn = daylight_hours(tindex, lat)
     return (as1 + bs1 * n / nn) * ra
 
 
