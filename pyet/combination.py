@@ -5,6 +5,7 @@
 from pandas import Series
 from .meteo_utils import *
 from .rad_utils import *
+from .utils import get_index_shape
 
 # Specific heat of air [MJ kg-1 °C-1]
 CP = 1.013 * 10 ** -3
@@ -98,13 +99,8 @@ def penman(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
                  rh=rh)
     es = calc_es(tmean=tmean, tmax=tmax, tmin=tmin)
 
-    if rn is None:
-        rns = calc_rad_short(rs=rs, n=n, nn=nn)  # [MJ/m2/d]
-        rnl = calc_rad_long(rs=rs, tmean=tmean, tmax=tmax, tmin=tmin,
-                            rhmax=rhmax, rhmin=rhmin, rh=rh,
-                            elevation=elevation, lat=lat, rso=rso, a=a, b=b,
-                            ea=ea)  # [MJ/m2/d]
-        rn = rns - rnl
+    rn = get_rn(tmean, rs, lat, n, nn, tmax, tmin, rhmax, rhmin, rh,
+                elevation, rso, a, b, ea)
 
     fu = aw * (1 + bw * wind)
 
@@ -226,8 +222,9 @@ def pm_asce(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
     es = calc_es(tmean=tmean, tmax=tmax, tmin=tmin)
 
     if rn is None:
-        rns = calc_rad_short(rs=rs, tindex=tmean.index, lat=lat, albedo=albedo,
-                             n=n, lz=lz, lon=lon, nn=nn, as1=as1,
+        index, shape = get_index_shape(tmean)
+        rns = calc_rad_short(rs=rs, tindex=index, lat=lat, albedo=albedo,
+                             n=n, lz=lz, lon=lon, nn=nn, as1=as1, shape=shape,
                              bs1=bs1, freq=freq)  # [MJ/m2/d]
         rnl = calc_rad_long(rs=rs, tmean=tmean, tmax=tmax, tmin=tmin,
                             rhmax=rhmax, rhmin=rhmin, rh=rh,
@@ -235,6 +232,7 @@ def pm_asce(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
                             b=b, ea=ea, lz=lz, lon=lon, kab=kab,
                             freq=freq)  # [MJ/m2/d]
         rn = rns - rnl
+
     if etype == "rs":
         cn = 1600
         cd = 0.38
@@ -372,13 +370,8 @@ def pm(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None, rhmax=None,
                           co2=co2)
     gamma1 = gamma * a_sh / a_s * (1 + res_s / res_a)
 
-    if rn is None:
-        rns = calc_rad_short(rs=rs, n=n, nn=nn)  # [MJ/m2/d]
-        rnl = calc_rad_long(rs=rs, tmean=tmean, tmax=tmax, tmin=tmin,
-                            rhmax=rhmax, rhmin=rhmin, rh=rh,
-                            elevation=elevation, lat=lat, rso=rso, a=a, b=b,
-                            ea=ea)  # [MJ/m2/d]
-        rn = rns - rnl
+    rn = get_rn(tmean, rs, lat, n, nn, tmax, tmin, rhmax, rhmin, rh,
+                elevation, rso, a, b, ea)
 
     kmin = 86400  # unit conversion s d-1
     rho_a = calc_rho(pressure, tmean, ea)
@@ -460,13 +453,8 @@ def pm_fao56(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
                  rh=rh)
     es = calc_es(tmean=tmean, tmax=tmax, tmin=tmin)
 
-    if rn is None:
-        rns = calc_rad_short(rs=rs, n=n, nn=nn)  # [MJ/m2/d]
-        rnl = calc_rad_long(rs=rs, tmean=tmean, tmax=tmax, tmin=tmin,
-                            rhmax=rhmax, rhmin=rhmin, rh=rh,
-                            elevation=elevation, lat=lat, rso=rso, a=a, b=b,
-                            ea=ea)  # [MJ/m2/d]
-        rn = rns - rnl
+    rn = get_rn(tmean, rs, lat, n, nn, tmax, tmin, rhmax, rhmin, rh,
+                elevation, rso, a, b, ea, as1, bs1, kab)
 
     den = dlt + gamma1
     num1 = (0.408 * dlt * (rn - g)) / den
@@ -548,12 +536,8 @@ def priestley_taylor(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
     dlt = calc_vpc(tmean)
     lambd = calc_lambda(tmean)
 
-    if rn is None:
-        rns = calc_rad_short(rs=rs, n=n, nn=nn)  # [MJ/m2/d]
-        rnl = calc_rad_long(rs=rs, tmean=tmean, tmax=tmax, tmin=tmin,
-                            rhmax=rhmax, rhmin=rhmin, rh=rh,
-                            elevation=elevation, lat=lat, rso=rso, a=a, b=b)
-        rn = rns - rnl
+    rn = get_rn(tmean, rs, lat, n, nn, tmax, tmin, rhmax, rhmin, rh,
+                elevation, rso, a, b, as1, bs1, kab)
 
     return (alpha * dlt * (rn - g)) / (lambd * (dlt + gamma))
 
@@ -632,13 +616,8 @@ def kimberly_penman(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
                  rh=rh)
     es = calc_es(tmean=tmean, tmax=tmax, tmin=tmin)
 
-    if rn is None:
-        rns = calc_rad_short(rs=rs, n=n, nn=nn)  # [MJ/m2/d]
-        rnl = calc_rad_long(rs=rs, tmean=tmean, tmax=tmax, tmin=tmin,
-                            rhmax=rhmax, rhmin=rhmin, rh=rh,
-                            elevation=elevation, lat=lat, rso=rso, a=a, b=b,
-                            ea=ea)  # [MJ/m2/d]
-        rn = rns - rnl
+    rn = get_rn(tmean, rs, lat, n, nn, tmax, tmin, rhmax, rhmin, rh,
+                elevation, rso, a, b, ea, as1, bs1, kab)
 
     j = day_of_year(tmean.index)
     w = wind * (0.4 + 0.14 * exp(-((j - 173) / 58) ** 2) + (
@@ -753,13 +732,8 @@ def thom_oliver(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
                           co2=co2)
     gamma1 = gamma * (1 + res_s / res_a)
 
-    if rn is None:
-        rns = calc_rad_short(rs=rs, n=n, nn=nn)  # [MJ/m2/d]
-        rnl = calc_rad_long(rs=rs, tmean=tmean, tmax=tmax, tmin=tmin,
-                            rhmax=rhmax, rhmin=rhmin, rh=rh,
-                            elevation=elevation, lat=lat, rso=rso, a=a, b=b,
-                            ea=ea)  # [MJ/m2/d]
-        rn = rns - rnl
+    rn = get_rn(tmean, rs, lat, n, nn, tmax, tmin, rhmax, rhmin, rh,
+                elevation, rso, a, b, ea, as1, bs1, kab)
 
     w = aw * (1 + bw * wind)
 
@@ -767,3 +741,17 @@ def thom_oliver(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
     num1 = dlt * (rn - g) / den
     num2 = 2.5 * gamma * (es - ea) * w / den
     return num1 + num2
+
+
+def get_rn(tmean, rs=None, lat=None, n=None, nn=None, tmax=None, tmin=None,
+           rhmax=None, rhmin=None, rh=None, elevation=None, rso=None,
+           a=None, b=None, ea=None):
+    index, shape = get_index_shape(tmean)
+    rns = calc_rad_short(rs=rs, tindex=index, lat=lat, n=n, nn=nn,
+                         shape=shape, as1=as1, bs1=bs1)  # [MJ/m2/d]
+    rnl = calc_rad_long(rs=rs, tmean=tmean, tmax=tmax, tmin=tmin,
+                        rhmax=rhmax, rhmin=rhmin, rh=rh,
+                        elevation=elevation, lat=lat, rso=rso, a=a,
+                        b=b, ea=ea)  # [MJ/m2/d]
+    rn = rns - rnl
+    return rn

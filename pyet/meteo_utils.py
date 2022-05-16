@@ -3,7 +3,7 @@
 """
 
 from numpy import tan, cos, pi, sin, arccos, clip, mod, minimum, exp, log, \
-    array
+    array, broadcast_to
 from pandas import to_numeric
 
 # Specific heat of air [MJ kg-1 °C-1]
@@ -409,7 +409,7 @@ def relative_distance(j):
     return 1 + 0.033 * cos(2. * pi / 365. * j)
 
 
-def extraterrestrial_r(tindex, lat):
+def extraterrestrial_r(tindex, lat, shape):
     """Extraterrestrial daily radiation [MJ m-2 d-1].
 
     Parameters
@@ -417,6 +417,8 @@ def extraterrestrial_r(tindex, lat):
     tindex: pandas.Index
     lat: float
         the site latitude [rad]
+    shape: list
+        shape of the input file
 
     Returns
     -------
@@ -433,7 +435,8 @@ def extraterrestrial_r(tindex, lat):
     omega = sunset_angle(sol_dec, lat)
     xx = sin(sol_dec) * sin(lat)
     yy = cos(sol_dec) * cos(lat)
-    return 118.08 / 3.141592654 * dr * (omega * xx + yy * sin(omega))
+    return broadcast_to(
+        118.08 / 3.141592654 * dr * (omega * xx + yy * sin(omega)), shape)
 
 
 def extraterrestrial_r_hour(tindex, lat, lz, lon):

@@ -1,3 +1,6 @@
+import pandas as pd
+
+
 def show_versions():
     """Method to print the version of dependencies.
 
@@ -18,3 +21,14 @@ def show_versions():
         f"Pyet version: {ps_version}"
     )
     return print(msg)
+
+
+def get_index_shape(df):
+    """Method to return the index and shape of the input data.
+
+    """
+    try:
+        index = pd.DatetimeIndex(df.index)
+    except:
+        index = pd.DatetimeIndex(df.time)
+    return index, df.shape

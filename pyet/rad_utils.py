@@ -21,7 +21,7 @@ def calc_rad_long(rs, tmean=None, tmax=None, tmin=None, rhmax=None,
 
     Parameters
     ----------
-    rs: pandas.Series, optional
+    rs: pandas.Series
         incoming solar radiation [MJ m-2 d-1]
     tmean: pandas.Series, optional
         average day temperature [°C]
@@ -95,7 +95,7 @@ def calc_rad_long(rs, tmean=None, tmax=None, tmin=None, rhmax=None,
         tmp1 = STEFAN_BOLTZMANN_HOUR * (tmean + 273.16) ** 4
     else:
         if rso is None:
-            ra = extraterrestrial_r(tindex=rs.index, lat=lat)
+            ra = extraterrestrial_r(tindex=rs.index, lat=lat, shape=rs.shape)
             rso = calc_rso(ra=ra, elevation=elevation, kab=kab)
         solar_rat = clip(rs / rso, 0.3, 1)
         if tmax is not None:
@@ -110,8 +110,8 @@ def calc_rad_long(rs, tmean=None, tmax=None, tmin=None, rhmax=None,
     return tmp1 * tmp2 * tmp3
 
 
-def calc_rad_short(rs=None, tindex=None, lat=None, albedo=0.23, n=None, lz=0,
-                   lon=0, nn=None, as1=0.25, bs1=0.5, freq="D"):
+def calc_rad_short(rs=None, tindex=None, shape=None, lat=None, albedo=0.23,
+                   n=None, lz=0, lon=0, nn=None, as1=0.25, bs1=0.5, freq="D"):
     """Net shortwave radiation [MJ m-2 d-1].
 
     Parameters
@@ -156,13 +156,13 @@ def calc_rad_short(rs=None, tindex=None, lat=None, albedo=0.23, n=None, lz=0,
     if rs is not None:
         return (1 - albedo) * rs
     else:
-        return (1 - albedo) * calc_rad_sol_in(tindex, lat, n, lz=lz, lon=lon,
-                                              as1=as1, bs1=bs1, nn=nn,
+        return (1 - albedo) * calc_rad_sol_in(tindex, lat, n, shape, lz=lz,
+                                              lon=lon, as1=as1, bs1=bs1, nn=nn,
                                               freq=freq)
 
 
-def calc_rad_sol_in(tindex, lat, n, lz=0, lon=0, as1=0.25, bs1=0.5, nn=None,
-                    freq="D"):
+def calc_rad_sol_in(index, lat, n, shape, lz=0, lon=0, as1=0.25, bs1=0.5,
+                    nn=None, freq="D"):
     """Incoming solar radiation [MJ m-2 d-1].
 
     Parameters
@@ -201,11 +201,11 @@ def calc_rad_sol_in(tindex, lat, n, lz=0, lon=0, as1=0.25, bs1=0.5, nn=None,
     Based on equation 35 in [allen_1998]_.
     """
     if freq == "D":
-        ra = extraterrestrial_r(tindex, lat)
+        ra = extraterrestrial_r(index, lat, shape)
     else:
-        ra = extraterrestrial_r_hour(tindex, lat, lz, lon)
+        ra = extraterrestrial_r_hour(index, lat, lz, lon)
     if nn is None:
-        nn = daylight_hours(tindex, lat)
+        nn = daylight_hours(index, lat)
     return (as1 + bs1 * n / nn) * ra
 
 
