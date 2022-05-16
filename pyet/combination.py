@@ -2,9 +2,9 @@
 
 """
 
-from pandas import Series
 from .meteo_utils import *
 from .rad_utils import *
+from .utils import get_index_shape
 
 # Specific heat of air [MJ kg-1 °C-1]
 CP = 1.013 * 10 ** -3
@@ -17,7 +17,7 @@ STEFAN_BOLTZMANN_DAY = 4.903 * 10 ** -9
 def penman(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
            rhmax=None, rhmin=None, rh=None, pressure=None, elevation=None,
            lat=None, n=None, nn=None, rso=None, aw=2.6, bw=0.536, a=1.35,
-           b=-0.35):
+           b=-0.35, albedo=0.23):
     """Evaporation calculated according to [penman_1948]_.
 
     Parameters
@@ -62,6 +62,8 @@ def penman(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
         empirical coefficient for Net Long-Wave radiation [-]
     b: float, optional
         empirical coefficient for Net Long-Wave radiation [-]
+    albedo: float, optional
+        surface albedo [-]
 
     Returns
     -------
@@ -97,14 +99,9 @@ def penman(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
     ea = calc_ea(tmean=tmean, tmax=tmax, tmin=tmin, rhmax=rhmax, rhmin=rhmin,
                  rh=rh)
     es = calc_es(tmean=tmean, tmax=tmax, tmin=tmin)
-
     if rn is None:
-        rns = calc_rad_short(rs=rs, n=n, nn=nn)  # [MJ/m2/d]
-        rnl = calc_rad_long(rs=rs, tmean=tmean, tmax=tmax, tmin=tmin,
-                            rhmax=rhmax, rhmin=rhmin, rh=rh,
-                            elevation=elevation, lat=lat, rso=rso, a=a, b=b,
-                            ea=ea)  # [MJ/m2/d]
-        rn = rns - rnl
+        rn = get_rn(tmean, rs, lat, n, nn, tmax, tmin, rhmax, rhmin, rh,
+                    elevation, rso, a, b, ea, albedo)
 
     fu = aw * (1 + bw * wind)
 
@@ -117,8 +114,8 @@ def penman(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
 def pm_asce(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
             rhmax=None, rhmin=None, rh=None, pressure=None, elevation=None,
             lat=None, n=None, nn=None, rso=None, a=1.35, b=-0.35, cn=900,
-            cd=0.34, ea=None, albedo=0.23, lz=0, lon=0, kab=None, as1=0.25,
-            bs1=0.5, freq="D", etype="os"):
+            cd=0.34, ea=None, albedo=0.23, kab=None, as1=0.25, bs1=0.5,
+            etype="os"):
     """Evaporation calculated according to [monteith_1965]_.
 
     Parameters
@@ -167,12 +164,6 @@ def pm_asce(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
         actual vapor pressure [kPa]
     albedo: float, optional
         surface albedo [-]
-    lz: float, optional
-        longitude of the center of the local time zone [expressed as positive
-        dergrees west of Greenwich, England]. lz = 0 for Greenwich and 345 deg.
-        for Paris (France).
-    lon: float, optioonal
-        longitude [expressed as positive degrees west of Greenwich, England].
     kab: float, optional
         coefficient derived from as1, bs1 for estimating clear-sky radiation
         [degrees].
@@ -181,10 +172,6 @@ def pm_asce(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
         reaching the earth on overcast days (n = 0) [-]
     bs1: float, optional
         empirical coefficient for extraterrestrial radiation [-]
-    freq: str, optional
-        time step of the input data - "D" for daily, "H" for hourly [-]
-        "D" => daily estimation
-        "H" => hourly estimation
     etype: str, optional
         "os" => ASCE-PM method is applied for a reference surfaces
         representing clipped grass (a short, smooth crop)
@@ -224,37 +211,12 @@ def pm_asce(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
         ea = calc_ea(tmean=tmean, tmax=tmax, tmin=tmin, rhmax=rhmax,
                      rhmin=rhmin, rh=rh)
     es = calc_es(tmean=tmean, tmax=tmax, tmin=tmin)
-
     if rn is None:
-        rns = calc_rad_short(rs=rs, tindex=tmean.index, lat=lat, albedo=albedo,
-                             n=n, lz=lz, lon=lon, nn=nn, as1=as1,
-                             bs1=bs1, freq=freq)  # [MJ/m2/d]
-        rnl = calc_rad_long(rs=rs, tmean=tmean, tmax=tmax, tmin=tmin,
-                            rhmax=rhmax, rhmin=rhmin, rh=rh,
-                            elevation=elevation, lat=lat, rso=rso, a=a,
-                            b=b, ea=ea, lz=lz, lon=lon, kab=kab,
-                            freq=freq)  # [MJ/m2/d]
-        rn = rns - rnl
+        rn = get_rn(tmean, rs, lat, n, nn, tmax, tmin, rhmax, rhmin, rh,
+                    elevation, rso, a, b, ea, albedo, as1, bs1, kab)
     if etype == "rs":
         cn = 1600
         cd = 0.38
-    if freq == "H":
-        if etype == "os":
-            cdd = 0.24
-            cdn = 0.96
-            cn = 37
-            g_coefd = 0.1
-            g_coefn = 0.5
-        elif etype == "rs":
-            cdd = 0.25
-            cdn = 1.7
-            cn = 66
-            g_coefd = 0.04
-            g_coefn = 0.2
-        cd = Series(cdd, rn.index)
-        cd[rn < 0] = cdn
-        g = Series(g_coefd * rn, rn.index)
-        g[rn < 0] = g_coefn * rn
 
     den = dlt + gamma * (1 + cd * wind)
     num1 = (0.408 * dlt * (rn - g)) / den
@@ -265,7 +227,8 @@ def pm_asce(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
 def pm(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None, rhmax=None,
        rhmin=None, rh=None, pressure=None, elevation=None, lat=None, n=None,
        nn=None, rso=None, a=1.35, b=-0.35, lai=None, croph=None, r_l=100,
-       r_s=70, ra_method=1, a_sh=1, a_s=1, lai_eff=1, srs=0.0009, co2=300):
+       r_s=70, ra_method=1, a_sh=1, a_s=1, lai_eff=1, srs=0.0009, co2=300,
+       albedo=0.23):
     """Evaporation calculated according to [monteith_1965]_.
 
     Parameters
@@ -331,6 +294,8 @@ def pm(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None, rhmax=None,
         Relative sensitivity of rl to Δ[CO2]
     co2: float
         CO2 concentration [ppm]
+    albedo: float, optional
+        surface albedo [-]
 
     Returns
     -------
@@ -371,14 +336,9 @@ def pm(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None, rhmax=None,
     res_s = calc_res_surf(lai=lai, r_s=r_s, r_l=r_l, lai_eff=lai_eff, srs=srs,
                           co2=co2)
     gamma1 = gamma * a_sh / a_s * (1 + res_s / res_a)
-
     if rn is None:
-        rns = calc_rad_short(rs=rs, n=n, nn=nn)  # [MJ/m2/d]
-        rnl = calc_rad_long(rs=rs, tmean=tmean, tmax=tmax, tmin=tmin,
-                            rhmax=rhmax, rhmin=rhmin, rh=rh,
-                            elevation=elevation, lat=lat, rso=rso, a=a, b=b,
-                            ea=ea)  # [MJ/m2/d]
-        rn = rns - rnl
+        rn = get_rn(tmean, rs, lat, n, nn, tmax, tmin, rhmax, rhmin, rh,
+                    elevation, rso, a, b, ea, albedo)
 
     kmin = 86400  # unit conversion s d-1
     rho_a = calc_rho(pressure, tmean, ea)
@@ -391,7 +351,8 @@ def pm(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None, rhmax=None,
 
 def pm_fao56(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
              rhmax=None, rhmin=None, rh=None, pressure=None, elevation=None,
-             lat=None, n=None, nn=None, rso=None, a=1.35, b=-0.35):
+             lat=None, n=None, nn=None, rso=None, a=1.35, b=-0.35,
+             albedo=0.23):
     """Evaporation calculated according to [allen_1998]_.
 
     Parameters
@@ -432,6 +393,8 @@ def pm_fao56(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
         empirical coefficient for Net Long-Wave radiation [-]
     b: float, optional
         empirical coefficient for Net Long-Wave radiation [-]
+    albedo: float, optional
+        surface albedo [-]
 
     Returns
     -------
@@ -459,14 +422,9 @@ def pm_fao56(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
     ea = calc_ea(tmean=tmean, tmax=tmax, tmin=tmin, rhmax=rhmax, rhmin=rhmin,
                  rh=rh)
     es = calc_es(tmean=tmean, tmax=tmax, tmin=tmin)
-
     if rn is None:
-        rns = calc_rad_short(rs=rs, n=n, nn=nn)  # [MJ/m2/d]
-        rnl = calc_rad_long(rs=rs, tmean=tmean, tmax=tmax, tmin=tmin,
-                            rhmax=rhmax, rhmin=rhmin, rh=rh,
-                            elevation=elevation, lat=lat, rso=rso, a=a, b=b,
-                            ea=ea)  # [MJ/m2/d]
-        rn = rns - rnl
+        rn = get_rn(tmean, rs, lat, n, nn, tmax, tmin, rhmax, rhmin, rh,
+                    elevation, rso, a, b, ea, albedo)
 
     den = dlt + gamma1
     num1 = (0.408 * dlt * (rn - g)) / den
@@ -477,7 +435,7 @@ def pm_fao56(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
 def priestley_taylor(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
                      rhmax=None, rhmin=None, rh=None, pressure=None,
                      elevation=None, lat=None, n=None, nn=None, rso=None,
-                     a=1.35, b=-0.35, alpha=1.26):
+                     a=1.35, b=-0.35, alpha=1.26, albedo=0.23):
     """Evaporation calculated according to [priestley_and_taylor_1965]_.
 
     Parameters
@@ -520,6 +478,8 @@ def priestley_taylor(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
         empirical coefficient for Net Long-Wave radiation [-]
     alpha: float, optional
         calibration coeffiecient [-]
+    albedo: float, optional
+        surface albedo [-]
 
     Returns
     -------
@@ -547,13 +507,9 @@ def priestley_taylor(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
     gamma = calc_psy(pressure)
     dlt = calc_vpc(tmean)
     lambd = calc_lambda(tmean)
-
     if rn is None:
-        rns = calc_rad_short(rs=rs, n=n, nn=nn)  # [MJ/m2/d]
-        rnl = calc_rad_long(rs=rs, tmean=tmean, tmax=tmax, tmin=tmin,
-                            rhmax=rhmax, rhmin=rhmin, rh=rh,
-                            elevation=elevation, lat=lat, rso=rso, a=a, b=b)
-        rn = rns - rnl
+        rn = get_rn(tmean, rs, lat, n, nn, tmax, tmin, rhmax, rhmin, rh,
+                    elevation, rso, a, b, albedo=albedo)
 
     return (alpha * dlt * (rn - g)) / (lambd * (dlt + gamma))
 
@@ -561,36 +517,36 @@ def priestley_taylor(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
 def kimberly_penman(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
                     rhmax=None, rhmin=None, rh=None, pressure=None,
                     elevation=None, lat=None, n=None, nn=None, rso=None,
-                    a=1.35, b=-0.35):
+                    a=1.35, b=-0.35, albedo=0.23):
     """Evaporation calculated according to [wright_1982]_.
 
     Parameters
     ----------
-    tmean: pandas.Series
+    tmean: pandas.Series/xarray.DataArray
         average day temperature [°C]
-    wind: pandas.Series
+    wind: pandas.Series/xarray.DataArray
         mean day wind speed [m/s]
-    rs: pandas.Series, optional
+    rs: pandas.Series/xarray.DataArray, optional
         incoming solar radiation [MJ m-2 d-1]
-    rn: pandas.Series, optional
+    rn: pandas.Series/xarray.DataArray, optional
         net radiation [MJ m-2 d-1]
-    g: pandas.Series/int, optional
+    g: pandas.Series/int/xarray.DataArray, optional
         soil heat flux [MJ m-2 d-1]
-    tmax: pandas.Series, optional
+    tmax: pandas.Series/xarray.DataArray, optional
         maximum day temperature [°C]
-    tmin: pandas.Series, optional
+    tmin: pandas.Series/xarray.DataArray, optional
         minimum day temperature [°C]
-    rhmax: pandas.Series, optional
+    rhmax: pandas.Series/xarray.DataArray, optional
         maximum daily relative humidity [%]
-    rhmin: pandas.Series, optional
+    rhmin: pandas.Series/xarray.DataArray, optional
         mainimum daily relative humidity [%]
-    rh: pandas.Series, optional
+    rh: pandas.Series/xarray.DataArray, optional
         mean daily relative humidity [%]
-    pressure: float, optional
+    pressure: float/xarray.DataArray, optional
         atmospheric pressure [kPa]
-    elevation: float, optional
+    elevation: float/xarray.DataArray, optional
         the site elevation [m]
-    lat: float, optional
+    lat: float/xarray.DataArray, optional
         the site latitude [rad]
     n: pandas.Series/float, optional
         actual duration of sunshine [hour]
@@ -602,6 +558,8 @@ def kimberly_penman(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
         empirical coefficient for Net Long-Wave radiation [-]
     b: float, optional
         empirical coefficient for Net Long-Wave radiation [-]
+    albedo: float, optional
+        surface albedo [-]
 
     Returns
     -------
@@ -633,12 +591,8 @@ def kimberly_penman(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
     es = calc_es(tmean=tmean, tmax=tmax, tmin=tmin)
 
     if rn is None:
-        rns = calc_rad_short(rs=rs, n=n, nn=nn)  # [MJ/m2/d]
-        rnl = calc_rad_long(rs=rs, tmean=tmean, tmax=tmax, tmin=tmin,
-                            rhmax=rhmax, rhmin=rhmin, rh=rh,
-                            elevation=elevation, lat=lat, rso=rso, a=a, b=b,
-                            ea=ea)  # [MJ/m2/d]
-        rn = rns - rnl
+        rn = get_rn(tmean, rs, lat, n, nn, tmax, tmin, rhmax, rhmin, rh,
+                    elevation, rso, a, b, ea, albedo)
 
     j = day_of_year(tmean.index)
     w = wind * (0.4 + 0.14 * exp(-((j - 173) / 58) ** 2) + (
@@ -654,7 +608,7 @@ def thom_oliver(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
                 rhmax=None, rhmin=None, rh=None, pressure=None, elevation=None,
                 lat=None, n=None, nn=None, rso=None, aw=2.6, bw=0.536, a=1.35,
                 b=-0.35, lai=None, croph=None, r_l=100, r_s=70, ra_method=1,
-                lai_eff=1, srs=0.0009, co2=300):
+                lai_eff=1, srs=0.0009, co2=300, albedo=0.23):
     """Evaporation calculated according to [thom_1977]_.
 
     Parameters
@@ -719,6 +673,8 @@ def thom_oliver(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
         Relative sensitivity of rl to Δ[CO2]
     co2: float
         CO2 concentration [ppm]
+    albedo: float, optional
+        surface albedo [-]
 
     Returns
     -------
@@ -754,12 +710,8 @@ def thom_oliver(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
     gamma1 = gamma * (1 + res_s / res_a)
 
     if rn is None:
-        rns = calc_rad_short(rs=rs, n=n, nn=nn)  # [MJ/m2/d]
-        rnl = calc_rad_long(rs=rs, tmean=tmean, tmax=tmax, tmin=tmin,
-                            rhmax=rhmax, rhmin=rhmin, rh=rh,
-                            elevation=elevation, lat=lat, rso=rso, a=a, b=b,
-                            ea=ea)  # [MJ/m2/d]
-        rn = rns - rnl
+        rn = get_rn(tmean, rs, lat, n, nn, tmax, tmin, rhmax, rhmin, rh,
+                    elevation, rso, a, b, ea, albedo)
 
     w = aw * (1 + bw * wind)
 
@@ -767,3 +719,18 @@ def thom_oliver(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
     num1 = dlt * (rn - g) / den
     num2 = 2.5 * gamma * (es - ea) * w / den
     return num1 + num2
+
+
+def get_rn(tmean, rs=None, lat=None, n=None, nn=None, tmax=None, tmin=None,
+           rhmax=None, rhmin=None, rh=None, elevation=None, rso=None,
+           a=1.35, b=-0.35, ea=None, albedo=0.23, as1=0.25, bs1=0.5, kab=None):
+    tindex, shape = get_index_shape(tmean)
+    rns = calc_rad_short(rs=rs, tindex=tindex, lat=lat, n=n, nn=nn,
+                         shape=shape, albedo=albedo, as1=as1,
+                         bs1=bs1)  # [MJ/m2/d]
+    rnl = calc_rad_long(rs=rs, tmean=tmean, tmax=tmax, tmin=tmin, rhmax=rhmax,
+                        rhmin=rhmin, rh=rh, elevation=elevation, lat=lat,
+                        rso=rso, a=a, b=b, ea=ea, kab=kab, tindex=tindex,
+                        shape=shape)  # [MJ/m2/d]
+    rn = rns - rnl
+    return rn

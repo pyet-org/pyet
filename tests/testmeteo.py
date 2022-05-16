@@ -12,5 +12,5 @@ class Testmeteo(unittest.TestCase):
         tindex = pd.to_datetime("2021-5-15")
         lat = -22.9 * np.pi / 180
         n = 7.1
-        rad_sol_in = et.calc_rad_sol_in(tindex, lat, n)
+        rad_sol_in = et.calc_rad_sol_in(tindex, lat, (1,), n)
         self.assertAlmostEqual(float(rad_sol_in), 14.5, 1)

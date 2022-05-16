@@ -8,6 +8,8 @@ from .combination import calc_lambda
 
 from .meteo_utils import extraterrestrial_r, calc_press, calc_psy, calc_vpc
 
+from .utils import get_index_shape
+
 
 def turc(tmean, rs, rh, k=0.31):
     """Evaporation calculated according to [turc_1961]_.
@@ -47,7 +49,7 @@ def turc(tmean, rs, rh, k=0.31):
        Hydrological processes, 14(2), 339-349.
     """
     c = tmean / tmean
-    c[rh] = 1 - (50 - rh) / 70
+    c[rh < 50] = 1 - (50 - rh) / 70
     et = k * c * tmean / (tmean + 15) * (rs + 2.094)
     return et
 
@@ -94,11 +96,12 @@ def jensen_haise(tmean, rs=None, cr=0.025, tx=-3, lat=None, method=1):
        Evaporation, evapotranspiration, and irrigation water requirements.
        American Society of Civil Engineers.
     """
+    index, shape = get_index_shape(tmean)
     lambd = calc_lambda(tmean)
     if method == 1:
         return rs / lambd * cr * (tmean - tx)
     else:
-        ra = extraterrestrial_r(tmean.index, lat)
+        ra = extraterrestrial_r(index, lat, shape)
         return ra * (tmean + 5) / 68 / lambd
 
 
@@ -135,8 +138,9 @@ def mcguinness_bordne(tmean, lat, k=0.0147):
        computed values, Tech. Bull., 1452. Agric. Res. Serv., US Dep. of
        Agric., Washington, DC.
     """
+    index, shape = get_index_shape(tmean)
     lambd = calc_lambda(tmean)
-    ra = extraterrestrial_r(tmean.index, lat)
+    ra = extraterrestrial_r(index, lat, shape)
     et = k * ra * (tmean + 5) / lambd
     return et
 
@@ -175,9 +179,10 @@ def hargreaves(tmean, tmax, tmin, lat):
         .. [hargreaves_samani_1982] Hargreaves, G. H., & Samani, Z. A. (1982).
            Estimating potential evapotranspiration. Journal of the irrigation
            and Drainage Division, 108(3), 225-230.
-        """
+    """
+    index, shape = get_index_shape(tmean)
     lambd = calc_lambda(tmean)
-    ra = extraterrestrial_r(tindex=tmean.index, lat=lat)
+    ra = extraterrestrial_r(index, lat, shape)
     return 0.0023 * (tmean + 17.8) * sqrt(tmax - tmin) * ra / lambd
 
 
@@ -341,8 +346,9 @@ def oudin(tmean, lat, k1=100, k2=5):
         else: P = 0
 
     """
+    index, shape = get_index_shape(tmean)
     lambd = calc_lambda(tmean)
-    ra = extraterrestrial_r(tmean.index, lat)
+    ra = extraterrestrial_r(index, lat, shape)
     et = ra * (tmean + k2) / lambd / k1
-    et[(tmean + k2) < 0] = 0
+    et = et.where((tmean + k2) > 0, 0)
     return et

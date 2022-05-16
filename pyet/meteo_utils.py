@@ -2,8 +2,7 @@
 
 """
 
-from numpy import tan, cos, pi, sin, arccos, clip, mod, minimum, exp, log, \
-    array
+from numpy import tan, cos, pi, sin, arccos, mod, exp, log, broadcast_to
 from pandas import to_numeric
 
 # Specific heat of air [MJ kg-1 °C-1]
@@ -54,7 +53,7 @@ def calc_vpc(tmean):
 
     Parameters
     ----------
-    tmean: pandas.Series, optional
+    tmean: float/pandas.Series/ndarray, optional
         average day temperature [°C]
 
     Returns
@@ -156,7 +155,7 @@ def calc_e0(tmean):
 
     Parameters
     ----------
-    tmean: pandas.Series, optional
+    tmean: float/pandas.Series/ndarray, optional
         average day temperature [°C]
 
     Returns
@@ -180,11 +179,11 @@ def calc_es(tmean=None, tmax=None, tmin=None):
 
     Parameters
     ----------
-    tmean: pandas.Series, optional
+    tmean: float/pandas.Series/ndarray, optional
         average day temperature [°C]
-    tmax: pandas.Series, optional
+    tmax: float/pandas.Series/ndarray, optional
         maximum day temperature [°C]
-    tmin: pandas.Series, optional
+    tmin: float/pandas.Series/ndarray, optional
         minimum day temperature [°C]
 
     Returns
@@ -212,17 +211,17 @@ def calc_ea(tmean=None, tmax=None, tmin=None, rhmax=None, rhmin=None, rh=None):
 
     Parameters
     ----------
-    tmean: pandas.Series, optional
+    tmean: float/pandas.Series/ndarray, optional
         average day temperature [°C]
-    tmax: pandas.Series, optional
+    tmax: float/pandas.Series/ndarray, optional
         maximum day temperature [°C]
-    tmin: pandas.Series, optional
+    tmin: float/pandas.Series/ndarray, optional
         minimum day temperature [°C]
-    rhmax: pandas.Series, optional
+    rhmax: float/pandas.Series/ndarray, optional
         maximum daily relative humidity [%]
-    rhmin: pandas.Series, optional
+    rhmin: float/pandas.Series/ndarray, optional
         mainimum daily relative humidity [%]
-    rh: pandas.Series, optional
+    rh: float/pandas.Series/ndarray, optional
         mean daily relative humidity [%]
 
     Returns
@@ -292,7 +291,7 @@ def sunset_angle(sol_dec, lat):
 
     Parameters
     ----------
-    sol_dec: pandas.Series
+    sol_dec: float/pandas.Series/ndarray
         solar declination [rad]
     lat: float
         the site latitude [rad]
@@ -306,54 +305,6 @@ def sunset_angle(sol_dec, lat):
     Based on equations 25 in [allen_1998]_.
     """
     return arccos(-tan(sol_dec) * tan(lat))
-
-
-def sunset_angle_hour(tindex, lat, lz, lon):
-    """Sunset hour angle from latitude and solar declination - hourly [rad].
-
-    Parameters
-    ----------
-    tindex: pandas.Index
-    lat: float
-        the site latitude [rad]
-    lz: float
-        longitude of the center of the local time zone [expressed as positive
-        degrees west of Greenwich, England]. In the United States, Lz = 75, 90,
-        105 and 120° for the Eastern, Central, Rocky Mountain and Pacific time
-        zones, respectively, and Lz = 0° for Greenwich, 345° for Paris
-        (France), and 255° for Bangkok (Thailand) [deg]
-    lon: float
-        longitude of the solar radiation measurement site [expressed as
-        positive degrees west of Greenwich, England]
-
-    Returns
-    -------
-    pandas.Series containing the calculated sunset hour angle - hourly [rad]
-
-    Notes
-    -----
-    Based on equations 29, 30, 31, 32, 33 in [allen_1998]_.
-    """
-    t = tindex.hour - 0.5
-    j = day_of_year(tindex)
-    b = 2 * pi * (j - 81) / 364
-    sc = 0.1645 * sin(2 * b) - 0.1255 * cos(b) - 0.025 * sin(b)
-
-    sol_t = t + 0.006667 * (lz - lon) + sc - 12
-
-    omega = array(pi / 12 * sol_t)
-    omega = _wrap(omega, -pi, pi)
-
-    sol_dec = solar_declination(j)
-    omegas = arccos(clip(-tan(lat) * tan(sol_dec), -1, 1))
-
-    omega1 = omega - (pi / 24)
-    omega2 = omega + (pi / 24)
-
-    omega1 = clip(omega1, -omegas, omegas)
-    omega2 = clip(omega2, -omegas, omegas)
-    omega1 = minimum(omega1, omega2)
-    return array(omega1), array(omega2)
 
 
 def _wrap(x, x_min, x_max):
@@ -409,7 +360,7 @@ def relative_distance(j):
     return 1 + 0.033 * cos(2. * pi / 365. * j)
 
 
-def extraterrestrial_r(tindex, lat):
+def extraterrestrial_r(tindex, lat, shape):
     """Extraterrestrial daily radiation [MJ m-2 d-1].
 
     Parameters
@@ -417,6 +368,8 @@ def extraterrestrial_r(tindex, lat):
     tindex: pandas.Index
     lat: float
         the site latitude [rad]
+    shape: tuple
+        shape of the underlying data.
 
     Returns
     -------
@@ -426,53 +379,15 @@ def extraterrestrial_r(tindex, lat):
     -----
     Based on equation 21 in [allen_1998]_.
     """
-    j = day_of_year(tindex)
+    j = broadcast_to(day_of_year(tindex), shape)
     dr = relative_distance(j)
     sol_dec = solar_declination(j)
 
     omega = sunset_angle(sol_dec, lat)
     xx = sin(sol_dec) * sin(lat)
     yy = cos(sol_dec) * cos(lat)
-    return 118.08 / 3.141592654 * dr * (omega * xx + yy * sin(omega))
-
-
-def extraterrestrial_r_hour(tindex, lat, lz, lon):
-    """Extraterrestrial hourly radiation [MJ m-2 h-1].
-
-    Parameters
-    ----------
-    tindex: pandas.Index
-    lat: float
-        the site latitude [rad]
-    lz: float
-        longitude of the center of the local time zone [expressed as positive
-        degrees west of Greenwich, England]. In the United States, Lz = 75, 90,
-        105 and 120° for the Eastern, Central, Rocky Mountain and Pacific time
-        zones, respectively, and Lz = 0° for Greenwich, 345° for Paris
-        (France), and 255° for Bangkok (Thailand)
-    lon: float
-        longitude of the solar radiation measurement site [expressed as
-        positive degrees west of Greenwich, England]
-
-    Returns
-    -------
-    pandas.Series containing the calculated extraterrestrial radiation
-
-    Notes
-    -----
-    Based on equation 55 in [ASCE_2000]_.
-
-    """
-    j = day_of_year(tindex)
-    dr = relative_distance(j)
-    sol_dec = solar_declination(j)
-
-    omega1, omega2 = sunset_angle_hour(tindex, lat, lz, lon)
-    xx = sin(sol_dec) * sin(lat)
-    yy = cos(sol_dec) * cos(lat)
-    gsc = 4.92
-    return array(12 / pi * gsc * dr * ((omega2 - omega1) * xx + yy *
-                                       (sin(omega2) - sin(omega1))))
+    return broadcast_to(
+        118.08 / 3.141592654 * dr * (omega * xx + yy * sin(omega)), shape)
 
 
 def calc_res_surf(lai=None, r_s=70, r_l=100, lai_eff=0, srs=None, co2=None):

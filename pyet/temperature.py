@@ -6,6 +6,8 @@ from numpy import exp
 
 from .meteo_utils import daylight_hours, calc_ea, calc_es
 
+from .utils import get_index_shape
+
 
 def blaney_criddle(tmean, p, k=0.85):
     """Evaporation calculated according to [blaney_1952]_.
@@ -81,8 +83,8 @@ def hamon(tmean, lat):
        for rainfall–runoff modelling. Journal of hydrology, 303(1-4), 290-306.
 
     """
-
-    dl = daylight_hours(tmean.index, lat)
+    index, shape = get_index_shape(tmean)
+    dl = daylight_hours(index, lat)
 
     return (dl / 12) ** 2 * exp(tmean / 16)
 
