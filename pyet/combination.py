@@ -99,9 +99,15 @@ def penman(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
     ea = calc_ea(tmean=tmean, tmax=tmax, tmin=tmin, rhmax=rhmax, rhmin=rhmin,
                  rh=rh)
     es = calc_es(tmean=tmean, tmax=tmax, tmin=tmin)
+<<<<<<< HEAD
     if rn is None:
         rn = get_rn(tmean, rs, lat, n, nn, tmax, tmin, rhmax, rhmin, rh,
                     elevation, rso, a, b, ea, albedo)
+=======
+
+    rn = get_rn(tmean, rs, lat, n, nn, tmax, tmin, rhmax, rhmin, rh,
+                elevation, rso, a, b, ea)
+>>>>>>> 9dd04566d670bf640b4a10154e8430ae75f9c615
 
     fu = aw * (1 + bw * wind)
 
@@ -212,8 +218,22 @@ def pm_asce(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
                      rhmin=rhmin, rh=rh)
     es = calc_es(tmean=tmean, tmax=tmax, tmin=tmin)
     if rn is None:
+<<<<<<< HEAD
         rn = get_rn(tmean, rs, lat, n, nn, tmax, tmin, rhmax, rhmin, rh,
                     elevation, rso, a, b, ea, albedo, as1, bs1, kab)
+=======
+        index, shape = get_index_shape(tmean)
+        rns = calc_rad_short(rs=rs, tindex=index, lat=lat, albedo=albedo,
+                             n=n, lz=lz, lon=lon, nn=nn, as1=as1, shape=shape,
+                             bs1=bs1, freq=freq)  # [MJ/m2/d]
+        rnl = calc_rad_long(rs=rs, tmean=tmean, tmax=tmax, tmin=tmin,
+                            rhmax=rhmax, rhmin=rhmin, rh=rh,
+                            elevation=elevation, lat=lat, rso=rso, a=a,
+                            b=b, ea=ea, lz=lz, lon=lon, kab=kab,
+                            freq=freq)  # [MJ/m2/d]
+        rn = rns - rnl
+
+>>>>>>> 9dd04566d670bf640b4a10154e8430ae75f9c615
     if etype == "rs":
         cn = 1600
         cd = 0.38
@@ -336,9 +356,15 @@ def pm(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None, rhmax=None,
     res_s = calc_res_surf(lai=lai, r_s=r_s, r_l=r_l, lai_eff=lai_eff, srs=srs,
                           co2=co2)
     gamma1 = gamma * a_sh / a_s * (1 + res_s / res_a)
+<<<<<<< HEAD
     if rn is None:
         rn = get_rn(tmean, rs, lat, n, nn, tmax, tmin, rhmax, rhmin, rh,
                     elevation, rso, a, b, ea, albedo)
+=======
+
+    rn = get_rn(tmean, rs, lat, n, nn, tmax, tmin, rhmax, rhmin, rh,
+                elevation, rso, a, b, ea)
+>>>>>>> 9dd04566d670bf640b4a10154e8430ae75f9c615
 
     kmin = 86400  # unit conversion s d-1
     rho_a = calc_rho(pressure, tmean, ea)
@@ -422,9 +448,15 @@ def pm_fao56(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
     ea = calc_ea(tmean=tmean, tmax=tmax, tmin=tmin, rhmax=rhmax, rhmin=rhmin,
                  rh=rh)
     es = calc_es(tmean=tmean, tmax=tmax, tmin=tmin)
+<<<<<<< HEAD
     if rn is None:
         rn = get_rn(tmean, rs, lat, n, nn, tmax, tmin, rhmax, rhmin, rh,
                     elevation, rso, a, b, ea, albedo)
+=======
+
+    rn = get_rn(tmean, rs, lat, n, nn, tmax, tmin, rhmax, rhmin, rh,
+                elevation, rso, a, b, ea, as1, bs1, kab)
+>>>>>>> 9dd04566d670bf640b4a10154e8430ae75f9c615
 
     den = dlt + gamma1
     num1 = (0.408 * dlt * (rn - g)) / den
@@ -507,9 +539,15 @@ def priestley_taylor(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
     gamma = calc_psy(pressure)
     dlt = calc_vpc(tmean)
     lambd = calc_lambda(tmean)
+<<<<<<< HEAD
     if rn is None:
         rn = get_rn(tmean, rs, lat, n, nn, tmax, tmin, rhmax, rhmin, rh,
                     elevation, rso, a, b, albedo=albedo)
+=======
+
+    rn = get_rn(tmean, rs, lat, n, nn, tmax, tmin, rhmax, rhmin, rh,
+                elevation, rso, a, b, as1, bs1, kab)
+>>>>>>> 9dd04566d670bf640b4a10154e8430ae75f9c615
 
     return (alpha * dlt * (rn - g)) / (lambd * (dlt + gamma))
 
@@ -590,9 +628,14 @@ def kimberly_penman(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
                  rh=rh)
     es = calc_es(tmean=tmean, tmax=tmax, tmin=tmin)
 
+<<<<<<< HEAD
     if rn is None:
         rn = get_rn(tmean, rs, lat, n, nn, tmax, tmin, rhmax, rhmin, rh,
                     elevation, rso, a, b, ea, albedo)
+=======
+    rn = get_rn(tmean, rs, lat, n, nn, tmax, tmin, rhmax, rhmin, rh,
+                elevation, rso, a, b, ea, as1, bs1, kab)
+>>>>>>> 9dd04566d670bf640b4a10154e8430ae75f9c615
 
     j = day_of_year(tmean.index)
     w = wind * (0.4 + 0.14 * exp(-((j - 173) / 58) ** 2) + (
@@ -709,9 +752,14 @@ def thom_oliver(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
                           co2=co2)
     gamma1 = gamma * (1 + res_s / res_a)
 
+<<<<<<< HEAD
     if rn is None:
         rn = get_rn(tmean, rs, lat, n, nn, tmax, tmin, rhmax, rhmin, rh,
                     elevation, rso, a, b, ea, albedo)
+=======
+    rn = get_rn(tmean, rs, lat, n, nn, tmax, tmin, rhmax, rhmin, rh,
+                elevation, rso, a, b, ea, as1, bs1, kab)
+>>>>>>> 9dd04566d670bf640b4a10154e8430ae75f9c615
 
     w = aw * (1 + bw * wind)
 
@@ -723,6 +771,7 @@ def thom_oliver(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
 
 def get_rn(tmean, rs=None, lat=None, n=None, nn=None, tmax=None, tmin=None,
            rhmax=None, rhmin=None, rh=None, elevation=None, rso=None,
+<<<<<<< HEAD
            a=1.35, b=-0.35, ea=None, albedo=0.23, as1=0.25, bs1=0.5, kab=None):
     tindex, shape = get_index_shape(tmean)
     rns = calc_rad_short(rs=rs, tindex=tindex, lat=lat, n=n, nn=nn,
@@ -732,5 +781,15 @@ def get_rn(tmean, rs=None, lat=None, n=None, nn=None, tmax=None, tmin=None,
                         rhmin=rhmin, rh=rh, elevation=elevation, lat=lat,
                         rso=rso, a=a, b=b, ea=ea, kab=kab, tindex=tindex,
                         shape=shape)  # [MJ/m2/d]
+=======
+           a=None, b=None, ea=None):
+    index, shape = get_index_shape(tmean)
+    rns = calc_rad_short(rs=rs, tindex=index, lat=lat, n=n, nn=nn,
+                         shape=shape, as1=as1, bs1=bs1)  # [MJ/m2/d]
+    rnl = calc_rad_long(rs=rs, tmean=tmean, tmax=tmax, tmin=tmin,
+                        rhmax=rhmax, rhmin=rhmin, rh=rh,
+                        elevation=elevation, lat=lat, rso=rso, a=a,
+                        b=b, ea=ea)  # [MJ/m2/d]
+>>>>>>> 9dd04566d670bf640b4a10154e8430ae75f9c615
     rn = rns - rnl
     return rn

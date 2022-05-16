@@ -2,7 +2,12 @@
 
 """
 
+<<<<<<< HEAD
 from numpy import tan, cos, pi, sin, arccos, mod, exp, log, broadcast_to
+=======
+from numpy import tan, cos, pi, sin, arccos, clip, mod, minimum, exp, log, \
+    array, broadcast_to
+>>>>>>> 9dd04566d670bf640b4a10154e8430ae75f9c615
 from pandas import to_numeric
 
 # Specific heat of air [MJ kg-1 °C-1]
@@ -368,8 +373,13 @@ def extraterrestrial_r(tindex, lat, shape):
     tindex: pandas.Index
     lat: float
         the site latitude [rad]
+<<<<<<< HEAD
     shape: tuple
         shape of the underlying data.
+=======
+    shape: list
+        shape of the input file
+>>>>>>> 9dd04566d670bf640b4a10154e8430ae75f9c615
 
     Returns
     -------
@@ -388,6 +398,48 @@ def extraterrestrial_r(tindex, lat, shape):
     yy = cos(sol_dec) * cos(lat)
     return broadcast_to(
         118.08 / 3.141592654 * dr * (omega * xx + yy * sin(omega)), shape)
+<<<<<<< HEAD
+=======
+
+
+def extraterrestrial_r_hour(tindex, lat, lz, lon):
+    """Extraterrestrial hourly radiation [MJ m-2 h-1].
+
+    Parameters
+    ----------
+    tindex: pandas.Index
+    lat: float
+        the site latitude [rad]
+    lz: float
+        longitude of the center of the local time zone [expressed as positive
+        degrees west of Greenwich, England]. In the United States, Lz = 75, 90,
+        105 and 120° for the Eastern, Central, Rocky Mountain and Pacific time
+        zones, respectively, and Lz = 0° for Greenwich, 345° for Paris
+        (France), and 255° for Bangkok (Thailand)
+    lon: float
+        longitude of the solar radiation measurement site [expressed as
+        positive degrees west of Greenwich, England]
+
+    Returns
+    -------
+    pandas.Series containing the calculated extraterrestrial radiation
+
+    Notes
+    -----
+    Based on equation 55 in [ASCE_2000]_.
+
+    """
+    j = day_of_year(tindex)
+    dr = relative_distance(j)
+    sol_dec = solar_declination(j)
+
+    omega1, omega2 = sunset_angle_hour(tindex, lat, lz, lon)
+    xx = sin(sol_dec) * sin(lat)
+    yy = cos(sol_dec) * cos(lat)
+    gsc = 4.92
+    return array(12 / pi * gsc * dr * ((omega2 - omega1) * xx + yy *
+                                       (sin(omega2) - sin(omega1))))
+>>>>>>> 9dd04566d670bf640b4a10154e8430ae75f9c615
 
 
 def calc_res_surf(lai=None, r_s=70, r_l=100, lai_eff=0, srs=None, co2=None):

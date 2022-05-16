@@ -6,7 +6,11 @@ from numpy import exp
 
 from .meteo_utils import daylight_hours, calc_ea, calc_es
 
+<<<<<<< HEAD
 from .utils import get_index_shape
+=======
+from .utils import show_versions
+>>>>>>> 9dd04566d670bf640b4a10154e8430ae75f9c615
 
 
 def blaney_criddle(tmean, p, k=0.85):

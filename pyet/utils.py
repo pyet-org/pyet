@@ -29,6 +29,10 @@ def get_index_shape(df):
     """
     try:
         index = pd.DatetimeIndex(df.index)
+<<<<<<< HEAD
     except AttributeError:
+=======
+    except:
+>>>>>>> 9dd04566d670bf640b4a10154e8430ae75f9c615
         index = pd.DatetimeIndex(df.time)
     return index, df.shape
