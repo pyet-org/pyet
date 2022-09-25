@@ -2,20 +2,22 @@
 
 """
 
-from numpy import exp
+from numpy import exp, broadcast_to
 
-from .meteo_utils import daylight_hours, calc_ea, calc_es
+from .meteo_utils import daylight_hours, calc_ea, calc_es, calc_e0
+
+from .utils import get_index_shape
 
 
-def blaney_criddle(tmean, p, k=0.85):
+def blaney_criddle(tmean, lat, k=0.65):
     """Evaporation calculated according to [blaney_1952]_.
 
     Parameters
     ----------
     tmean: pandas.Series, optional
         average day temperature [°C]
-    p: pandas.Series/float, optional
-        bright sunshine (hour day-1)
+    lat: float, optional
+        the site latitude [rad]
     k: float, optional
         calibration coefficient [-]
 
@@ -25,7 +27,7 @@ def blaney_criddle(tmean, p, k=0.85):
 
     Examples
     --------
-    >>> et_blaney_criddle = blaney_criddle(tmean)
+    >>> et_blaney_criddle = blaney_criddle(tmean, lat)
 
     Notes
     -----
@@ -41,19 +43,23 @@ def blaney_criddle(tmean, p, k=0.85):
        generalization of temperature‐based methods for calculating evaporation.
        Hydrological processes, 15(2), 305-319.
     """
-    et = k * p * (0.46 * tmean + 8.13)
+    index, shape = get_index_shape(tmean)
+    dl = broadcast_to(daylight_hours(index, lat, shape), shape)
+    et = k * dl / (365 * 12) * 100 * (0.46 * tmean + 8.13)
     return et
 
 
-def hamon(tmean, lat):
-    """Evaporation calculated according to [hamon_1961]_.
+def haude(tmean, rh, k=1):
+    """Evaporation calculated according to [haude]_.
 
     Parameters
     ----------
     tmean: pandas.Series, optional
-        average day temperature [°C]
-    lat: float, optional
-        the site latitude [rad]
+        temperature at 2pm or maximum dailty temperature [°C]
+    rh: float, optional
+        average relative humidity at 2pm [%]
+    k: float, optional
+        calibration coefficient [-]
 
     Returns
     -------
@@ -61,7 +67,52 @@ def hamon(tmean, lat):
 
     Examples
     --------
-    >>> et_hamon = hamon(tmean, lat)
+    >>> et_haude = haude(tmean, rh)
+
+    Notes
+    -----
+    Following [haude_1955]_ and [schiff_1975]_.
+
+    .. math:: PE = f * (e_s-e_a)
+
+    References
+    ----------
+    .. [haude_1955] Haude, W. (1955). Determination of evapotranspiration by
+        an approach as simple as possible. Mitt Dt Wetterdienst, 2(11).
+    .. [schiff_1975] Schiff, H. (1975). Berechnung der potentiellen Verdunstung
+        und deren Vergleich mit aktuellen Verdunstungswerten von Lysimetern.
+        Archiv für Meteorologie, Geophysik und Bioklimatologie, Serie B, 23(4),
+        331-342.
+    """
+    e0 = calc_e0(tmean)
+    ea = rh * e0 / 100
+    # Haude coefficients from [schiff_1975]_
+    fk = [0.27, 0.27, 0.28, 0.39, 0.39, 0.37, 0.35, 0.33, 0.31, 0.29, 0.27,
+          0.27]
+    index, shape = get_index_shape(tmean)
+    f = [fk[x - 1] for x in index.month]
+    return k * f * (e0 - ea) * 10  # kPa to hPa
+
+
+def hamon1(tmean, lat, k=1):
+    """Evaporation calculated according to [hamon_1961]_ based on [oudin_2005]_.
+
+    Parameters
+    ----------
+    tmean: pandas.Series, optional
+        average day temperature [°C]
+    lat: float, optional
+        the site latitude [rad]
+    k: float, optional
+        calibration coefficient [-]
+
+    Returns
+    -------
+    pandas.Series containing the calculated evaporation.
+
+    Examples
+    --------
+    >>> et_hamon = hamon_1(tmean, lat)
 
     Notes
     -----
@@ -81,10 +132,103 @@ def hamon(tmean, lat):
        for rainfall–runoff modelling. Journal of hydrology, 303(1-4), 290-306.
 
     """
+    index, shape = get_index_shape(tmean)
+    dl = broadcast_to(daylight_hours(index, lat, shape), shape)
+    et = k * (dl / 12) ** 2 * exp(tmean / 16)
+    return et[:]
 
-    dl = daylight_hours(tmean.index, lat)
 
-    return (dl / 12) ** 2 * exp(tmean / 16)
+def hamon2(tmean, lat, c=13.97):
+    """Evaporation calculated according to [hamon_1961]_ based on equation 7
+       in [ansorge_2019]_.
+
+    Parameters
+    ----------
+    tmean: pandas.Series, optional
+        average day temperature [°C]
+    lat: float, optional
+        the site latitude [rad]
+    c: float, optional
+        c is a constant for calculation in mm per day.
+
+    Returns
+    -------
+    pandas.Series containing the calculated evaporation.
+
+    Examples
+    --------
+    >>> et_hamon = hamon_2(tmean, lat)
+
+    Notes
+    -----
+    Following [hamon_1961]_ and [ansorge_2019]_.
+
+    .. math:: PE = C (\\frac{DL}{12})^2 Pt
+
+    References
+    ----------
+    .. [hamon_1961] Hamon, W. R. (1963). Estimating potential
+       evapotranspiration. Transactions of the American Society of Civil
+       Engineers, 128(1), 324-338.
+    .. [ansorge_2019] Ansorge, L., & Beran, A. (2019). Performance of simple
+       temperature-based evaporation methods compared with a time series of pan
+       evaporation measures from a standard 20 m 2 tank. Journal of Water and
+       Land Development.
+
+    """
+    index, shape = get_index_shape(tmean)
+    dl = broadcast_to(daylight_hours(index, lat, shape), shape)
+    pt = 4.95 * exp(
+        0.062 * tmean) / 100  # saturated water content after Xu and Singh (2001)
+    et = c * (dl / 12) ** 2 * pt
+    et = et.where(tmean > 0, 0)
+    return et[:]
+
+
+def hamon3(tmean, lat, cc=218.527):
+    """Evaporation calculated according to [hamon_1961]_ based on equation 12
+       in [ansorge_2019]_.
+
+    Parameters
+    ----------
+    tmean: pandas.Series, optional
+        average day temperature [°C]
+    lat: float, optional
+        the site latitude [rad]
+    cc: float, optional
+        calibration coefficient [-].
+
+    Returns
+    -------
+    pandas.Series containing the calculated evaporation.
+
+    Examples
+    --------
+    >>> et_hamon = hamon_3(tmean, lat)
+
+    Notes
+    -----
+    Following [hamon_1961]_ and [ansorge_2019]_.
+
+    .. math:: PE = 218.527  (\\frac{DL}{12}) \\frac{1}{T+273.3} e^{\\frac{17.26939 T}{t+237.3}}
+
+    References
+    ----------
+    .. [hamon_1961] Hamon, W. R. (1963). Estimating potential
+       evapotranspiration. Transactions of the American Society of Civil
+       Engineers, 128(1), 324-338.
+    .. [ansorge_2019] Ansorge, L., & Beran, A. (2019). Performance of simple
+       temperature-based evaporation methods compared with a time series of pan
+       evaporation measures from a standard 20 m 2 tank. Journal of Water and
+       Land Development.
+
+    """
+    index, shape = get_index_shape(tmean)
+    dl = broadcast_to(daylight_hours(index, lat, shape), shape)
+    et = cc * (dl / 12) * 1 / (tmean + 273.3) * exp(
+        (17.26939 * tmean) / (tmean + 273.3))
+    et = et.where(tmean > 0, 0)
+    return et
 
 
 def romanenko(tmean, rh, k=4.5):

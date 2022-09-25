@@ -49,7 +49,7 @@ def turc(tmean, rs, rh, k=0.31):
        Hydrological processes, 14(2), 339-349.
     """
     c = tmean / tmean
-    c[rh < 50] = 1 + (50 - rh) / 70
+    c.where(rh > 50,  1 + (50 - rh) / 70)
     et = k * c * tmean / (tmean + 15) * (rs + 2.094)
     return et
 
@@ -145,7 +145,7 @@ def mcguinness_bordne(tmean, lat, k=0.0147):
     return et
 
 
-def hargreaves(tmean, tmax, tmin, lat):
+def hargreaves(tmean, tmax, tmin, lat, k=0.0023):
     """Evaporation calculated according to [hargreaves_samani_1982]_.
 
         Parameters
@@ -158,6 +158,8 @@ def hargreaves(tmean, tmax, tmin, lat):
             minimum day temperature [°C]
         lat: float, optional
             the site latitude [rad]
+        k: float, optional
+            calirbation coefficient [-]
 
         Returns
         -------
@@ -184,7 +186,7 @@ def hargreaves(tmean, tmax, tmin, lat):
     index, shape = get_index_shape(tmean)
     lambd = calc_lambda(tmean)
     ra = extraterrestrial_r(index, lat, shape)
-    return 0.0023 * (tmean + 17.8) * sqrt(tmax - tmin) * ra / lambd
+    return k * (tmean + 17.8) * sqrt(tmax - tmin) * ra / lambd
 
 
 def fao_24(tmean, wind, rs, rh, pressure=None, elevation=None, albedo=0.23):
@@ -275,7 +277,7 @@ def abtew(tmean, rs, k=0.53):
     return et
 
 
-def makkink(tmean, rs, pressure=None, elevation=None):
+def makkink(tmean, rs, pressure=None, elevation=None, k=0.65):
     """"Evaporation calculated according to [makkink1957]_.
 
     Parameters
@@ -288,6 +290,8 @@ def makkink(tmean, rs, pressure=None, elevation=None):
         atmospheric pressure [kPa]
     elevation: float, optional
         the site elevation [m]
+    k: float, optional
+        calirbation coefficient [-]
 
     Returns
     -------
@@ -314,7 +318,7 @@ def makkink(tmean, rs, pressure=None, elevation=None):
     dlt = calc_vpc(tmean)
     lambd = calc_lambda(tmean)
 
-    return 0.65 * dlt / (dlt + gamma) * rs / lambd
+    return k * dlt / (dlt + gamma) * rs / lambd
 
 
 def oudin(tmean, lat, k1=100, k2=5):

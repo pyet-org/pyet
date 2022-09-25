@@ -264,7 +264,7 @@ def day_of_year(tindex):
     return to_numeric(tindex.strftime('%j'))
 
 
-def daylight_hours(tindex, lat):
+def daylight_hours(tindex, lat, shape):
     """Daylight hours [hour].
 
     Parameters
@@ -272,6 +272,8 @@ def daylight_hours(tindex, lat):
     tindex: pandas.Index
     lat: float
         the site latitude [rad]
+    shape: list
+        shape of the input file
 
     Returns
     -------
@@ -281,7 +283,7 @@ def daylight_hours(tindex, lat):
     -----
     Based on equation 34 in [allen_1998]_.
     """
-    j = day_of_year(tindex)
+    j = broadcast_to(day_of_year(tindex), shape)
     sol_dec = solar_declination(j)
     sangle = sunset_angle(sol_dec, lat)
     return 24 / pi * sangle

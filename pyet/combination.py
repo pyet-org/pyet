@@ -1,9 +1,12 @@
 """The combination module contains functions of combination PET methods
 
 """
+import pandas
 
 from .meteo_utils import *
 from .rad_utils import *
+from .temperature import *
+from .radiation import *
 
 from .utils import get_index_shape
 
@@ -740,3 +743,68 @@ def get_rn(tmean, rs=None, lat=None, n=None, nn=None, tmax=None, tmin=None,
                         shape=shape)  # [MJ/m2/d]
     rn = rns - rnl
     return rn
+
+
+def calculate_all(tmean, wind, rs, elevation, lat, tmax, tmin, rh):
+    """Potential evaporation estimated based on all available methods in pyet.
+
+     Parameters
+     ----------
+     tmean: pandas.Series
+         average day temperature [°C]
+     wind: pandas.Series
+         mean day wind speed [m/s]
+     rs: pandas.Series, optional
+         incoming solar radiation [MJ m-2 d-1]
+     elevation: float, optional
+         the site elevation [m]
+     lat: float, optional
+         the site latitude [rad]
+     tmax: pandas.Series, optional
+         maximum day temperature [°C]
+     tmin: pandas.Series, optional
+         minimum day temperature [°C]
+     rh: pandas.Series, optional
+         mean daily relative humidity [%]
+
+     Returns
+     -------
+     pandas.DataFrame containing the calculated potential evaporation
+
+     Examples
+     --------
+     >>> pe_all = calculate_all(tmean, wind, rs, elevation, lat, tmax=tmax,
+                                tmin=tmin, rh=rh)
+     """
+    pe_df = pandas.DataFrame()
+    pe_df["Penman"] = penman(tmean, wind, rs=rs, elevation=elevation,
+                             lat=lat, tmax=tmax, tmin=tmin, rh=rh)
+    pe_df["FAO56"] = pm_fao56(tmean, wind, rs=rs, elevation=elevation,
+                              lat=lat, tmax=tmax, tmin=tmin, rh=rh)
+    pe_df["Priestley-Taylor"] = priestley_taylor(tmean, wind, rs=rs,
+                                                 elevation=elevation, lat=lat,
+                                                 tmax=tmax, tmin=tmin, rh=rh)
+    pe_df["Kimberly-Penman"] = kimberly_penman(tmean, wind, rs=rs,
+                                               elevation=elevation,
+                                               lat=lat, tmax=tmax, tmin=tmin,
+                                               rh=rh)
+    pe_df["Thom-Oliver"] = thom_oliver(tmean, wind, rs=rs,
+                                       elevation=elevation,
+                                       lat=lat, tmax=tmax, tmin=tmin, rh=rh)
+
+    pe_df["Blaney-Criddle"] = blaney_criddle(tmean, lat)
+    pe_df["Hamon"] = hamon2(tmean, lat=lat)
+    pe_df["Romanenko"] = romanenko(tmean, rh=rh)
+    pe_df["Linacre"] = linacre(tmean, elevation, lat, tmax=tmax, tmin=tmin)
+    pe_df["Haude"] = haude(tmax, rh)
+
+    pe_df["Turc"] = turc(tmean, rs, rh)
+    pe_df["Jensen-Haise"] = jensen_haise(tmean, rs=rs, method=1)
+    pe_df["Mcguinness-Bordne"] = mcguinness_bordne(tmean, lat=lat)
+    pe_df["Hargreaves"] = hargreaves(tmean, tmax, tmin, lat)
+    pe_df["FAO-24"] = fao_24(tmean, wind, rs=rs, rh=rh, elevation=elevation)
+    pe_df["Abtew"] = abtew(tmean, rs)
+    pe_df["Makkink"] = makkink(tmean, rs, elevation=elevation)
+    pe_df["Oudin"] = oudin(tmean, lat=lat)
+
+    return pe_df
