@@ -10,10 +10,7 @@
 <a href="https://pyet.readthedocs.io/en/latest/?badge=latest"><img src="https://readthedocs.org/projects/pyet/badge/?version=latest"><a>   
 <a href="https://doi.org/10.5281/zenodo.5896800"><img src=https://zenodo.org/badge/DOI/10.5281/zenodo.5896800.svg><a>
 
-pyet is an open source python package for calculating reference and potential
-evaporation (PE) for 1D (pandas.Series) and 3D (xarray.DataArrray). Currently nineteen methods for calculating daily PE
-are
-implemented:
+pyet is an open source python package for calculating reference and potential evaporation (PE) for 1D (pandas.Series) and 3D (xarray.DataArrray). Currently, nineteen methods for calculating daily PE are implemented:
 
 | Classification | Common method name        | Data needed | pyet Method         | Reference                    |
 |----------------|---------------------------|-------------|---------------------|------------------------------|
@@ -42,7 +39,14 @@ T, Temperature; U, Wind Speed; D, Radiation; RH, Relative Humidity. Adapted from
 
 ## Examples and Documentation
 
-Examples of using pyet can be found in the example folder. This folder also
+Examples of using pyet can be found in the example folder:
+* [Example 1](/examples/01_example_zamg.ipynb): Estimating PE using pandas.Series
+* [Example 2](/examples/02_example_zamg_netcdf.ipynb): Estimating PE using xarray.DataArray
+* [Example 3](/examples/03_example_knmi.ipynb): Benchmarking Makkink against ([KNMI data](https://www.knmi.nl/over-het-knmi/about))
+* [Example 4](/examples/04_example_coagmet.ipynb): Benchmarking FAO56 against [CoAgMET data](https://coagmet.colostate.edu/)
+* [Example 5](/examples/05_example_calibration.ipynb): Calibrating the Romanenko and Abtew method against the PM-FAO56
+
+This folder also
 contains a number of Jupyter Notebooks that thoroughly explain the use of the
 software. Documentation is hosted on [ReadTheDocs](https://pyet.readthedocs.io).
 
@@ -53,11 +57,10 @@ line of python code:
 
 ## Benchmarking
 
-Most of the implemented methods in pyet are benchmarked against literature values from the FAO Irrigation and
-drainage paper 56. Additionally the `>>>"pyet.pm_fao56<<<` is benchmarked against daily PE estimated with the
-ASCE Penman-Monteith equation available from [CoAgMET](https://coagmet.colostate.edu/) (Colorado State University),
-while the `>>>"pyet.makkink<<<` is benchmarked against daily PE estimated with Makkink from The Royal Netherlands
-Meteorological Institute ([KNMI](https://www.knmi.nl/over-het-knmi/about)).
+Most of the methods implemented in pyet are benchmarked against literature values from the FAO Irrigation and
+drainage paper 56. In addition, two comparative analysis between daily PE estimated with pyet and other organizations is made:
+* `>>>"pyet.pm_fao56<<<` against daily PE estimated with ASCE Penman-Monteith from [CoAgMET](https://coagmet.colostate.edu/) (Colorado State University),
+* `>>>"pyet.makkink<<<` against daily PE estimated with Makkink from The Royal Netherlands Meteorological Institute ([KNMI](https://www.knmi.nl/over-het-knmi/about)).
 
 ## Dimensions
 
