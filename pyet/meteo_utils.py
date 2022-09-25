@@ -2,7 +2,8 @@
 
 """
 
-from numpy import tan, cos, pi, sin, arccos, mod, exp, log, broadcast_to
+from numpy import tan, cos, pi, sin, arccos, mod, exp, log, broadcast_to, \
+    nanmax, isnan
 
 from pandas import to_numeric
 
@@ -286,7 +287,11 @@ def daylight_hours(tindex, lat, shape):
     j = broadcast_to(day_of_year(tindex), shape)
     sol_dec = solar_declination(j)
     sangle = sunset_angle(sol_dec, lat)
-    return 24 / pi * sangle
+    # Account for subpolar belt which returns NaN values
+    dl = 24 / pi * sangle
+    dl[(sol_dec > 0) & (isnan(dl))] = nanmax(dl)
+    dl[(sol_dec < 0) & (isnan(dl))] = 0
+    return dl
 
 
 def sunset_angle(sol_dec, lat):
