@@ -42,13 +42,11 @@ T, Temperature; U, Wind Speed; D, Radiation; RH, Relative Humidity. Adapted from
 Examples of using pyet can be found in the example folder:
 * [Example 1](/examples/01_example_zamg.ipynb): Estimating PE using pandas.Series
 * [Example 2](/examples/02_example_zamg_netcdf.ipynb): Estimating PE using xarray.DataArray
-* [Example 3](/examples/03_example_knmi.ipynb): Benchmarking Makkink against ([KNMI data](https://www.knmi.nl/over-het-knmi/about))
+* [Example 3](/examples/03_example_knmi.ipynb): Benchmarking Makkink against [KNMI data](https://www.knmi.nl/over-het-knmi/about)
 * [Example 4](/examples/04_example_coagmet.ipynb): Benchmarking FAO56 against [CoAgMET data](https://coagmet.colostate.edu/)
 * [Example 5](/examples/05_example_calibration.ipynb): Calibrating the Romanenko and Abtew method against the PM-FAO56
 
-This folder also
-contains a number of Jupyter Notebooks that thoroughly explain the use of the
-software. Documentation is hosted on [ReadTheDocs](https://pyet.readthedocs.io).
+Documentation is hosted on [ReadTheDocs](https://pyet.readthedocs.io).
 
 After defining the input data, evaporation is estimated using only one
 line of python code:
