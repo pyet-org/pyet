@@ -94,8 +94,8 @@ def haude(tmean, rh, k=1):
     return k * f * (e0 - ea) * 10  # kPa to hPa
 
 
-def hamon1(tmean, lat, k=1):
-    """Evaporation calculated according to [hamon_1961]_ based on [oudin_2005]_.
+def hamon(tmean, lat, k=1, c=13.97, cc=218.527, method=1):
+    """Evaporation calculated according to [hamon_1961]_.
 
     Parameters
     ----------
@@ -104,7 +104,15 @@ def hamon1(tmean, lat, k=1):
     lat: float, optional
         the site latitude [rad]
     k: float, optional
-        calibration coefficient [-]
+        calibration coefficient if method = 0 [-]
+    c: float, optional
+        c is a constant for calculation in mm per day if method = 1.
+    cc: float, optional
+        calibration coefficient if method = 2 [-].
+    method: float, optional
+        0 => Hamon after [oudin_2005]_
+        1 => Hamon after equation 7 in [ansorge_2019]_
+        2 => Hamon after equation 12 in [ansorge_2019]_.
 
     Returns
     -------
@@ -130,105 +138,27 @@ def hamon1(tmean, lat, k=1):
        evapotranspiration input for a lumped rainfall–runoff model?:
        Part 2—Towards a simple and efficient potential evapotranspiration model
        for rainfall–runoff modelling. Journal of hydrology, 303(1-4), 290-306.
-
-    """
-    index, shape = get_index_shape(tmean)
-    dl = broadcast_to(daylight_hours(index, lat, shape), shape)
-    et = k * (dl / 12) ** 2 * exp(tmean / 16)
-    return et[:]
-
-
-def hamon2(tmean, lat, c=13.97):
-    """Evaporation calculated according to [hamon_1961]_ based on equation 7
-       in [ansorge_2019]_.
-
-    Parameters
-    ----------
-    tmean: pandas.Series, optional
-        average day temperature [°C]
-    lat: float, optional
-        the site latitude [rad]
-    c: float, optional
-        c is a constant for calculation in mm per day.
-
-    Returns
-    -------
-    pandas.Series containing the calculated evaporation.
-
-    Examples
-    --------
-    >>> et_hamon = hamon_2(tmean, lat)
-
-    Notes
-    -----
-    Following [hamon_1961]_ and [ansorge_2019]_.
-
-    .. math:: PE = C (\\frac{DL}{12})^2 Pt
-
-    References
-    ----------
-    .. [hamon_1961] Hamon, W. R. (1963). Estimating potential
-       evapotranspiration. Transactions of the American Society of Civil
-       Engineers, 128(1), 324-338.
     .. [ansorge_2019] Ansorge, L., & Beran, A. (2019). Performance of simple
        temperature-based evaporation methods compared with a time series of pan
        evaporation measures from a standard 20 m 2 tank. Journal of Water and
        Land Development.
-
     """
     index, shape = get_index_shape(tmean)
     dl = broadcast_to(daylight_hours(index, lat, shape), shape)
-    pt = 4.95 * exp(
-        0.062 * tmean) / 100  # saturated water content after Xu and Singh (2001)
-    et = c * (dl / 12) ** 2 * pt
-    et = et.where(tmean > 0, 0)
-    return et[:]
-
-
-def hamon3(tmean, lat, cc=218.527):
-    """Evaporation calculated according to [hamon_1961]_ based on equation 12
-       in [ansorge_2019]_.
-
-    Parameters
-    ----------
-    tmean: pandas.Series, optional
-        average day temperature [°C]
-    lat: float, optional
-        the site latitude [rad]
-    cc: float, optional
-        calibration coefficient [-].
-
-    Returns
-    -------
-    pandas.Series containing the calculated evaporation.
-
-    Examples
-    --------
-    >>> et_hamon = hamon_3(tmean, lat)
-
-    Notes
-    -----
-    Following [hamon_1961]_ and [ansorge_2019]_.
-
-    .. math:: PE = 218.527  (\\frac{DL}{12}) \\frac{1}{T+273.3} e^{\\frac{17.26939 T}{t+237.3}}
-
-    References
-    ----------
-    .. [hamon_1961] Hamon, W. R. (1963). Estimating potential
-       evapotranspiration. Transactions of the American Society of Civil
-       Engineers, 128(1), 324-338.
-    .. [ansorge_2019] Ansorge, L., & Beran, A. (2019). Performance of simple
-       temperature-based evaporation methods compared with a time series of pan
-       evaporation measures from a standard 20 m 2 tank. Journal of Water and
-       Land Development.
-
-    """
-    index, shape = get_index_shape(tmean)
-    dl = broadcast_to(daylight_hours(index, lat, shape), shape)
-    et = cc * (dl / 12) * 1 / (tmean + 273.3) * exp(
-        (17.26939 * tmean) / (tmean + 273.3))
-    et = et.where(tmean > 0, 0)
-    return et
+    if method == 0:
+        et = k * (dl / 12) ** 2 * exp(tmean / 16)
+        return et[:]
+    if method == 1:
+        pt = 4.95 * exp(
+            0.062 * tmean) / 100  # saturated water content after Xu and Singh (2001)
+        et = c * (dl / 12) ** 2 * pt
+        et = et.where(tmean > 0, 0)
+        return et[:]
+    if method == 2:
+        et = cc * (dl / 12) * 1 / (tmean + 273.3) * exp(
+            (17.26939 * tmean) / (tmean + 273.3))
+        et = et.where(tmean > 0, 0)
+        return et
 
 
 def romanenko(tmean, rh, k=4.5):

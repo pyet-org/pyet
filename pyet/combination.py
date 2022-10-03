@@ -440,7 +440,7 @@ def pm_fao56(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
     return num1 + num2
 
 
-def priestley_taylor(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
+def priestley_taylor(tmean, rs=None, rn=None, g=0, tmax=None, tmin=None,
                      rhmax=None, rhmin=None, rh=None, pressure=None,
                      elevation=None, lat=None, n=None, nn=None, rso=None,
                      a=1.35, b=-0.35, alpha=1.26, albedo=0.23):
@@ -450,8 +450,6 @@ def priestley_taylor(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
     ----------
     tmean: pandas.Series
         average day temperature [°C]
-    wind: pandas.Series
-        mean day wind speed [m/s]
     rs: pandas.Series, optional
         incoming solar radiation [MJ m-2 d-1]
     rn: pandas.Series, optional
@@ -495,7 +493,7 @@ def priestley_taylor(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
 
     Examples
     --------
-    >>> pt = priestley_taylor(tmean, wind, rn=rn, rh=rh)
+    >>> pt = priestley_taylor(tmean, rn=rn, rh=rh)
 
     Notes
     -----
@@ -781,7 +779,7 @@ def calculate_all(tmean, wind, rs, elevation, lat, tmax, tmin, rh):
                              lat=lat, tmax=tmax, tmin=tmin, rh=rh)
     pe_df["FAO56"] = pm_fao56(tmean, wind, rs=rs, elevation=elevation,
                               lat=lat, tmax=tmax, tmin=tmin, rh=rh)
-    pe_df["Priestley-Taylor"] = priestley_taylor(tmean, wind, rs=rs,
+    pe_df["Priestley-Taylor"] = priestley_taylor(tmean, rs=rs,
                                                  elevation=elevation, lat=lat,
                                                  tmax=tmax, tmin=tmin, rh=rh)
     pe_df["Kimberly-Penman"] = kimberly_penman(tmean, wind, rs=rs,
@@ -793,7 +791,7 @@ def calculate_all(tmean, wind, rs, elevation, lat, tmax, tmin, rh):
                                        lat=lat, tmax=tmax, tmin=tmin, rh=rh)
 
     pe_df["Blaney-Criddle"] = blaney_criddle(tmean, lat)
-    pe_df["Hamon"] = hamon2(tmean, lat=lat)
+    pe_df["Hamon"] = hamon(tmean, lat=lat)
     pe_df["Romanenko"] = romanenko(tmean, rh=rh)
     pe_df["Linacre"] = linacre(tmean, elevation, lat, tmax=tmax, tmin=tmin)
     pe_df["Haude"] = haude(tmax, rh)

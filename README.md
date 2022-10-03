@@ -14,25 +14,25 @@ pyet is an open source python package for calculating reference and potential ev
 
 | Classification | Common method name        | Data needed | pyet Method         | Reference                    |
 |----------------|---------------------------|-------------|---------------------|------------------------------|
-| Combination    | Penman                    | RH, T, U, D | `penman`            | Penman (1948)                |
-|                | Penman-Monteith           | RH, T, U, D | `pm`                | Monteith (1965)              |
-|                | Penman-Monteith ASCE      | RH, T, U, D | `pm`                | ASCE (2005)                  |
-|                | FAO-56                    | RH, T, U, D | `pm_fao56`          | Allen et al. (1998)          |
-|                | Priestley-Taylor          | T, D        | `priestley_taylor`  | Priestley and Taylor (1972)  |
-|                | Kimberly-Penman           | RH, T, U, D | `kimberly_penman`   | Wright (1982)                |
-|                | Thom-Oliver               | RH, T, U, D | `thom_oliver`       | Thom and Oliver (1977)       |
-| Temperature    | Blaney–Criddle            | T, D        | `blaney_criddle`    | Blaney and Criddle (1952)    |
+| Combination    | Penman                    | RH, T, U, R | `penman`            | Penman (1948)                |
+|                | Penman-Monteith           | RH, T, U, R | `pm`                | Monteith (1965)              |
+|                | Penman-Monteith ASCE      | RH, T, U, R | `pm`                | ASCE (2005)                  |
+|                | FAO-56                    | RH, T, U, R | `pm_fao56`          | Allen et al. (1998)          |
+|                | Priestley-Taylor          | RH, T, R    | `priestley_taylor`  | Priestley and Taylor (1972)  |
+|                | Kimberly-Penman           | RH, T, U, R | `kimberly_penman`   | Wright (1982)                |
+|                | Thom-Oliver               | RH, T, U, R | `thom_oliver`       | Thom and Oliver (1977)       |
+| Temperature    | Blaney–Criddle            | T           | `blaney_criddle`    | Blaney and Criddle (1952)    |
 |                | Hamon                     | T           | `hamon`             | Hamon (1963), 3 options      |
 |                | Romanenko                 | RH, T       | `romanenko`         | Xu and Singh (2001)          |
 |                | Linacre                   | T           | `linacre`           | Linacre (1977)               |
-|                | Haude                     | T           | `haude`             | Haude (1955)                 |
-| Radiation      | Turc                      | T, D        | `turc`              | Xu and Singh (2001)          |
-|                | Jensen–Haise              | T, D        | `jensen_haise`      | Jensen (1963)                |
-|                | McGuinness–Bordne         | T, D        | `mcguinness_bordne` | McGuinness (1972)            |
+|                | Haude                     | RH, T       | `haude`             | Haude (1955)                 |
+| Radiation      | Turc                      | RH, T, R    | `turc`              | Xu and Singh (2001)          |
+|                | Jensen–Haise              | T, (R)      | `jensen_haise`      | Jensen (1963)                |
+|                | McGuinness–Bordne         | T           | `mcguinness_bordne` | McGuinness (1972)            |
 |                | Hargreaves                | T           | `hargreaves`        | Hargreaves and Samani (1982) |
-|                | Doorenbos–Pruitt (FAO-24) | RH, T, U, D | `fao_24`            | Jensen et al. (1990)         |
-|                | Abtew                     | T, D        | `abtew`             | Abtew (1996)                 |
-|                | Makkink                   | T, D        | `makkink`           | Makkink (1957)               |
+|                | Doorenbos–Pruitt (FAO-24) | RH, T, U, R | `fao_24`            | Jensen et al. (1990)         |
+|                | Abtew                     | T, R        | `abtew`             | Abtew (1996)                 |
+|                | Makkink                   | T, R        | `makkink`           | Makkink (1957)               |
 |                | Oudin                     | T           | `oudin`             | Oudin (2005)                 |
 
 T, Temperature; U, Wind Speed; D, Radiation; RH, Relative Humidity. Adapted from Oudin et al. (2005).
