@@ -4,7 +4,11 @@
 
 from numpy import sqrt, clip
 
+from pandas import DatetimeIndex
+
 from .meteo_utils import calc_ea, extraterrestrial_r, daylight_hours
+
+from .utils import get_index
 
 # Stefan Boltzmann constant - hourly [MJm-2K-4h-1]
 STEFAN_BOLTZMANN_HOUR = 2.042 * 10 ** -10
@@ -12,42 +16,38 @@ STEFAN_BOLTZMANN_HOUR = 2.042 * 10 ** -10
 STEFAN_BOLTZMANN_DAY = 4.903 * 10 ** -9
 
 
-def calc_rad_long(rs, tindex=None, shape=None, tmean=None, tmax=None,
-                  tmin=None,
-                  rhmax=None, rhmin=None, rh=None, elevation=None, lat=None,
-                  rso=None, a=1.35, b=-0.35, ea=None, kab=None):
+def calc_rad_long(rs, tmean=None, tmax=None, tmin=None, rhmax=None, rhmin=None,
+                  rh=None, elevation=None, lat=None, rso=None, a=1.35, b=-0.35,
+                  ea=None, kab=None):
     """Net longwave radiation [MJ m-2 d-1].
 
     Parameters
     ----------
-    rs: pandas.Series, optional
+    rs: float/pandas.Series/xarray.DataArray, optional
         incoming solar radiation [MJ m-2 d-1]
-    tindex: pandas.DatetimeIndex
-    shape: tuple
-        shape of the underlying data.
-    tmean: pandas.Series, optional
+    tmean: float/pandas.Series/xarray.DataArray, optional
         average day temperature [°C]
-    tmax: pandas.Series, optional
+    tmax: float/pandas.Series/xarray.DataArray, optional
         maximum day temperature [°C]
-    tmin: pandas.Series, optional
+    tmin: float/pandas.Series/xarray.DataArray, optional
         minimum day temperature [°C]
-    rhmax: pandas.Series, optional
+    rhmax: float/pandas.Series/xarray.DataArray, optional
         maximum daily relative humidity [%]
-    rhmin: pandas.Series, optional
+    rhmin: float/pandas.Series/xarray.DataArray, optional
         mainimum daily relative humidity [%]
-    rh: pandas.Series, optional
+    rh: float/pandas.Series/xarray.DataArray, optional
         mean daily relative humidity [%]
-    elevation: float, optional
+    elevation: float/xarray.DataArray, optional
         the site elevation [m]
-    lat: float, optional
+    lat: float/xarray.DataArray, optional
         the site latitude [rad]
-    rso: pandas.Series/float, optional
+    rso: float/pandas.Series/xarray.DataArray, optional
         clear-sky solar radiation [MJ m-2 day-1]
     a: float, optional
         empirical coefficient for Net Long-Wave radiation [-]
     b: float, optional
         empirical coefficient for Net Long-Wave radiation [-]
-    ea: pandas.Series, optional
+    ea: float/pandas.Series/xarray.DataArray, optional
         actual vapor pressure [kPa]
     kab: float, optional
         coefficient that can be derived from the as and bs coefficients of the
@@ -57,7 +57,8 @@ def calc_rad_long(rs, tindex=None, shape=None, tmean=None, tmax=None,
 
     Returns
     -------
-        pandas.Series containing the calculated net longwave radiation
+    float/pandas.Series/xarray.DataArray, optional containing the calculated
+        net longwave radiation
 
     Notes
     -----
@@ -71,7 +72,8 @@ def calc_rad_long(rs, tindex=None, shape=None, tmean=None, tmax=None,
                      rhmin=rhmin, rh=rh)
 
     if rso is None:
-        ra = extraterrestrial_r(tindex, lat, shape)
+        tindex = get_index(rs)
+        ra = extraterrestrial_r(tindex, lat)
         rso = calc_rso(ra=ra, elevation=elevation, kab=kab)
     solar_rat = clip(rs / rso, 0.3, 1)
     if tmax is not None:
@@ -86,34 +88,32 @@ def calc_rad_long(rs, tindex=None, shape=None, tmean=None, tmax=None,
     return tmp1 * tmp2 * tmp3
 
 
-def calc_rad_short(rs=None, tindex=None, lat=None, shape=None, albedo=0.23,
-                   n=None, nn=None, as1=0.25, bs1=0.5):
+def calc_rad_short(rs=None, lat=None, albedo=0.23, n=None, nn=None, as1=0.25,
+                   bs1=0.5):
     """Net shortwave radiation [MJ m-2 d-1].
 
     Parameters
     ----------
-    rs: pandas.Series, optional
+    rs: float/pandas.Series/xarray.DataArray, optional
         incoming solar radiation [MJ m-2 d-1]
-    tindex: pandas..DatetimeIndex
     lat: float, optional
         the site latitude [rad]
-    shape: tuple
-        shape of the underlying data.
-    albedo: float, optional
+    albedo: float/pandas.Series/xarray.DataArray, optional
         surface albedo [-]
-    n: pandas.Series/float, optional
+    n: pandas.Series/xarray.DataArray, optional
         actual duration of sunshine [hour]
     as1: float, optional
         regression constant,  expressing the fraction of extraterrestrial
         reaching the earth on overcast days (n = 0) [-]
     bs1: float, optional
         empirical coefficient for extraterrestrial radiation [-]
-    nn: pandas.Series/float, optional
+    nn: float/pandas.Series/xarray.DataArray, optional
         maximum possible duration of sunshine or daylight hours [hour]
 
     Returns
     -------
-    pandas.Series containing the calculated net shortwave radiation
+    float/pandas.Series/xarray.DataArray, optional containing the calculated
+        net shortwave radiation
 
     Notes
     -----
@@ -122,22 +122,18 @@ def calc_rad_short(rs=None, tindex=None, lat=None, shape=None, albedo=0.23,
     if rs is not None:
         return (1 - albedo) * rs
     else:
-        return (1 - albedo) * calc_rad_sol_in(tindex, lat, shape, n, as1=as1,
-                                              bs1=bs1, nn=nn)
+        return (1 - albedo) * calc_rad_sol_in(n, lat, as1=as1, bs1=bs1, nn=nn)
 
 
-def calc_rad_sol_in(tindex, lat, shape, n, as1=0.25, bs1=0.5, nn=None):
+def calc_rad_sol_in(n, lat, as1=0.25, bs1=0.5, nn=None):
     """Incoming solar radiation [MJ m-2 d-1].
 
     Parameters
     ----------
-    tindex: pandas.DatetimeIndex
+    n: pandas.Series/xarray.DataArray
+        actual duration of sunshine [hour]
     lat: float, optional
         the site latitude [rad]
-    shape: tuple
-        shape of the underlying data.
-    n: pandas.Series/float
-        actual duration of sunshine [hour]
     as1: float, optional
         regression constant,  expressing the fraction of extraterrestrial
         reaching the earth on overcast days (n = 0) [-]
@@ -154,7 +150,8 @@ def calc_rad_sol_in(tindex, lat, shape, n, as1=0.25, bs1=0.5, nn=None):
     -----
     Based on equation 35 in [allen_1998]_.
     """
-    ra = extraterrestrial_r(tindex, lat, shape)
+    tindex = get_index(n)
+    ra = extraterrestrial_r(tindex, lat)
     if nn is None:
         nn = daylight_hours(tindex, lat)
     return (as1 + bs1 * n / nn) * ra
@@ -165,9 +162,9 @@ def calc_rso(ra, elevation, kab=None):
 
     Parameters
     ----------
-    ra: pandas.Series, optional
+    ra: pandas.Series/xarray.DataArray, optional
         Extraterrestrial daily radiation [MJ m-2 d-1]
-    elevation: float, optional
+    elevation: float/xarray.DataArray, optional
         the site elevation [m]
     kab: float, optional
         coefficient that can be derived from the as and bs coefficients of the
@@ -177,13 +174,16 @@ def calc_rso(ra, elevation, kab=None):
 
     Returns
     -------
-    pandas.Series containing the calculated Clear-sky solar radiation
+    pandas.Series/xarray.DataArray, optional containing the calculated
+        Clear-sky solar radiation
 
     Notes
     -----
     Based on equation 37 in [allen_1998]_.
 
     """
+    if (type(elevation) is not float) & (type(elevation) is not int):
+        elevation = (elevation.expand_dims(time=DatetimeIndex(ra.time)))
     if kab is None:
         return (0.75 + (2 * 10 ** -5) * elevation) * ra
     else:

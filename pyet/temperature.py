@@ -2,28 +2,46 @@
 
 """
 
-from numpy import exp, broadcast_to
+from numpy import exp
 
 from .meteo_utils import daylight_hours, calc_ea, calc_es, calc_e0
 
-from .utils import get_index_shape
+from .utils import get_index
 
 
-def blaney_criddle(tmean, lat, k=0.65):
-    """Evaporation calculated according to [blaney_1952]_.
+def blaney_criddle(tmean, lat, a=-1.55, b=0.96, k=0.65, wind=None, rhmin=None,
+                   n=None, nn=None, method=0):
+    """Potential evaporation calculated according to [blaney_1952]_.
 
     Parameters
     ----------
-    tmean: pandas.Series, optional
+    tmean: pandas.Series/xarray.DataArray
         average day temperature [°C]
-    lat: float, optional
+    lat: float/xarray.DataArray, optional
         the site latitude [rad]
+    a: float, optional
+        calibration coefficient for method 0 [-]
+    b: float, optional
+        calibration coefficient for method 0 [-]
     k: float, optional
-        calibration coefficient [-]
+        calibration coefficient for method 1 [-]
+    wind: float/pandas.Series/xarray.DataArray, optional
+        mean day wind speed [m/s]
+    rhmin: float/pandas.Series/xarray.DataArray, optional
+        mainimum daily relative humidity [%]
+    n: float/pandas.Series/xarray.DataArray, optional
+        actual duration of sunshine [hour]
+    nn: float/pandas.Series/xarray.DataArray, optional
+        maximum possible duration of sunshine or daylight hours [hour]
+    method: float, optional
+        0 => Blaney Criddle after [schrodter_2013]_
+        1 => Blaney Criddle after [Xu_2001]_
+        2 => FAO-24 Blaney Criddle after [mcmahon_2013]_
 
     Returns
     -------
-    pandas.Series containing the calculated evaporation.
+    float/pandas.Series/xarray.DataArray containing the calculated
+            potential evaporation [mm d-1].
 
     Examples
     --------
@@ -37,33 +55,54 @@ def blaney_criddle(tmean, lat, k=0.65):
 
     References
     ----------
+    .. [schrodter_2013] Schrödter, H. (2013). Verdunstung:
+        Anwendungsorientierte Meßverfahren und Bestimmungsmethoden.
+        Springer-Verlag.
     .. [blaney_1952] Blaney, H. F. (1952). Determining water requirements in
        irrigated areas from climatological and irrigation data.
     .. [xu_2001] Xu, C. Y., & Singh, V. P. (2001). Evaluation and
        generalization of temperature‐based methods for calculating evaporation.
        Hydrological processes, 15(2), 305-319.
+    .. [mcmahon_2013] McMahon, T. A., Peel, M. C., Lowe, L., Srikanthan, R.,
+        and McVicar, T. R. (2013): Estimating actual, potential, reference crop
+        and pan evaporation using standard meteorological data: a pragmatic
+        synthesis, Hydrol. Earth Syst. Sci., 17, 1331–1363.
     """
-    index, shape = get_index_shape(tmean)
-    dl = broadcast_to(daylight_hours(index, lat, shape), shape)
-    et = k * dl / (365 * 12) * 100 * (0.46 * tmean + 8.13)
-    return et
+    index = get_index(tmean)
+    dl = daylight_hours(index, lat)
+    py = dl / (365 * 12) * 100
+    if method == 0:
+        pet = a + b * (py * (0.457 * tmean + 8.128))
+    if method == 1:
+        pet = k * py * (0.46 * tmean + 8.13)
+    if method == 2:
+        if nn is None:
+            nn = daylight_hours(index, lat)
+        k1 = (0.0043 * rhmin - n / nn - 1.41)
+        e0, e1, e2, e3, e4, e5 = (0.81917, -0.0040922, 1.0705, 0.065649,
+                                  -0.0059684, -0.0005967)
+        bvar = e0 + e1 * rhmin + e2 * n / nn + e3 * wind + e4 * rhmin * n / \
+               nn + e5 * rhmin * wind
+        pet = k1 + bvar * py * (0.46 * tmean + 8.13)
+    return pet.rename("Blaney_Criddle")
 
 
 def haude(tmean, rh, k=1):
-    """Evaporation calculated according to [haude]_.
+    """Potential evaporation calculated according to [haude]_.
 
     Parameters
     ----------
-    tmean: pandas.Series, optional
+    tmean: pandas.Series/xarray.DataArray
         temperature at 2pm or maximum dailty temperature [°C]
-    rh: float, optional
+    rh: float/pandas.Series/xarray.DataArray
         average relative humidity at 2pm [%]
     k: float, optional
         calibration coefficient [-]
 
     Returns
     -------
-    pandas.Series containing the calculated evaporation.
+    float/pandas.Series/xarray.DataArray containing the calculated
+            potential evaporation [mm d-1].
 
     Examples
     --------
@@ -89,19 +128,20 @@ def haude(tmean, rh, k=1):
     # Haude coefficients from [schiff_1975]_
     fk = [0.27, 0.27, 0.28, 0.39, 0.39, 0.37, 0.35, 0.33, 0.31, 0.29, 0.27,
           0.27]
-    index, shape = get_index_shape(tmean)
-    f = [fk[x - 1] for x in index.month]
-    return k * f * (e0 - ea) * 10  # kPa to hPa
+    index = get_index(tmean)
+    f = ([fk[x - 1] for x in index.month] * (tmean / tmean).T).T
+    pe = k * f * (e0 - ea) * 10  # kPa to hPa
+    return pe.rename("Haude")
 
 
-def hamon(tmean, lat, k=1, c=13.97, cc=218.527, method=1):
-    """Evaporation calculated according to [hamon_1961]_.
+def hamon(tmean, lat, k=1, c=13.97, cc=218.527, method=0):
+    """Potential evaporation calculated according to [hamon_1961]_.
 
     Parameters
     ----------
-    tmean: pandas.Series, optional
+    tmean: pandas.Series/xarray.DataArray
         average day temperature [°C]
-    lat: float, optional
+    lat: float/xarray.DataArray
         the site latitude [rad]
     k: float, optional
         calibration coefficient if method = 0 [-]
@@ -116,11 +156,12 @@ def hamon(tmean, lat, k=1, c=13.97, cc=218.527, method=1):
 
     Returns
     -------
-    pandas.Series containing the calculated evaporation.
+    float/pandas.Series/xarray.DataArray containing the calculated
+            potential evaporation [mm d-1].
 
     Examples
     --------
-    >>> et_hamon = hamon_1(tmean, lat)
+    >>> et_hamon = hamon(tmean, lat)
 
     Notes
     -----
@@ -143,39 +184,39 @@ def hamon(tmean, lat, k=1, c=13.97, cc=218.527, method=1):
        evaporation measures from a standard 20 m 2 tank. Journal of Water and
        Land Development.
     """
-    index, shape = get_index_shape(tmean)
-    dl = broadcast_to(daylight_hours(index, lat, shape), shape)
+    index = get_index(tmean)
+    # Use transpose to work with lat either as int or xarray.DataArray
+    dl = daylight_hours(index, lat)
     if method == 0:
-        et = k * (dl / 12) ** 2 * exp(tmean / 16)
-        return et[:]
+        pe = k * (dl / 12) ** 2 * exp(tmean / 16)
     if method == 1:
-        pt = 4.95 * exp(
-            0.062 * tmean) / 100  # saturated water content after Xu and Singh (2001)
-        et = c * (dl / 12) ** 2 * pt
-        et = et.where(tmean > 0, 0)
-        return et[:]
+        # saturated water content after Xu and Singh (2001)
+        pt = 4.95 * exp(0.062 * tmean) / 100
+        pe = c * (dl / 12) ** 2 * pt
+        pe = pe.where(tmean > 0, 0)
     if method == 2:
-        et = cc * (dl / 12) * 1 / (tmean + 273.3) * exp(
+        pe = cc * (dl / 12) * 1 / (tmean + 273.3) * exp(
             (17.26939 * tmean) / (tmean + 273.3))
-        et = et.where(tmean > 0, 0)
-        return et
+        pe = pe.where(tmean > 0, 0)
+    return pe.rename("Hamon")
 
 
 def romanenko(tmean, rh, k=4.5):
-    """Evaporation calculated according to [romanenko_1961]_.
+    """Potential evaporation calculated according to [romanenko_1961]_.
 
     Parameters
     ----------
-    tmean: pandas.Series, optional
+    tmean: float/pandas.Series/xarray.DataArray
         average day temperature [°C]
-    rh: pandas.Series, optional
+    rh: float/pandas.Series/xarray.DataArray
         mean daily relative humidity [%]
     k: float, optional
         calibration coefficient [-]
 
     Returns
     -------
-    pandas.Series containing the calculated evaporation.
+    float/pandas.Series/xarray.DataArray containing the calculated
+            potential evaporation [mm d-1].
 
     Examples
     --------
@@ -195,31 +236,32 @@ def romanenko(tmean, rh, k=4.5):
     """
     ea = calc_ea(tmean=tmean, rh=rh)
     es = calc_es(tmean=tmean)
-
-    return k * (1 + tmean / 25) ** 2 * (1 - ea / es)
+    pe = k * (1 + tmean / 25) ** 2 * (1 - ea / es)
+    return pe.rename("Romanenko")
 
 
 def linacre(tmean, elevation, lat, tdew=None, tmax=None, tmin=None):
-    """Evaporation calculated according to [linacre_1977]_.
+    """Potential evaporation calculated according to [linacre_1977]_.
 
     Parameters
     ----------
-    tmean: pandas.Series, optional
+    tmean: float/pandas.Series/xarray.DataArray
         average day temperature [°C]
-    elevation: float, optional
+    elevation: float/xarray.DataArray
         the site elevation [m]
-    lat: float, optional
+    lat: float/xarray.DataArray, optional
         the site latitude [°]
-    tdew: pandas.Series, optional
+    tdew: float/pandas.Series/xarray.DataArray, optional
         mean dew-point temperature [°C]
-    tmax: pandas.Series, optional
+    tmax: float/pandas.Series/xarray.DataArray, optional
         maximum day temperature [°C]
-    tmin: pandas.Series, optional
+    tmin: float/pandas.Series/xarray.DataArray, optional
         minimum day temperature [°C]
 
     Returns
     -------
-    pandas.Series containing the calculated evaporation.
+    float/pandas.Series/xarray.DataArray containing the calculated
+            potential evaporation [mm d-1].
 
     Examples
     --------
@@ -240,5 +282,5 @@ def linacre(tmean, elevation, lat, tdew=None, tmax=None, tmin=None):
     if tdew is None:
         tdew = 0.52 * tmin + 0.6 * tmax - 0.009 * tmax ** 2 - 2
     tm = tmean + 0.006 * elevation
-    et = (500 * tm / (100 - lat) + 15 * (tmean - tdew)) / (80 - tmean)
-    return et
+    pe = (500 * tm / (100 - lat) + 15 * (tmean - tdew)) / (80 - tmean)
+    return pe.rename("Linacre")

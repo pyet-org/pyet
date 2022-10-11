@@ -23,12 +23,12 @@ def show_versions():
     return print(msg)
 
 
-def get_index_shape(df):
-    """Method to return the index and shape of the input data.
+def get_index(df):
+    """Method to return the index of the input data.
 
     """
     try:
         index = pandas.DatetimeIndex(df.index)
     except AttributeError:
         index = pandas.DatetimeIndex(df.time)
-    return index, df.shape
+    return index
