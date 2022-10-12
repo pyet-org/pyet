@@ -45,6 +45,7 @@ Examples of using pyet can be found in the example folder:
 * [Example 3](/examples/03_example_knmi.ipynb): Benchmarking Makkink against [KNMI data](https://www.knmi.nl/over-het-knmi/about)
 * [Example 4](/examples/04_example_coagmet.ipynb): Benchmarking FAO56 against [CoAgMET data](https://coagmet.colostate.edu/)
 * [Example 5](/examples/05_example_calibration.ipynb): Calibrating the Romanenko and Abtew method against the PM-FAO56
+* [Example 6](/examples/06_worked_examples_McMahon_etal_2013.ipynb): Worked examples for estimating meteorological variables and potential evaporation after McMahon et al., 2013
 
 Documentation is hosted on [ReadTheDocs](https://pyet.readthedocs.io).
 
