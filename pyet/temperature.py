@@ -10,7 +10,7 @@ from .utils import get_index
 
 
 def blaney_criddle(tmean, lat, a=-1.55, b=0.96, k=0.65, wind=None, rhmin=None,
-                   n=None, nn=None, method=0):
+                   n=None, nn=None, py=None, method=0):
     """Potential evaporation calculated according to [blaney_1952]_.
 
     Parameters
@@ -33,6 +33,9 @@ def blaney_criddle(tmean, lat, a=-1.55, b=0.96, k=0.65, wind=None, rhmin=None,
         actual duration of sunshine [hour]
     nn: float/pandas.Series/xarray.DataArray, optional
         maximum possible duration of sunshine or daylight hours [hour]
+    py: float/pandas.Series/xarray.DataArray, optional
+        percentage of actual day-light hours for the day compared to the
+        number of day-light hour during the entire year [-]
     method: float, optional
         0 => Blaney Criddle after [schrodter_2013]_
         1 => Blaney Criddle after [Xu_2001]_
@@ -70,7 +73,8 @@ def blaney_criddle(tmean, lat, a=-1.55, b=0.96, k=0.65, wind=None, rhmin=None,
     """
     index = get_index(tmean)
     dl = daylight_hours(index, lat)
-    py = dl / (365 * 12) * 100
+    if py is None:
+        py = dl / (365 * 12) * 100
     if method == 0:
         pet = a + b * (py * (0.457 * tmean + 8.128))
     if method == 1:
@@ -87,7 +91,7 @@ def blaney_criddle(tmean, lat, a=-1.55, b=0.96, k=0.65, wind=None, rhmin=None,
     return pet.rename("Blaney_Criddle")
 
 
-def haude(tmean, rh, k=1):
+def haude(tmean, rh=None, ea=None, k=1):
     """Potential evaporation calculated according to [haude]_.
 
     Parameters
@@ -96,6 +100,8 @@ def haude(tmean, rh, k=1):
         temperature at 2pm or maximum dailty temperature [°C]
     rh: float/pandas.Series/xarray.DataArray
         average relative humidity at 2pm [%]
+    ea: float/pandas.Series/xarray.DataArray, optional
+        actual vapor pressure [kPa]
     k: float, optional
         calibration coefficient [-]
 
@@ -124,7 +130,8 @@ def haude(tmean, rh, k=1):
         331-342.
     """
     e0 = calc_e0(tmean)
-    ea = rh * e0 / 100
+    if ea is None:
+        ea = rh * e0 / 100
     # Haude coefficients from [schiff_1975]_
     fk = [0.27, 0.27, 0.28, 0.39, 0.39, 0.37, 0.35, 0.33, 0.31, 0.29, 0.27,
           0.27]

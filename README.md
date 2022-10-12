@@ -96,6 +96,7 @@ If you use PyEt in one of your studies, please cite the PyEt EGU abstract:
   author={Vremec, Matev{\v{z}} and Collenteur, Raoul},
   booktitle={EGU General Assembly Conference Abstracts},
   pages={EGU21--15008},
-  year={2021}
+  year={2021},
+  doi={https://doi.org/10.5194/egusphere-egu21-15008}
 }
 ```
