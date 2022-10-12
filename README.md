@@ -58,8 +58,8 @@ line of python code:
 
 Most of the methods implemented in pyet are benchmarked against literature values from the FAO Irrigation and
 drainage paper 56. In addition, two comparative analysis between daily PE estimated with pyet and other organizations is made:
-* `>>>"pyet.pm_fao56<<<` against daily PE estimated with ASCE Penman-Monteith from [CoAgMET](https://coagmet.colostate.edu/) (Colorado State University),
-* `>>>"pyet.makkink<<<` against daily PE estimated with Makkink from The Royal Netherlands Meteorological Institute ([KNMI](https://www.knmi.nl/over-het-knmi/about)).
+* `pyet.pm_fao56` against daily PE estimated with ASCE Penman-Monteith from [CoAgMET](https://coagmet.colostate.edu/) (Colorado State University),
+* `pyet.makkink` against daily PE estimated with Makkink from The Royal Netherlands Meteorological Institute ([KNMI](https://www.knmi.nl/over-het-knmi/about)).
 
 ## Dimensions
 
