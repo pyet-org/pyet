@@ -57,6 +57,9 @@ Examples of using pyet can be found in the example folder:
 *   [Example 6](/examples/06_worked_examples_McMahon_etal_2013.ipynb): Worked examples for estimating meteorological
   variables and potential evaporation after McMahon et al., 2013
 
+*   [Example 7](/examples/07_example_climate_change.ipynb): Example for estimating potential evaporation under 
+  warming and elevated $CO_2$ concentrations following Yang et al., (2019) 
+
 Documentation is hosted on [ReadTheDocs](https://pyet.readthedocs.io).
 
 After defining the input data, evaporation is estimated using only one
