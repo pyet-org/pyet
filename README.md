@@ -11,7 +11,7 @@
 <a href="https://doi.org/10.5281/zenodo.5896800"><img src=https://zenodo.org/badge/DOI/10.5281/zenodo.5896800.svg><a>
 
 pyet is an open source python package for calculating reference and potential evaporation (PE) for 1D (pandas.Series)
-and 3D (xarray.DataArrray). Currently, nineteen methods for calculating daily PE are implemented:
+and 3D (xarray.DataArrray) data. Currently, eighteen methods for calculating daily PE are implemented:
 
 | Classification | Common method name        | Data needed | pyet Method         | Reference                    |
 |----------------|---------------------------|-------------|---------------------|------------------------------|
@@ -58,6 +58,8 @@ After defining the input data, evaporation is estimated using only one
 line of python code:
 
 `>>> pyet.pm_fao56(tmean, wind, rn=rn, tmax=tmax, tmin=tmin, rh=rh, elevation=elevation)`
+
+We support Python >= 3.8.
 
 ## Benchmarking
 
