@@ -80,7 +80,7 @@ made:
 
 ## Dimensions
 
-As of version v1.2.0, pyet is compatible with both Pandas.Series and xarray.DataArray, which means you can now estimate
+As of version v1.1.1, pyet is compatible with both Pandas.Series and xarray.DataArray, which means you can now estimate
 potential evaporation for both point and gridded data.
 
 ## Bug reports and Questions
