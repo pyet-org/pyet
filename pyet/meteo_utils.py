@@ -7,6 +7,8 @@ from numpy import tan, cos, pi, sin, arccos, mod, exp, log, nanmax, isnan, \
 
 from pandas import to_numeric, Series
 
+from xarray import DataArray
+
 # Specific heat of air [MJ kg-1 °C-1]
 CP = 1.013 * 10 ** -3
 
@@ -293,7 +295,7 @@ def daylight_hours(tindex, lat):
     sangle = sunset_angle(sol_dec, lat)
     # Account for subpolar belt which returns NaN values
     dl = 24 / pi * sangle
-    if (type(lat) is not float) & (type(lat) is not int):
+    if isinstance(lat, DataArray):
         sol_dec = ((dl / dl).T * sol_dec.values).T
     dl = where((sol_dec > 0) & (isnan(dl)), nanmax(dl), dl)
     dl = where((sol_dec < 0) & (isnan(dl)), 0, dl)
@@ -319,7 +321,7 @@ def sunset_angle(sol_dec, lat):
     -----
     Based on equations 25 in [allen_1998]_.
     """
-    if (type(lat) is not float) & (type(lat) is not int):
+    if isinstance(lat, DataArray):
         lat = (lat.expand_dims(time=sol_dec.index))
         return arccos(-tan(sol_dec.values) * tan(lat).T).T
     else:
@@ -402,7 +404,7 @@ def extraterrestrial_r(tindex, lat):
     sol_dec = solar_declination(j)
 
     omega = sunset_angle(sol_dec, lat).values
-    if (type(lat) is not float) & (type(lat) is not int):
+    if isinstance(lat, DataArray):
         lat = (lat.expand_dims(time=sol_dec.index))
         xx = (sin(sol_dec.values) * sin(lat.T))
         yy = (cos(sol_dec.values) * cos(lat.T))

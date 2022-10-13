@@ -10,7 +10,8 @@
 <a href="https://pyet.readthedocs.io/en/latest/?badge=latest"><img src="https://readthedocs.org/projects/pyet/badge/?version=latest"><a>   
 <a href="https://doi.org/10.5281/zenodo.5896800"><img src=https://zenodo.org/badge/DOI/10.5281/zenodo.5896800.svg><a>
 
-pyet is an open source python package for calculating reference and potential evaporation (PE) for 1D (pandas.Series) and 3D (xarray.DataArrray). Currently, nineteen methods for calculating daily PE are implemented:
+pyet is an open source python package for calculating reference and potential evaporation (PE) for 1D (pandas.Series)
+and 3D (xarray.DataArrray). Currently, nineteen methods for calculating daily PE are implemented:
 
 | Classification | Common method name        | Data needed | pyet Method         | Reference                    |
 |----------------|---------------------------|-------------|---------------------|------------------------------|
@@ -40,12 +41,16 @@ T, Temperature; U, Wind Speed; D, Radiation; RH, Relative Humidity. Adapted from
 ## Examples and Documentation
 
 Examples of using pyet can be found in the example folder:
-* [Example 1](/examples/01_example_zamg.ipynb): Estimating PE using pandas.Series
-* [Example 2](/examples/02_example_zamg_netcdf.ipynb): Estimating PE using xarray.DataArray
-* [Example 3](/examples/03_example_knmi.ipynb): Benchmarking Makkink against [KNMI data](https://www.knmi.nl/over-het-knmi/about)
-* [Example 4](/examples/04_example_coagmet.ipynb): Benchmarking FAO56 against [CoAgMET data](https://coagmet.colostate.edu/)
-* [Example 5](/examples/05_example_calibration.ipynb): Calibrating the Romanenko and Abtew method against the PM-FAO56
-* [Example 6](/examples/06_worked_examples_McMahon_etal_2013.ipynb): Worked examples for estimating meteorological variables and potential evaporation after McMahon et al., 2013
+
+*   [Example 1](/examples/01_example_zamg.ipynb): Estimating PE using pandas.Series
+*   [Example 2](/examples/02_example_zamg_netcdf.ipynb): Estimating PE using xarray.DataArray
+*   [Example 3](/examples/03_example_knmi.ipynb): Benchmarking Makkink
+  against [KNMI data](https://www.knmi.nl/over-het-knmi/about)
+*   [Example 4](/examples/04_example_coagmet.ipynb): Benchmarking FAO56
+  against [CoAgMET data](https://coagmet.colostate.edu/)
+*   [Example 5](/examples/05_example_calibration.ipynb): Calibrating the Romanenko and Abtew method against the PM-FAO56
+*   [Example 6](/examples/06_worked_examples_McMahon_etal_2013.ipynb): Worked examples for estimating meteorological
+  variables and potential evaporation after McMahon et al., 2013
 
 Documentation is hosted on [ReadTheDocs](https://pyet.readthedocs.io).
 
@@ -57,9 +62,13 @@ line of python code:
 ## Benchmarking
 
 Most of the methods implemented in pyet are benchmarked against literature values from the FAO Irrigation and
-drainage paper 56. In addition, two comparative analysis between daily PE estimated with pyet and other organizations is made:
-* `pyet.pm_fao56` against daily PE estimated with ASCE Penman-Monteith from [CoAgMET](https://coagmet.colostate.edu/) (Colorado State University),
-* `pyet.makkink` against daily PE estimated with Makkink from The Royal Netherlands Meteorological Institute ([KNMI](https://www.knmi.nl/over-het-knmi/about)).
+drainage paper 56. In addition, two comparative analysis between daily PE estimated with pyet and other organizations is
+made:
+
+*   `pyet.pm_fao56` against daily PE estimated with ASCE Penman-Monteith from [CoAgMET](https://coagmet.colostate.edu/) (
+  Colorado State University),
+*   `pyet.makkink` against daily PE estimated with Makkink from The Royal Netherlands Meteorological
+  Institute ([KNMI](https://www.knmi.nl/over-het-knmi/about)).
 
 ## Dimensions
 
@@ -88,10 +97,10 @@ To install in developer mode, use the following syntax:
 
 If you use PyEt in one of your studies, please cite the PyEt EGU abstract:
 
-- Vremec, M. and Collenteur, R.: PyEt - a Python package to estimate potential and reference evapotranspiration, EGU
+*   Vremec, M. and Collenteur, R.: PyEt - a Python package to estimate potential and reference evapotranspiration, EGU
   General Assembly 2021, online, 19–30 Apr 2021, EGU21-15008, https://doi.org/10.5194/egusphere-egu21-15008, 2021.
 
-```
+```Reference
 @inproceedings{vremec2021pyet,
   title={PyEt-a Python package to estimate potential and reference evapotranspiration},
   author={Vremec, Matev{\v{z}} and Collenteur, Raoul},

@@ -6,6 +6,8 @@ from numpy import sqrt, clip
 
 from pandas import DatetimeIndex
 
+from xarray import DataArray
+
 from .meteo_utils import calc_ea, extraterrestrial_r, daylight_hours
 
 from .utils import get_index
@@ -182,7 +184,7 @@ def calc_rso(ra, elevation, kab=None):
     Based on equation 37 in [allen_1998]_.
 
     """
-    if (type(elevation) is not float) & (type(elevation) is not int):
+    if isinstance(elevation, DataArray):
         elevation = (elevation.expand_dims(time=DatetimeIndex(ra.time)))
     if kab is None:
         return (0.75 + (2 * 10 ** -5) * elevation) * ra
