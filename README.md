@@ -68,8 +68,8 @@ We support Python >= 3.8.
 
 ## Benchmarking
 
-Most of the methods implemented in pyet are benchmarked against literature values from the FAO Irrigation and
-drainage paper 56. In addition, two comparative analysis between daily PE estimated with pyet and other organizations is
+Most of the methods implemented in pyet are benchmarked against literature values from the [FAO Irrigation and
+drainage paper 56](https://www.fao.org/3/x0490e/x0490e00.htm), [McMahon et al., 2013 (supplementary)](https://hess.copernicus.org/articles/17/4865/2013/) and [Schrödter, 1985](https://link.springer.com/book/10.1007/978-3-642-70434-5). In addition, two comparative analysis between daily PE estimated with pyet and other organizations is
 made:
 
 *   `pyet.pm_fao56` against daily PE estimated with ASCE Penman-Monteith from [CoAgMET](https://coagmet.colostate.edu/) (
