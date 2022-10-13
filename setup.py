@@ -36,7 +36,10 @@ setup(
     install_requires=['numpy>=1.18',
                       'matplotlib>=3.3',
                       'pandas>=1.2',
-                      'scipy>=1.4',
-                      'xarray>=0.18.0'],
+                      'scipy>=1.4'
+                      ],
+    examples=['xarray>=0.18.0'
+              ],
     packages=find_packages(exclude=[]),
+
 )
