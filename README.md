@@ -42,14 +42,19 @@ T, Temperature; U, Wind Speed; D, Radiation; RH, Relative Humidity. Adapted from
 
 Examples of using pyet can be found in the example folder:
 
-*   [Example 1](/examples/01_example_zamg.ipynb): Estimating PE using pandas.Series
-*   [Example 2](/examples/02_example_zamg_netcdf.ipynb): Estimating PE using xarray.DataArray
-*   [Example 3](/examples/03_example_knmi.ipynb): Benchmarking Makkink
+* [Example 1](/examples/01_example_zamg.ipynb): Estimating PE using pandas.Series
+
+* [Example 2](/examples/02_example_zamg_netcdf.ipynb): Estimating PE using xarray.DataArray
+
+* [Example 3](/examples/03_example_knmi.ipynb): Benchmarking Makkink
   against [KNMI data](https://www.knmi.nl/over-het-knmi/about)
-*   [Example 4](/examples/04_example_coagmet.ipynb): Benchmarking FAO56
+
+* [Example 4](/examples/04_example_coagmet.ipynb): Benchmarking FAO56
   against [CoAgMET data](https://coagmet.colostate.edu/)
-*   [Example 5](/examples/05_example_calibration.ipynb): Calibrating the Romanenko and Abtew method against the PM-FAO56
-*   [Example 6](/examples/06_worked_examples_McMahon_etal_2013.ipynb): Worked examples for estimating meteorological
+
+* [Example 5](/examples/05_example_calibration.ipynb): Calibrating the Romanenko and Abtew method against the PM-FAO56
+
+* [Example 6](/examples/06_worked_examples_McMahon_etal_2013.ipynb): Worked examples for estimating meteorological
   variables and potential evaporation after McMahon et al., 2013
 
 Documentation is hosted on [ReadTheDocs](https://pyet.readthedocs.io).
@@ -67,9 +72,10 @@ Most of the methods implemented in pyet are benchmarked against literature value
 drainage paper 56. In addition, two comparative analysis between daily PE estimated with pyet and other organizations is
 made:
 
-*   `pyet.pm_fao56` against daily PE estimated with ASCE Penman-Monteith from [CoAgMET](https://coagmet.colostate.edu/) (
+* `pyet.pm_fao56` against daily PE estimated with ASCE Penman-Monteith from [CoAgMET](https://coagmet.colostate.edu/) (
   Colorado State University),
-*   `pyet.makkink` against daily PE estimated with Makkink from The Royal Netherlands Meteorological
+
+* `pyet.makkink` against daily PE estimated with Makkink from The Royal Netherlands Meteorological
   Institute ([KNMI](https://www.knmi.nl/over-het-knmi/about)).
 
 ## Dimensions
