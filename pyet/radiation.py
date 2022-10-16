@@ -8,24 +8,27 @@ from .combination import calc_lambda
 
 from .meteo_utils import extraterrestrial_r, calc_press, calc_psy, calc_vpc
 
+from .utils import get_index
+
 
 def turc(tmean, rs, rh, k=0.31):
     """Evaporation calculated according to [turc_1961]_.
 
     Parameters
     ----------
-    tmean: pandas.Series
+    tmean: float/pandas.Series/xarray.DataArray
         average day temperature [°C]
-    rs: pandas.Series
+    rs: float/pandas.Series/xarray.DataArray
         incoming solar radiation [MJ m-2 d-1]
-    rh: pandas.Series
+    rh: float/pandas.Series/xarray.DataArray
         mean daily relative humidity [%]
     k: float, optional
         calibration coefficient [-]
 
     Returns
     -------
-    pandas.Series containing the calculated evaporation.
+    float/pandas.Series/xarray.DataArray containing the calculated
+            potential evaporation [mm d-1].
 
     Examples
     --------
@@ -47,25 +50,26 @@ def turc(tmean, rs, rh, k=0.31):
        Hydrological processes, 14(2), 339-349.
     """
     c = tmean / tmean
-    c[rh] = 1 - (50 - rh) / 70
-    et = k * c * tmean / (tmean + 15) * (rs + 2.094)
-    return et
+    c.where(rh > 50, 1 + (50 - rh) / 70)
+    pe = k * c * tmean / (tmean + 15) * (rs + 2.094)
+    pe = pe.where(tmean > 0, 0)
+    return pe.rename("Turc")
 
 
 def jensen_haise(tmean, rs=None, cr=0.025, tx=-3, lat=None, method=1):
-    """Evaporation calculated accordinf to [jensen_haise_1963]_.
+    """Potential evaporation calculated accordinf to [jensen_haise_1963]_.
 
     Parameters
     ----------
-    tmean: pandas.Series, optional
+    tmean: andas.Series/xarray.DataArray
         average day temperature [°C]
-    rs: pandas.Series, optional
+    rs: float/pandas.Series/xarray.DataArray, optional
         incoming solar radiation [MJ m-2 d-1]
     cr: float, optional
         temperature coefficient [-]
     tx: float, optional
         intercept of the temperature axis [°C]
-    lat: float
+    lat: float/xarray.DataArray
         the site latitude [rad]
     method: float, optional
         1 => after [jensen_allen_2016]
@@ -73,7 +77,8 @@ def jensen_haise(tmean, rs=None, cr=0.025, tx=-3, lat=None, method=1):
 
     Returns
     -------
-    pandas.Series containing the calculated evaporation.
+    float/pandas.Series/xarray.DataArray containing the calculated
+            potential evaporation [mm d-1].
 
     Examples
     --------
@@ -96,27 +101,30 @@ def jensen_haise(tmean, rs=None, cr=0.025, tx=-3, lat=None, method=1):
     """
     lambd = calc_lambda(tmean)
     if method == 1:
-        return rs / lambd * cr * (tmean - tx)
+        pe = rs / lambd * cr * (tmean - tx)
     else:
-        ra = extraterrestrial_r(tmean.index, lat)
-        return ra * (tmean + 5) / 68 / lambd
+        index = get_index(tmean)
+        ra = extraterrestrial_r(index, lat)
+        pe = ra * (tmean + 5) / 68 / lambd
+    return pe.rename("Jensen_Haise")
 
 
 def mcguinness_bordne(tmean, lat, k=0.0147):
-    """Evaporation calculated according to [mcguinness_bordne_1972]_.
+    """Potential evaporation calculated according to [mcguinness_bordne_1972]_.
 
     Parameters
     ----------
-    tmean: pandas.Series, optional
+    tmean: pandas.Series/xarray.DataArray
         average day temperature [°C]
-    lat: float, optional
+    lat: float/xarray.DataArray, optional
         the site latitude [rad]
     k: float, optional
         calibration coefficient [-]
 
     Returns
     -------
-    pandas.Series containing the calculated evaporation.
+    float/pandas.Series/xarray.DataArray containing the calculated
+            potential evaporation [mm d-1].
 
     Examples
     --------
@@ -136,74 +144,91 @@ def mcguinness_bordne(tmean, lat, k=0.0147):
        Agric., Washington, DC.
     """
     lambd = calc_lambda(tmean)
-    ra = extraterrestrial_r(tmean.index, lat)
-    et = k * ra * (tmean + 5) / lambd
-    return et
+    index = get_index(tmean)
+    ra = extraterrestrial_r(index, lat)
+    pe = k * ra * (tmean + 5) / lambd
+    return pe.rename("Mcguinness_Bordne")
 
 
-def hargreaves(tmean, tmax, tmin, lat):
-    """Evaporation calculated according to [hargreaves_samani_1982]_.
-
-        Parameters
-        ----------
-        tmean: pandas.Series
-            average day temperature [°C]
-        tmax: pandas.Series, optional
-            maximum day temperature [°C]
-        tmin: pandas.Series, optional
-            minimum day temperature [°C]
-        lat: float, optional
-            the site latitude [rad]
-
-        Returns
-        -------
-        pandas.Series containing the calculated evaporation.
-
-        Examples
-        --------
-        >>> et_har = hargreaves(tmean, tmax, tmin, lat)
-
-        Notes
-        -----
-        Based on equation (8-16) in [jensen_allen_2016]_.
-
-        .. math:: PE = 0.0023 \\frac{R_a (T_a+17.8)\\sqrt{(T_{max}-T_{min})}}\
-            {\\lambda}
-
-        References
-        ----------
-        .. [hargreaves_samani_1982] Hargreaves, G. H., & Samani, Z. A. (1982).
-           Estimating potential evapotranspiration. Journal of the irrigation
-           and Drainage Division, 108(3), 225-230.
-        """
-    lambd = calc_lambda(tmean)
-    ra = extraterrestrial_r(tindex=tmean.index, lat=lat)
-    return 0.0023 * (tmean + 17.8) * sqrt(tmax - tmin) * ra / lambd
-
-
-def fao_24(tmean, wind, rs, rh, pressure=None, elevation=None, albedo=0.23):
-    """Evaporation calculated according to [jensen_1990]_.
+def hargreaves(tmean, tmax, tmin, lat, k=0.0135, method=0):
+    """Potential evaporation calculated according to [hargreaves_samani_1982]_.
 
     Parameters
     ----------
-    tmean: pandas.Series
+    tmean: pandas.Series/xarray.DataArray
         average day temperature [°C]
-    wind: pandas.Series
+    tmax: float/pandas.Series/xarray.DataArray
+        maximum day temperature [°C]
+    tmin: float/pandas.Series/xarray.DataArray
+        minimum day temperature [°C]
+    lat: float/xarray.DataArray
+        the site latitude [rad]
+    k: float, optional
+        calirbation coefficient [-]
+    method: float, optional
+        0 => after [jensen_allen_2016]
+        1 => after [mcmahon_2013]
+
+    Returns
+    -------
+    float/pandas.Series/xarray.DataArray containing the calculated
+            potential evaporation [mm d-1].
+
+    Examples
+    --------
+    >>> et_har = hargreaves(tmean, tmax, tmin, lat)
+
+    Notes
+    -----
+    Based on equation (8-16) in [jensen_allen_2016]_.
+
+    .. math:: PE = 0.0023 \\frac{R_a (T_a+17.8)\\sqrt{(T_{max}-T_{min})}}\
+        {\\lambda}
+
+    References
+    ----------
+    .. [hargreaves_samani_1982] Hargreaves, G. H., & Samani, Z. A. (1982).
+        Estimating potential evapotranspiration. Journal of the irrigation
+        and Drainage Division, 108(3), 225-230.
+
+    """
+    lambd = calc_lambda(tmean)
+    index = get_index(tmean)
+
+    ra = extraterrestrial_r(index, lat)
+    chs = 0.00185 * (tmax - tmin) ** 2 - 0.0433 * (tmax - tmin) + 0.4023
+    if method == 0:
+        pe = k / 0.0135 * 0.0023 * (tmean + 17.8) * sqrt(
+            tmax - tmin) * ra / lambd
+    else:
+        pe = k * chs * sqrt(tmax - tmin) * ra / lambd * (tmean + 17.8)
+    return pe.rename("Hargreaves")
+
+
+def fao_24(tmean, wind, rs, rh, pressure=None, elevation=None, albedo=0.23):
+    """Potential evaporation calculated according to [jensen_1990]_.
+
+    Parameters
+    ----------
+    tmean: float/pandas.Series/xarray.DataArray
+        average day temperature [°C]
+    wind: float/pandas.Series/xarray.DataArray
         mean day wind speed [m/s]
-    rs: pandas.Series
+    rs: float/pandas.Series/xarray.DataArray
         incoming solar radiation [MJ m-2 d-1]
-    rh: pandas.Series
+    rh: float/pandas.Series/xarray.DataArray
         mean daily relative humidity [%]
-    pressure: float, optional
+    pressure: float/pandas.Series/xarray.DataArray, optional
         atmospheric pressure [kPa]
-    elevation: float, optional
+    elevation: float/xarray.DataArray, optional
         the site elevation [m]
-    albedo: float, optional
+    albedo: float/xarray.DataArray, optional
         surface albedo [-]
 
     Returns
     -------
-        pandas.Series containing the calculated evaporation
+    float/pandas.Series/xarray.DataArray containing the calculated
+            potential evaporation [mm d-1].
 
     Examples
     --------
@@ -228,25 +253,26 @@ def fao_24(tmean, wind, rs, rh, pressure=None, elevation=None, albedo=0.23):
 
     w = 1.066 - 0.13 * rh / 100 + 0.045 * wind - 0.02 * rh / 100 * wind - \
         0.315 * (rh / 100) ** 2 - 0.0011 * wind
-
-    return -0.3 + dlt / (dlt + gamma) * rs * (1 - albedo) * w / lambd
+    pe = -0.3 + dlt / (dlt + gamma) * rs * (1 - albedo) * w / lambd
+    return pe.rename("FAO_24")
 
 
 def abtew(tmean, rs, k=0.53):
-    """Evaporation calculated according to [abtew_1996]_.
+    """Potential evaporation calculated according to [abtew_1996]_.
 
     Parameters
     ----------
-    tmean: pandas.Series, optional
+    tmean: float/pandas.Series/xarray.DataArray
         average day temperature [°C]
-    rs: pandas.Series, optional
+    rs: float/pandas.Series/xarray.DataArray
         incoming solar radiation [MJ m-2 d-1]
     k: float, optional
         calibration coefficient [-]
 
     Returns
     -------
-    pandas.Series containing the calculated evaporation.
+    float/pandas.Series/xarray.DataArray containing the calculated
+            potential evaporation [mm d-1].
 
     Examples
     --------
@@ -265,27 +291,30 @@ def abtew(tmean, rs, k=0.53):
        the American Water Resources Association, 32(3), 465-473.
     """
     lambd = calc_lambda(tmean)
-    et = k * rs / lambd
-    return et
+    pe = k * rs / lambd
+    return pe.rename("Abtew")
 
 
-def makkink(tmean, rs, pressure=None, elevation=None):
-    """"Evaporation calculated according to [makkink1957]_.
+def makkink(tmean, rs, pressure=None, elevation=None, k=0.65):
+    """"Potential evaporation calculated according to [makkink1957]_.
 
     Parameters
     ----------
-    tmean: pandas.Series
+    tmean: float/pandas.Series/xarray.DataArray
         average day temperature [°C]
-    rs: pandas.Series, optional
+    rs: float/pandas.Series/xarray.DataArray
         incoming solar radiation [MJ m-2 d-1]
-    pressure: float, optional
+    pressure: float/pandas.Series/xarray.DataArray, optional
         atmospheric pressure [kPa]
-    elevation: float, optional
+    elevation: float/xarray.DataArray, optional
         the site elevation [m]
+    k: float, optional
+        calirbation coefficient [-]
 
     Returns
     -------
-        pandas.Series containing the calculated evaporation
+    float/pandas.Series/xarray.DataArray containing the calculated
+            potential evaporation [mm d-1].
 
     Examples
     --------
@@ -307,18 +336,18 @@ def makkink(tmean, rs, pressure=None, elevation=None):
     gamma = calc_psy(pressure)
     dlt = calc_vpc(tmean)
     lambd = calc_lambda(tmean)
-
-    return 0.65 * dlt / (dlt + gamma) * rs / lambd
+    pe = k * dlt / (dlt + gamma) * rs / lambd
+    return pe.rename("Makkink")
 
 
 def oudin(tmean, lat, k1=100, k2=5):
-    """Evaporation calculated according to [oudin_2005]_.
+    """Potential evaporation calculated according to [oudin_2005]_.
 
     Parameters
     ----------
-    tmean: pandas.Series, optional
+    tmean: pandas.Series/xarray.DataArray
         average day temperature [°C]
-    lat: float, optional
+    lat: float/xarray.DataArray
         the site latitude [rad]
     k1: float, optional
         calibration coefficient [-]
@@ -327,7 +356,8 @@ def oudin(tmean, lat, k1=100, k2=5):
 
     Returns
     -------
-    pandas.Series containing the calculated evaporation.
+    float/pandas.Series/xarray.DataArray containing the calculated
+            potential evaporation [mm d-1].
 
     Examples
     --------
@@ -342,7 +372,9 @@ def oudin(tmean, lat, k1=100, k2=5):
 
     """
     lambd = calc_lambda(tmean)
-    ra = extraterrestrial_r(tmean.index, lat)
-    et = ra * (tmean + k2) / lambd / k1
-    et[(tmean + k2) < 0] = 0
-    return et
+    index = get_index(tmean)
+    # Add transpose to be able to work with lat in float or xarray.DataArray
+    ra = extraterrestrial_r(index, lat)
+    pe = ra * (tmean + k2) / lambd / k1
+    pe = pe.where((tmean + k2) > 0, 0)
+    return pe.rename("Oudin")

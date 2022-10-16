@@ -1,3 +1,6 @@
+import pandas
+
+
 def show_versions():
     """Method to print the version of dependencies.
 
@@ -18,3 +21,14 @@ def show_versions():
         f"Pyet version: {ps_version}"
     )
     return print(msg)
+
+
+def get_index(df):
+    """Method to return the index of the input data.
+
+    """
+    try:
+        index = pandas.DatetimeIndex(df.index)
+    except AttributeError:
+        index = pandas.DatetimeIndex(df.time)
+    return index

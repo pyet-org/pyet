@@ -1,7 +1,8 @@
 numpy>=1.15
 matplotlib>=2.0
-pandas>=0.23
+pandas>=1.0
 scipy>=1.1
+xarray>=0.18.0
 Ipython
 ipykernel
 nbsphinx
