@@ -376,5 +376,5 @@ def oudin(tmean, lat, k1=100, k2=5):
     # Add transpose to be able to work with lat in float or xarray.DataArray
     ra = extraterrestrial_r(index, lat)
     pe = ra * (tmean + k2) / lambd / k1
-    pe = pe.where((tmean + k2) > 0, 0)
+    pe = pe.where(((tmean + k2) > 0) | (pe.isnull()), 0)
     return pe.rename("Oudin")

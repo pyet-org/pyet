@@ -322,7 +322,7 @@ def sunset_angle(sol_dec, lat):
     Based on equations 25 in [allen_1998]_.
     """
     if isinstance(lat, DataArray):
-        lat = (lat.expand_dims(time=sol_dec.index))
+        lat = lat.expand_dims(dim={"time": sol_dec.index}, axis=0)
         return arccos(-tan(sol_dec.values) * tan(lat).T).T
     else:
         return arccos(-tan(sol_dec) * tan(lat))
@@ -405,7 +405,7 @@ def extraterrestrial_r(tindex, lat):
 
     omega = sunset_angle(sol_dec, lat).values
     if isinstance(lat, DataArray):
-        lat = (lat.expand_dims(time=sol_dec.index))
+        lat = lat.expand_dims(dim={"time": sol_dec.index}, axis=0)
         xx = (sin(sol_dec.values) * sin(lat.T))
         yy = (cos(sol_dec.values) * cos(lat.T))
         return (118.08 / 3.141592654 * dr.values * (

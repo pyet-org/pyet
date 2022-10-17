@@ -185,7 +185,8 @@ def calc_rso(ra, elevation, kab=None):
 
     """
     if isinstance(elevation, DataArray):
-        elevation = (elevation.expand_dims(time=DatetimeIndex(ra.time)))
+        elevation = elevation.expand_dims(dim={"time": DatetimeIndex(ra.time)},
+                                          axis=0)
     if kab is None:
         return (0.75 + (2 * 10 ** -5) * elevation) * ra
     else:
