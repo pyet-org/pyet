@@ -1,4 +1,5 @@
 import pandas
+from numpy import where
 
 
 def show_versions():
@@ -21,6 +22,17 @@ def show_versions():
         f"Pyet version: {ps_version}"
     )
     return print(msg)
+
+
+def clip_zeros(s, clip_zero):
+    """Method to replace negative values with 0 for Pandas.Series and
+        xarray.DataArray.
+
+    """
+    if clip_zero:
+        return s.where((s > 0) | (s.isnull()), 0)
+    else:
+        return s
 
 
 def get_index(df):

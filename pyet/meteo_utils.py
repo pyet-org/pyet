@@ -101,14 +101,15 @@ def calc_lambda(tmean):
     return 2.501 - 0.002361 * tmean
 
 
-def calc_press(elevation):
+def calc_press(elevation, pressure=None):
     """Atmospheric pressure [kPa].
 
     Parameters
     ----------
     elevation: float/xarray.DataArray
         the site elevation [m]
-
+    pressure: float/xarray.DataArray, optional
+        atmospheric pressure [kPa].
     Returns
     -------
     float/xarray.DataArray containing the calculated atmospheric
@@ -122,7 +123,10 @@ def calc_press(elevation):
     -----
     Based on equation 7 in [allen_1998]_.
     """
-    return 101.3 * ((293 - 0.0065 * elevation) / 293) ** 5.26
+    if pressure is None:
+        return 101.3 * ((293 - 0.0065 * elevation) / 293) ** 5.26
+    else:
+        return pressure
 
 
 def calc_rho(pressure, tmean, ea):

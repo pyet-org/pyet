@@ -8,10 +8,10 @@ from .combination import calc_lambda
 
 from .meteo_utils import extraterrestrial_r, calc_press, calc_psy, calc_vpc
 
-from .utils import get_index
+from .utils import *
 
 
-def turc(tmean, rs, rh, k=0.31):
+def turc(tmean, rs, rh, k=0.31, clip_zero=True):
     """Evaporation calculated according to [turc_1961]_.
 
     Parameters
@@ -24,6 +24,8 @@ def turc(tmean, rs, rh, k=0.31):
         mean daily relative humidity [%]
     k: float, optional
         calibration coefficient [-]
+    clip_zero: bool, optional
+        if True, replace all negative values with 0.
 
     Returns
     -------
@@ -52,11 +54,12 @@ def turc(tmean, rs, rh, k=0.31):
     c = tmean / tmean
     c.where(rh > 50, 1 + (50 - rh) / 70)
     pe = k * c * tmean / (tmean + 15) * (rs + 2.094)
-    pe = pe.where(tmean > 0, 0)
+    pe = clip_zeros(pe, clip_zero)
     return pe.rename("Turc")
 
 
-def jensen_haise(tmean, rs=None, cr=0.025, tx=-3, lat=None, method=1):
+def jensen_haise(tmean, rs=None, cr=0.025, tx=-3, lat=None, method=1,
+                 clip_zero=True):
     """Potential evaporation calculated accordinf to [jensen_haise_1963]_.
 
     Parameters
@@ -74,6 +77,8 @@ def jensen_haise(tmean, rs=None, cr=0.025, tx=-3, lat=None, method=1):
     method: float, optional
         1 => after [jensen_allen_2016]
         2 => after [oudin_2005]
+    clip_zero: bool, optional
+        if True, replace all negative values with 0.
 
     Returns
     -------
@@ -102,14 +107,15 @@ def jensen_haise(tmean, rs=None, cr=0.025, tx=-3, lat=None, method=1):
     lambd = calc_lambda(tmean)
     if method == 1:
         pe = rs / lambd * cr * (tmean - tx)
-    else:
+    elif method == 2:
         index = get_index(tmean)
         ra = extraterrestrial_r(index, lat)
         pe = ra * (tmean + 5) / 68 / lambd
+    pe = clip_zeros(pe, clip_zero)
     return pe.rename("Jensen_Haise")
 
 
-def mcguinness_bordne(tmean, lat, k=0.0147):
+def mcguinness_bordne(tmean, lat, k=0.0147, clip_zero=True):
     """Potential evaporation calculated according to [mcguinness_bordne_1972]_.
 
     Parameters
@@ -120,6 +126,8 @@ def mcguinness_bordne(tmean, lat, k=0.0147):
         the site latitude [rad]
     k: float, optional
         calibration coefficient [-]
+    clip_zero: bool, optional
+        if True, replace all negative values with 0.
 
     Returns
     -------
@@ -147,10 +155,11 @@ def mcguinness_bordne(tmean, lat, k=0.0147):
     index = get_index(tmean)
     ra = extraterrestrial_r(index, lat)
     pe = k * ra * (tmean + 5) / lambd
+    pe = clip_zeros(pe, clip_zero)
     return pe.rename("Mcguinness_Bordne")
 
 
-def hargreaves(tmean, tmax, tmin, lat, k=0.0135, method=0):
+def hargreaves(tmean, tmax, tmin, lat, k=0.0135, method=0, clip_zero=True):
     """Potential evaporation calculated according to [hargreaves_samani_1982]_.
 
     Parameters
@@ -168,6 +177,8 @@ def hargreaves(tmean, tmax, tmin, lat, k=0.0135, method=0):
     method: float, optional
         0 => after [jensen_allen_2016]
         1 => after [mcmahon_2013]
+    clip_zero: bool, optional
+        if True, replace all negative values with 0.
 
     Returns
     -------
@@ -200,12 +211,14 @@ def hargreaves(tmean, tmax, tmin, lat, k=0.0135, method=0):
     if method == 0:
         pe = k / 0.0135 * 0.0023 * (tmean + 17.8) * sqrt(
             tmax - tmin) * ra / lambd
-    else:
+    elif method == 1:
         pe = k * chs * sqrt(tmax - tmin) * ra / lambd * (tmean + 17.8)
+    pe = clip_zeros(pe, clip_zero)
     return pe.rename("Hargreaves")
 
 
-def fao_24(tmean, wind, rs, rh, pressure=None, elevation=None, albedo=0.23):
+def fao_24(tmean, wind, rs, rh, pressure=None, elevation=None, albedo=0.23,
+           clip_zero=True):
     """Potential evaporation calculated according to [jensen_1990]_.
 
     Parameters
@@ -224,6 +237,8 @@ def fao_24(tmean, wind, rs, rh, pressure=None, elevation=None, albedo=0.23):
         the site elevation [m]
     albedo: float/xarray.DataArray, optional
         surface albedo [-]
+    clip_zero: bool, optional
+        if True, replace all negative values with 0.
 
     Returns
     -------
@@ -245,8 +260,7 @@ def fao_24(tmean, wind, rs, rh, pressure=None, elevation=None, albedo=0.23):
        Evapotranspiration and irrigation water requirements. ASCE.
 
     """
-    if pressure is None:
-        pressure = calc_press(elevation)
+    pressure = calc_press(elevation, pressure)
     gamma = calc_psy(pressure)
     dlt = calc_vpc(tmean)
     lambd = calc_lambda(tmean)
@@ -254,10 +268,11 @@ def fao_24(tmean, wind, rs, rh, pressure=None, elevation=None, albedo=0.23):
     w = 1.066 - 0.13 * rh / 100 + 0.045 * wind - 0.02 * rh / 100 * wind - \
         0.315 * (rh / 100) ** 2 - 0.0011 * wind
     pe = -0.3 + dlt / (dlt + gamma) * rs * (1 - albedo) * w / lambd
+    pe = clip_zeros(pe, clip_zero)
     return pe.rename("FAO_24")
 
 
-def abtew(tmean, rs, k=0.53):
+def abtew(tmean, rs, k=0.53, clip_zero=True):
     """Potential evaporation calculated according to [abtew_1996]_.
 
     Parameters
@@ -268,6 +283,8 @@ def abtew(tmean, rs, k=0.53):
         incoming solar radiation [MJ m-2 d-1]
     k: float, optional
         calibration coefficient [-]
+    clip_zero: bool, optional
+        if True, replace all negative values with 0.
 
     Returns
     -------
@@ -292,10 +309,11 @@ def abtew(tmean, rs, k=0.53):
     """
     lambd = calc_lambda(tmean)
     pe = k * rs / lambd
+    pe = clip_zeros(pe, clip_zero)
     return pe.rename("Abtew")
 
 
-def makkink(tmean, rs, pressure=None, elevation=None, k=0.65):
+def makkink(tmean, rs, pressure=None, elevation=None, k=0.65, clip_zero=True):
     """"Potential evaporation calculated according to [makkink1957]_.
 
     Parameters
@@ -310,6 +328,8 @@ def makkink(tmean, rs, pressure=None, elevation=None, k=0.65):
         the site elevation [m]
     k: float, optional
         calirbation coefficient [-]
+    clip_zero: bool, optional
+        if True, replace all negative values with 0.
 
     Returns
     -------
@@ -331,16 +351,16 @@ def makkink(tmean, rs, pressure=None, elevation=None, k=0.65):
         of lysimeters. Journal of the Institution of Water Engineers 11,
         277–288.
     """
-    if pressure is None:
-        pressure = calc_press(elevation)
+    pressure = calc_press(elevation, pressure)
     gamma = calc_psy(pressure)
     dlt = calc_vpc(tmean)
     lambd = calc_lambda(tmean)
     pe = k * dlt / (dlt + gamma) * rs / lambd
+    pe = clip_zeros(pe, clip_zero)
     return pe.rename("Makkink")
 
 
-def oudin(tmean, lat, k1=100, k2=5):
+def oudin(tmean, lat, k1=100, k2=5, clip_zero=True):
     """Potential evaporation calculated according to [oudin_2005]_.
 
     Parameters
@@ -353,11 +373,15 @@ def oudin(tmean, lat, k1=100, k2=5):
         calibration coefficient [-]
     k2: float, optional
         calibration coefficient [-]
+    clip_zero: bool, optional
+        if True, replace all negative values with 0.
 
     Returns
     -------
     float/pandas.Series/xarray.DataArray containing the calculated
             potential evaporation [mm d-1].
+    clip_zero: bool, optional
+        if True, replace all negative values with 0.
 
     Examples
     --------
@@ -377,4 +401,5 @@ def oudin(tmean, lat, k1=100, k2=5):
     ra = extraterrestrial_r(index, lat)
     pe = ra * (tmean + k2) / lambd / k1
     pe = pe.where(((tmean + k2) > 0) | (pe.isnull()), 0)
+    pe = clip_zeros(pe, clip_zero)
     return pe.rename("Oudin")

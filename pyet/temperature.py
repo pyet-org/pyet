@@ -6,11 +6,11 @@ from numpy import exp
 
 from .meteo_utils import daylight_hours, calc_ea, calc_es, calc_e0
 
-from .utils import get_index
+from .utils import *
 
 
 def blaney_criddle(tmean, lat, a=-1.55, b=0.96, k=0.65, wind=None, rhmin=None,
-                   n=None, nn=None, py=None, method=0):
+                   n=None, nn=None, py=None, method=0, clip_zero=True):
     """Potential evaporation calculated according to [blaney_1952]_.
 
     Parameters
@@ -40,6 +40,8 @@ def blaney_criddle(tmean, lat, a=-1.55, b=0.96, k=0.65, wind=None, rhmin=None,
         0 => Blaney Criddle after [schrodter_2013]_
         1 => Blaney Criddle after [Xu_2001]_
         2 => FAO-24 Blaney Criddle after [mcmahon_2013]_
+    clip_zero: bool, optional
+        if True, replace all negative values with 0.
 
     Returns
     -------
@@ -76,9 +78,9 @@ def blaney_criddle(tmean, lat, a=-1.55, b=0.96, k=0.65, wind=None, rhmin=None,
     if py is None:
         py = dl / (365 * 12) * 100
     if method == 0:
-        pet = a + b * (py * (0.457 * tmean + 8.128))
+        pe = a + b * (py * (0.457 * tmean + 8.128))
     if method == 1:
-        pet = k * py * (0.46 * tmean + 8.13)
+        pe = k * py * (0.46 * tmean + 8.13)
     if method == 2:
         if nn is None:
             nn = daylight_hours(index, lat)
@@ -87,11 +89,12 @@ def blaney_criddle(tmean, lat, a=-1.55, b=0.96, k=0.65, wind=None, rhmin=None,
                                   -0.0059684, -0.0005967)
         bvar = e0 + e1 * rhmin + e2 * n / nn + e3 * wind + e4 * rhmin * n / \
                nn + e5 * rhmin * wind
-        pet = k1 + bvar * py * (0.46 * tmean + 8.13)
-    return pet.rename("Blaney_Criddle")
+        pe = k1 + bvar * py * (0.46 * tmean + 8.13)
+    pe = clip_zeros(pe, clip_zero)
+    return pe.rename("Blaney_Criddle")
 
 
-def haude(tmean, rh=None, ea=None, k=1):
+def haude(tmean, rh=None, ea=None, k=1, clip_zero=True):
     """Potential evaporation calculated according to [haude]_.
 
     Parameters
@@ -104,6 +107,8 @@ def haude(tmean, rh=None, ea=None, k=1):
         actual vapor pressure [kPa]
     k: float, optional
         calibration coefficient [-]
+    clip_zero: bool, optional
+        if True, replace all negative values with 0.
 
     Returns
     -------
@@ -138,10 +143,11 @@ def haude(tmean, rh=None, ea=None, k=1):
     index = get_index(tmean)
     f = ([fk[x - 1] for x in index.month] * (tmean / tmean).T).T
     pe = k * f * (e0 - ea) * 10  # kPa to hPa
+    pe = clip_zeros(pe, clip_zero)
     return pe.rename("Haude")
 
 
-def hamon(tmean, lat, k=1, c=13.97, cc=218.527, method=0):
+def hamon(tmean, lat, k=1, c=13.97, cc=218.527, method=0, clip_zero=True):
     """Potential evaporation calculated according to [hamon_1961]_.
 
     Parameters
@@ -160,6 +166,8 @@ def hamon(tmean, lat, k=1, c=13.97, cc=218.527, method=0):
         0 => Hamon after [oudin_2005]_
         1 => Hamon after equation 7 in [ansorge_2019]_
         2 => Hamon after equation 12 in [ansorge_2019]_.
+    clip_zero: bool, optional
+        if True, replace all negative values with 0.
 
     Returns
     -------
@@ -200,15 +208,14 @@ def hamon(tmean, lat, k=1, c=13.97, cc=218.527, method=0):
         # saturated water content after Xu and Singh (2001)
         pt = 4.95 * exp(0.062 * tmean) / 100
         pe = c * (dl / 12) ** 2 * pt
-        pe = pe.where(tmean > 0, 0)
-    if method == 2:
+    elif method == 2:
         pe = cc * (dl / 12) * 1 / (tmean + 273.3) * exp(
             (17.26939 * tmean) / (tmean + 273.3))
-        pe = pe.where(tmean > 0, 0)
+    pe = clip_zeros(pe, clip_zero)
     return pe.rename("Hamon")
 
 
-def romanenko(tmean, rh, k=4.5):
+def romanenko(tmean, rh, k=4.5, clip_zero=True):
     """Potential evaporation calculated according to [romanenko_1961]_.
 
     Parameters
@@ -219,6 +226,8 @@ def romanenko(tmean, rh, k=4.5):
         mean daily relative humidity [%]
     k: float, optional
         calibration coefficient [-]
+    clip_zero: bool, optional
+        if True, replace all negative values with 0.
 
     Returns
     -------
@@ -244,10 +253,12 @@ def romanenko(tmean, rh, k=4.5):
     ea = calc_ea(tmean=tmean, rh=rh)
     es = calc_es(tmean=tmean)
     pe = k * (1 + tmean / 25) ** 2 * (1 - ea / es)
+    pe = clip_zeros(pe, clip_zero)
     return pe.rename("Romanenko")
 
 
-def linacre(tmean, elevation, lat, tdew=None, tmax=None, tmin=None):
+def linacre(tmean, elevation, lat, tdew=None, tmax=None, tmin=None,
+            clip_zero=True):
     """Potential evaporation calculated according to [linacre_1977]_.
 
     Parameters
@@ -264,6 +275,8 @@ def linacre(tmean, elevation, lat, tdew=None, tmax=None, tmin=None):
         maximum day temperature [°C]
     tmin: float/pandas.Series/xarray.DataArray, optional
         minimum day temperature [°C]
+    clip_zero: bool, optional
+        if True, replace all negative values with 0.
 
     Returns
     -------
@@ -290,4 +303,5 @@ def linacre(tmean, elevation, lat, tdew=None, tmax=None, tmin=None):
         tdew = 0.52 * tmin + 0.6 * tmax - 0.009 * tmax ** 2 - 2
     tm = tmean + 0.006 * elevation
     pe = (500 * tm / (100 - lat) + 15 * (tmean - tdew)) / (80 - tmean)
+    pe = clip_zeros(pe, clip_zero)
     return pe.rename("Linacre")

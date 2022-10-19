@@ -7,6 +7,7 @@ from .meteo_utils import *
 from .rad_utils import *
 from .temperature import *
 from .radiation import *
+from .utils import *
 
 # Specific heat of air [MJ kg-1 °C-1]
 CP = 1.013 * 10 ** -3
@@ -19,7 +20,7 @@ STEFAN_BOLTZMANN_DAY = 4.903 * 10 ** -9
 def penman(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
            rhmax=None, rhmin=None, rh=None, pressure=None, elevation=None,
            lat=None, n=None, nn=None, rso=None, aw=2.6, bw=0.536, a=1.35,
-           b=-0.35, albedo=0.23):
+           b=-0.35, albedo=0.23, clip_zero=True):
     """Potential evaporation calculated according to [penman_1948]_.
 
     Parameters
@@ -66,6 +67,8 @@ def penman(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
         empirical coefficient for Net Long-Wave radiation [-]
     albedo: float, optional
         surface albedo [-]
+    clip_zero: bool, optional
+        if True, replace all negative values with 0.
 
     Returns
     -------
@@ -93,8 +96,7 @@ def penman(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
        Hydrology, 331(3-4), 690-702.
 
     """
-    if pressure is None:
-        pressure = calc_press(elevation)
+    pressure = calc_press(elevation, pressure)
     gamma = calc_psy(pressure)
     dlt = calc_vpc(tmean)
     lambd = calc_lambda(tmean)
@@ -113,6 +115,7 @@ def penman(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
     num1 = dlt * (rn - g) / den
     num2 = gamma * (es - ea) * fu / den
     pe = num1 + num2
+    pe = clip_zeros(pe, clip_zero)
     return pe.rename("Penman")
 
 
@@ -120,7 +123,7 @@ def pm_asce(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
             rhmax=None, rhmin=None, rh=None, pressure=None, elevation=None,
             lat=None, n=None, nn=None, rso=None, a=1.35, b=-0.35, cn=900,
             cd=0.34, ea=None, albedo=0.23, kab=None, as1=0.25, bs1=0.5,
-            etype="os"):
+            clip_zero=True, etype="os"):
     """Potential evaporation calculated according to [monteith_1965]_.
 
     Parameters
@@ -177,6 +180,8 @@ def pm_asce(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
         reaching the earth on overcast days (n = 0) [-]
     bs1: float, optional
         empirical coefficient for extraterrestrial radiation [-]
+    clip_zero: bool, optional
+        if True, replace all negative values with 0.
     etype: str, optional
         "os" => ASCE-PM method is applied for a reference surfaces
         representing clipped grass (a short, smooth crop)
@@ -209,8 +214,7 @@ def pm_asce(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
        reference evapotranspiration equation. In Watershed management and
        operations management 2000 (pp. 1-11).
     """
-    if pressure is None:
-        pressure = calc_press(elevation)
+    pressure = calc_press(elevation, pressure)
     gamma = calc_psy(pressure)
     dlt = calc_vpc(tmean)
     if ea is None:
@@ -229,6 +233,7 @@ def pm_asce(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
     num1 = (0.408 * dlt * (rn - g)) / den
     num2 = gamma * cn / (tmean + 273) * wind * (es - ea) / den
     pe = num1 + num2
+    pe = clip_zeros(pe, clip_zero)
     return pe.rename("PM_ASCE")
 
 
@@ -236,7 +241,7 @@ def pm(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None, rhmax=None,
        rhmin=None, rh=None, pressure=None, elevation=None, lat=None, n=None,
        nn=None, rso=None, ea=None, a=1.35, b=-0.35, lai=None, croph=0.12,
        r_l=100, r_s=None, ra_method=0, a_sh=1, a_s=1, lai_eff=0, srs=0.0009,
-       co2=300, albedo=0.23, kab=None, as1=0.25, bs1=0.5):
+       co2=300, albedo=0.23, kab=None, as1=0.25, bs1=0.5, clip_zero=True):
     """Potential evaporation calculated according to [monteith_1965]_.
 
     Parameters
@@ -314,6 +319,8 @@ def pm(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None, rhmax=None,
         reaching the earth on overcast days (n = 0) [-]
     bs1: float, optional
         empirical coefficient for extraterrestrial radiation [-]
+    clip_zero: bool, optional
+        if True, replace all negative values with 0.
 
     Returns
     -------
@@ -341,8 +348,7 @@ def pm(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None, rhmax=None,
        experiments reveal an important omission in the Penman–Monteith
        equation. Hydrology and Earth System Sciences, 21(2), 685-706.
     """
-    if pressure is None:
-        pressure = calc_press(elevation)
+    pressure = calc_press(elevation, pressure)
     gamma = calc_psy(pressure)
     dlt = calc_vpc(tmean)
     lambd = calc_lambda(tmean)
@@ -368,13 +374,14 @@ def pm(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None, rhmax=None,
     num1 = dlt * (rn - g) / den
     num2 = rho_a * CP * kmin * (es - ea) * a_sh / res_a / den
     pe = num1 + num2
+    pe = clip_zeros(pe, clip_zero)
     return pe.rename("Penman_Monteith")
 
 
 def pm_fao56(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
              rhmax=None, rhmin=None, rh=None, pressure=None, elevation=None,
              lat=None, n=None, nn=None, rso=None, a=1.35, b=-0.35,
-             albedo=0.23, kab=None, as1=0.25, bs1=0.5):
+             albedo=0.23, kab=None, as1=0.25, bs1=0.5, clip_zero=True):
     """Potential evaporation calculated according to [allen_1998]_.
 
     Parameters
@@ -425,6 +432,8 @@ def pm_fao56(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
         reaching the earth on overcast days (n = 0) [-]
     bs1: float, optional
         empirical coefficient for extraterrestrial radiation [-]
+    clip_zero: bool, optional
+        if True, replace all negative values with 0.
 
     Returns
     -------
@@ -443,8 +452,7 @@ def pm_fao56(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
     """
     if tmean is None:
         tmean = (tmax + tmin) / 2
-    if pressure is None:
-        pressure = calc_press(elevation)
+    pressure = calc_press(elevation, pressure)
     gamma = calc_psy(pressure)
     dlt = calc_vpc(tmean)
 
@@ -462,13 +470,14 @@ def pm_fao56(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
     num1 = (0.408 * dlt * (rn - g)) / den
     num2 = (gamma * (es - ea) * 900 * wind / (tmean + 273)) / den
     pe = num1 + num2
+    pe = clip_zeros(pe, clip_zero)
     return pe.rename("PM_FAO_56")
 
 
 def priestley_taylor(tmean, rs=None, rn=None, g=0, tmax=None, tmin=None,
                      rhmax=None, rhmin=None, rh=None, pressure=None,
                      elevation=None, lat=None, n=None, nn=None, rso=None,
-                     a=1.35, b=-0.35, alpha=1.26, albedo=0.23):
+                     a=1.35, b=-0.35, alpha=1.26, albedo=0.23, clip_zero=True):
     """Potential evaporation calculated according to
         [priestley_and_taylor_1965]_.
 
@@ -512,6 +521,8 @@ def priestley_taylor(tmean, rs=None, rn=None, g=0, tmax=None, tmin=None,
         calibration coeffiecient [-]
     albedo: float, optional
         surface albedo [-]
+    clip_zero: bool, optional
+        if True, replace all negative values with 0.
 
     Returns
     -------
@@ -534,8 +545,7 @@ def priestley_taylor(tmean, rs=None, rn=None, g=0, tmax=None, tmin=None,
        parameters. Monthly weather review, 100(2), 81-92.
 
     """
-    if pressure is None:
-        pressure = calc_press(elevation)
+    pressure = calc_press(elevation, pressure)
     gamma = calc_psy(pressure)
     dlt = calc_vpc(tmean)
     lambd = calc_lambda(tmean)
@@ -545,13 +555,14 @@ def priestley_taylor(tmean, rs=None, rn=None, g=0, tmax=None, tmin=None,
                     elevation, rso, a, b, albedo=albedo)
 
     pe = (alpha * dlt * (rn - g)) / (lambd * (dlt + gamma))
+    pe = clip_zeros(pe, clip_zero)
     return pe.rename("Priestley_Taylor")
 
 
 def kimberly_penman(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
                     rhmax=None, rhmin=None, rh=None, pressure=None,
                     elevation=None, lat=None, n=None, nn=None, rso=None,
-                    a=1.35, b=-0.35, albedo=0.23):
+                    a=1.35, b=-0.35, albedo=0.23, clip_zero=True):
     """Potential evaporation calculated according to [wright_1982]_.
 
     Parameters
@@ -594,6 +605,8 @@ def kimberly_penman(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
         empirical coefficient for Net Long-Wave radiation [-]
     albedo: float, optional
         surface albedo [-]
+    clip_zero: bool, optional
+        if True, replace all negative values with 0.
 
     Returns
     -------
@@ -615,8 +628,7 @@ def kimberly_penman(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
        coefficients. Proceedings of the American Society of Civil Engineers,
        Journal of the Irrigation and Drainage Division, 108(IR2), 57-74.
     """
-    if pressure is None:
-        pressure = calc_press(elevation)
+    pressure = calc_press(elevation, pressure)
     gamma = calc_psy(pressure)
     dlt = calc_vpc(tmean)
     lambd = calc_lambda(tmean)
@@ -637,6 +649,7 @@ def kimberly_penman(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
     num1 = dlt * (rn - g) / den
     num2 = gamma * (es - ea) * w / den
     pe = num1 + num2
+    pe = clip_zeros(pe, clip_zero)
     return pe.rename("Kimberly_Penman")
 
 
@@ -644,7 +657,7 @@ def thom_oliver(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
                 rhmax=None, rhmin=None, rh=None, pressure=None, elevation=None,
                 lat=None, n=None, nn=None, rso=None, aw=2.6, bw=0.536, a=1.35,
                 b=-0.35, lai=None, croph=0.12, r_l=100, r_s=None, ra_method=0,
-                lai_eff=0, srs=0.0009, co2=300, albedo=0.23):
+                lai_eff=0, srs=0.0009, co2=300, albedo=0.23, clip_zero=True):
     """Potential evaporation calculated according to [thom_1977]_.
 
     Parameters
@@ -711,6 +724,8 @@ def thom_oliver(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
         CO2 concentration [ppm]
     albedo: float, optional
         surface albedo [-]
+    clip_zero: bool, optional
+        if True, replace all negative values with 0.
 
     Returns
     -------
@@ -731,8 +746,7 @@ def thom_oliver(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
        for estimating regional evaporation. Quarterly Journal of the Royal
        Meteorological Society, 103(436), 345-357.
     """
-    if pressure is None:
-        pressure = calc_press(elevation)
+    pressure = calc_press(elevation, pressure)
     gamma = calc_psy(pressure)
     dlt = calc_vpc(tmean)
     lambd = calc_lambda(tmean)
@@ -756,6 +770,7 @@ def thom_oliver(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
     num1 = dlt * (rn - g) / den
     num2 = 2.5 * gamma * (es - ea) * w / den
     pe = num1 + num2
+    pe = clip_zeros(pe, clip_zero)
     return pe.rename("Thom_Oliver")
 
 
