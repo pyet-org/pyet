@@ -64,13 +64,13 @@ Notation and units
      - .. math:: MJ m^{-2} d^{-1}
    * - .. math::  RH
      - Relative humidity
-     - .. math::  [%]
+     - .. math::  %
    * - .. math::  DL
      - Day length
      - .. math:: h d^{-1}
    * - .. math::  \alpha
      - Surface albedo
-     - [-]
+     - -
    * - .. math::  J_D
      - Julian day
      - ordinal date

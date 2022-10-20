@@ -18,10 +18,12 @@ Jensen and Haise (2005)
 
 .. math::
 
+    Method1: After Jensen et al. 2016
     PE = \frac{C_r (T - T_x) R_s}{\lambda}
 
 .. math::
 
+    Method2: After Oudin et al. 2005
     PE = \frac{R_a (T_a+5)}{\lambda 68}
 
 McGuinness and Bordne (1972)

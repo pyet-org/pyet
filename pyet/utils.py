@@ -1,5 +1,4 @@
 import pandas
-from numpy import where
 
 
 def show_versions():
