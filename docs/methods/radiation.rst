@@ -16,14 +16,14 @@ Turc (1961)
 Jensen and Haise (2005)
 -----------------------
 
+Method1: After Jensen et al. 2016
 .. math::
 
-    Method1: After Jensen et al. 2016
     PE = \frac{C_r (T - T_x) R_s}{\lambda}
 
+Method2: After Oudin et al. 2005
 .. math::
 
-    Method2: After Oudin et al. 2005
     PE = \frac{R_a (T_a+5)}{\lambda 68}
 
 McGuinness and Bordne (1972)
