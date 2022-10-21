@@ -106,7 +106,7 @@ To install in developer mode, use the following syntax:
 
 ## Citing
 
-If you use PyEt in one of your studies, please cite the PyEt EGU abstract:
+If you use pyet in one of your studies, please cite the PyEt EGU abstract:
 
 *   Vremec, M. and Collenteur, R.: PyEt - a Python package to estimate potential and reference evapotranspiration, EGU
   General Assembly 2021, online, 19–30 Apr 2021, EGU21-15008, https://doi.org/10.5194/egusphere-egu21-15008, 2021.
