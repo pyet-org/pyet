@@ -16,17 +16,17 @@ Turc (1961)
 Jensen and Haise (2005)
 -----------------------
 
-Method1: After Jensen et al. 2016
+Method = 0: After Jensen et al. 2016
 
 .. math::
 
     PE = \frac{C_r (T - T_x) R_s}{\lambda}
 
-Method2: After Oudin et al. 2005
+Method = 1: After Oudin et al. 2005
 
 .. math::
 
-    PE = \frac{R_a (T_a+5)}{\lambda 68}
+    PE = \frac{R_a (T_a+5)}{\lambda}
 
 McGuinness and Bordne (1972)
 ----------------------------
@@ -39,9 +39,22 @@ McGuinness and Bordne (1972)
 Hargreaves (Hargreaves and Samani, 1982; 1985)
 ----------------------------------------------
 
+Method = 0: after Jensen et al. 2016
+
 .. math::
 
     PE = 0.0023 \frac{R_a (T_a+17.8)\sqrt{(T_{max}-T_{min})}}{\lambda}$
+
+Method = 1: After McMahon et al. 2013
+
+.. math::
+
+    chs = 0.00185 (T_{max}-T_{min})^2 - 0.0433 * (T_{max} - T_{min}) + 0.4023
+
+.. math::
+
+    PE = 0.0135 chs \frac{R_a (T_a+17.8)\sqrt{(T_{max}-T_{min})}}{\lambda}$
+
 
 Doorenbos–Pruitt (FAO-24) (Jensen et al., 1990)
 -----------------------------------------------

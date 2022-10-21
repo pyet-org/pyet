@@ -58,7 +58,7 @@ def turc(tmean, rs, rh, k=0.31, clip_zero=True):
     return pe.rename("Turc")
 
 
-def jensen_haise(tmean, rs=None, cr=0.025, tx=-3, lat=None, method=1,
+def jensen_haise(tmean, rs=None, cr=0.025, tx=-3, lat=None, method=0,
                  clip_zero=True):
     """Potential evaporation calculated accordinf to [jensen_haise_1963]_.
 
@@ -75,8 +75,8 @@ def jensen_haise(tmean, rs=None, cr=0.025, tx=-3, lat=None, method=1,
     lat: float/xarray.DataArray
         the site latitude [rad]
     method: float, optional
-        1 => after [jensen_allen_2016]
-        2 => after [oudin_2005]
+        0 => after [jensen_allen_2016]
+        1 => after [oudin_2005]
     clip_zero: bool, optional
         if True, replace all negative values with 0.
 

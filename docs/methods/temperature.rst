@@ -1,4 +1,4 @@
-Temperature
+ Temperature
 ===============================
 
 Blaney-Criddle (1950)
@@ -11,9 +11,27 @@ Blaney-Criddle (1950)
 Hamon (1961)
 ------------
 
+Method = 0: After Oudin et al. 2005
+
 .. math::
 
-    PE = (\frac{DL}{12})^2 exp(\frac{T_a}{16})
+    PE = k (\frac{DL}{12})^2 exp(\frac{T_a}{16})
+
+Method = 1: After Ansorge et al. 2019, eq. 7
+
+.. math::
+
+    pt = 4.95 exp(0.062 T_{mean}) / 100
+
+.. math::
+
+    PE = 13.97 (\frac{DL}{12})^2 pt
+
+Method = 2: After Ansorge et al. 2019, eq. 12
+
+.. math::
+
+    PE = 218.527 (\frac{DL}{12})^2 / (T_{mean}+273.3) exp(17.26939 T_{mean} / (T_{mean+273.3}))
 
 Romanenko (1961)
 ----------------
