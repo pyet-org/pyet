@@ -81,7 +81,7 @@ def blaney_criddle(tmean, lat, a=-1.55, b=0.96, k=0.65, wind=None, rhmin=None,
         pe = a + b * (py * (0.457 * tmean + 8.128))
     if method == 1:
         pe = k * py * (0.46 * tmean + 8.13)
-    if method == 2:
+    elif method == 2:
         if nn is None:
             nn = daylight_hours(index, lat)
         k1 = (0.0043 * rhmin - n / nn - 1.41)

@@ -20,7 +20,7 @@ STEFAN_BOLTZMANN_DAY = 4.903 * 10 ** -9
 def penman(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
            rhmax=None, rhmin=None, rh=None, pressure=None, elevation=None,
            lat=None, n=None, nn=None, rso=None, aw=2.6, bw=0.536, a=1.35,
-           b=-0.35, albedo=0.23, clip_zero=True):
+           b=-0.35, ea=None, albedo=0.23, clip_zero=True):
     """Potential evaporation calculated according to [penman_1948]_.
 
     Parameters
@@ -65,6 +65,8 @@ def penman(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
         empirical coefficient for Net Long-Wave radiation [-]
     b: float, optional
         empirical coefficient for Net Long-Wave radiation [-]
+    ea: float/pandas.Series/xarray.DataArray, optional
+        actual vapor pressure [kPa]
     albedo: float, optional
         surface albedo [-]
     clip_zero: bool, optional
@@ -101,8 +103,8 @@ def penman(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
     dlt = calc_vpc(tmean)
     lambd = calc_lambda(tmean)
 
-    ea = calc_ea(tmean=tmean, tmax=tmax, tmin=tmin, rhmax=rhmax, rhmin=rhmin,
-                 rh=rh)
+    ea = calc_ea(tmean=tmean, tmax=tmax, tmin=tmin, rhmax=rhmax,
+                 rhmin=rhmin, rh=rh, ea=ea)
     es = calc_es(tmean=tmean, tmax=tmax, tmin=tmin)
 
     if rn is None:
@@ -217,9 +219,8 @@ def pm_asce(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
     pressure = calc_press(elevation, pressure)
     gamma = calc_psy(pressure)
     dlt = calc_vpc(tmean)
-    if ea is None:
-        ea = calc_ea(tmean=tmean, tmax=tmax, tmin=tmin, rhmax=rhmax,
-                     rhmin=rhmin, rh=rh)
+    ea = calc_ea(tmean=tmean, tmax=tmax, tmin=tmin, rhmax=rhmax,
+                 rhmin=rhmin, rh=rh, ea=ea)
     es = calc_es(tmean=tmean, tmax=tmax, tmin=tmin)
     if rn is None:
         rn = get_rn(tmean, rs, lat, n, nn, tmax, tmin, rhmax, rhmin, rh,
@@ -353,9 +354,8 @@ def pm(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None, rhmax=None,
     dlt = calc_vpc(tmean)
     lambd = calc_lambda(tmean)
 
-    if ea is None:
-        ea = calc_ea(tmean=tmean, tmax=tmax, tmin=tmin, rhmax=rhmax,
-                     rhmin=rhmin, rh=rh)
+    ea = calc_ea(tmean=tmean, tmax=tmax, tmin=tmin, rhmax=rhmax,
+                 rhmin=rhmin, rh=rh, ea=ea)
     es = calc_es(tmean=tmean, tmax=tmax, tmin=tmin)
 
     res_a = calc_res_aero(wind, ra_method=ra_method, croph=croph)
@@ -380,7 +380,7 @@ def pm(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None, rhmax=None,
 
 def pm_fao56(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
              rhmax=None, rhmin=None, rh=None, pressure=None, elevation=None,
-             lat=None, n=None, nn=None, rso=None, a=1.35, b=-0.35,
+             lat=None, n=None, nn=None, rso=None, a=1.35, b=-0.35, ea=None,
              albedo=0.23, kab=None, as1=0.25, bs1=0.5, clip_zero=True):
     """Potential evaporation calculated according to [allen_1998]_.
 
@@ -422,6 +422,8 @@ def pm_fao56(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
         empirical coefficient for Net Long-Wave radiation [-]
     b: float, optional
         empirical coefficient for Net Long-Wave radiation [-]
+    ea: float/pandas.Series/xarray.DataArray, optional
+        actual vapor pressure [kPa]
     albedo: float, optional
         surface albedo [-]
     kab: float, optional
@@ -458,8 +460,8 @@ def pm_fao56(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
 
     gamma1 = (gamma * (1 + 0.34 * wind))
 
-    ea = calc_ea(tmean=tmean, tmax=tmax, tmin=tmin, rhmax=rhmax, rhmin=rhmin,
-                 rh=rh)
+    ea = calc_ea(tmean=tmean, tmax=tmax, tmin=tmin, rhmax=rhmax,
+                 rhmin=rhmin, rh=rh, ea=ea)
     es = calc_es(tmean=tmean, tmax=tmax, tmin=tmin)
 
     if rn is None:
@@ -562,7 +564,7 @@ def priestley_taylor(tmean, rs=None, rn=None, g=0, tmax=None, tmin=None,
 def kimberly_penman(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
                     rhmax=None, rhmin=None, rh=None, pressure=None,
                     elevation=None, lat=None, n=None, nn=None, rso=None,
-                    a=1.35, b=-0.35, albedo=0.23, clip_zero=True):
+                    a=1.35, b=-0.35, ea=None, albedo=0.23, clip_zero=True):
     """Potential evaporation calculated according to [wright_1982]_.
 
     Parameters
@@ -603,6 +605,8 @@ def kimberly_penman(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
         empirical coefficient for Net Long-Wave radiation [-]
     b: float, optional
         empirical coefficient for Net Long-Wave radiation [-]
+    ea: float/pandas.Series/xarray.DataArray, optional
+        actual vapor pressure [kPa]
     albedo: float, optional
         surface albedo [-]
     clip_zero: bool, optional
@@ -633,8 +637,8 @@ def kimberly_penman(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
     dlt = calc_vpc(tmean)
     lambd = calc_lambda(tmean)
 
-    ea = calc_ea(tmean=tmean, tmax=tmax, tmin=tmin, rhmax=rhmax, rhmin=rhmin,
-                 rh=rh)
+    ea = calc_ea(tmean=tmean, tmax=tmax, tmin=tmin, rhmax=rhmax,
+                 rhmin=rhmin, rh=rh, ea=ea)
     es = calc_es(tmean=tmean, tmax=tmax, tmin=tmin)
 
     if rn is None:
@@ -657,7 +661,8 @@ def thom_oliver(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
                 rhmax=None, rhmin=None, rh=None, pressure=None, elevation=None,
                 lat=None, n=None, nn=None, rso=None, aw=2.6, bw=0.536, a=1.35,
                 b=-0.35, lai=None, croph=0.12, r_l=100, r_s=None, ra_method=0,
-                lai_eff=0, srs=0.0009, co2=300, albedo=0.23, clip_zero=True):
+                lai_eff=0, srs=0.0009, co2=300, ea=None, albedo=0.23,
+                clip_zero=True):
     """Potential evaporation calculated according to [thom_1977]_.
 
     Parameters
@@ -722,6 +727,8 @@ def thom_oliver(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
         Relative sensitivity of rl to Δ[CO2]
     co2: float
         CO2 concentration [ppm]
+    ea: float/pandas.Series/xarray.DataArray, optional
+        actual vapor pressure [kPa]
     albedo: float, optional
         surface albedo [-]
     clip_zero: bool, optional
@@ -751,8 +758,8 @@ def thom_oliver(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
     dlt = calc_vpc(tmean)
     lambd = calc_lambda(tmean)
 
-    ea = calc_ea(tmean=tmean, tmax=tmax, tmin=tmin, rhmax=rhmax, rhmin=rhmin,
-                 rh=rh)
+    ea = calc_ea(tmean=tmean, tmax=tmax, tmin=tmin, rhmax=rhmax,
+                 rhmin=rhmin, rh=rh, ea=ea)
     es = calc_es(tmean=tmean, tmax=tmax, tmin=tmin)
 
     res_a = calc_res_aero(wind, ra_method=ra_method, croph=croph)

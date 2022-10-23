@@ -60,6 +60,8 @@ Examples of using pyet can be found in the example folder:
 *   [Example 7](/examples/07_example_climate_change.ipynb): Example for estimating potential evaporation under 
   warming and elevated $CO_2$ concentrations following Yang et al., (2019) 
 
+*   [Example 8](/examples/08_crop_coefficient.ipynb): Determining the crop coefficient function with Python 
+
 Documentation is hosted on [ReadTheDocs](https://pyet.readthedocs.io).
 
 After defining the input data, evaporation is estimated using only one

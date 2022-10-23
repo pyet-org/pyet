@@ -218,7 +218,8 @@ def calc_es(tmean=None, tmax=None, tmin=None):
         return calc_e0(tmean)
 
 
-def calc_ea(tmean=None, tmax=None, tmin=None, rhmax=None, rhmin=None, rh=None):
+def calc_ea(tmean=None, tmax=None, tmin=None, rhmax=None, rhmin=None, rh=None,
+            ea=None):
     """ Actual vapor pressure [kPa].
 
     Parameters
@@ -235,6 +236,8 @@ def calc_ea(tmean=None, tmax=None, tmin=None, rhmax=None, rhmin=None, rh=None):
         mainimum daily relative humidity [%]
     rh: float/pandas.Series/xarray.DataArray, optional
         mean daily relative humidity [%]
+    ea: pandas.Series/float, optional
+        actual vapor pressure [kPa]
 
     Returns
     -------
@@ -249,6 +252,8 @@ def calc_ea(tmean=None, tmax=None, tmin=None, rhmax=None, rhmin=None, rh=None):
     -----
     Based on equation 17, 19 in [allen_1998]_.
     """
+    if ea is not None:
+        return ea
     if rhmax is not None:  # eq. 11
         esmax = calc_e0(tmax)
         esmin = calc_e0(tmin)

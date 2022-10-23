@@ -105,9 +105,9 @@ def jensen_haise(tmean, rs=None, cr=0.025, tx=-3, lat=None, method=0,
        American Society of Civil Engineers.
     """
     lambd = calc_lambda(tmean)
-    if method == 1:
+    if method == 0:
         pe = rs / lambd * cr * (tmean - tx)
-    elif method == 2:
+    elif method == 1:
         index = get_index(tmean)
         ra = extraterrestrial_r(index, lat)
         pe = ra * (tmean + 5) / 68 / lambd
