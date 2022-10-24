@@ -425,7 +425,7 @@ def extraterrestrial_r(tindex, lat):
         return 118.08 / 3.141592654 * dr * (omega * xx + yy * sin(omega))
 
 
-def calc_res_surf(lai=None, r_s=None, srs=None, co2=None, r_l=100, lai_eff=0,
+def calc_res_surf(lai=None, r_s=None, srs=0.002, co2=300, r_l=100, lai_eff=0,
                   croph=0.12):
     """Surface resistance [s m-1].
 
@@ -468,14 +468,11 @@ def calc_res_surf(lai=None, r_s=None, srs=None, co2=None, r_l=100, lai_eff=0,
     if r_s:
         return r_s
     else:
+        fco2 = (1 + srs * (co2 - 300))
         if lai is None:
-            return r_l / (0.5 * croph * 24)  # after FAO-56
+            return fco2 * r_l / (0.5 * croph * 24)  # after FAO-56
         else:
-            if co2 is None:
-                return r_l / calc_laieff(lai=lai, lai_eff=lai_eff)
-            else:
-                fco2 = (1 + srs * (co2 - 300))
-                return fco2 * r_l / calc_laieff(lai=lai, lai_eff=lai_eff)
+            return fco2 * r_l / calc_laieff(lai=lai, lai_eff=lai_eff)
 
 
 def calc_laieff(lai=None, lai_eff=0):

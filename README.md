@@ -1,6 +1,6 @@
 <img src=https://raw.githubusercontent.com/phydrus/pyet/d7fdd87719588c00326e692f3b1a47b32161e533/docs/_static/logo.png width=120, align=left>
 
-# pyet: Estimation of Potential Evaporation
+# pyet: Estimation of Potential Evapotranspiration
 
 <a href="https://travis-ci.org/github/phydrus/PyEt"><img src="https://api.travis-ci.org/phydrus/PyEt.svg?branch=master"><a>
 <a href="https://mit-license.org/"><img src=https://img.shields.io/pypi/v/pyet.svg><a>
@@ -10,8 +10,8 @@
 <a href="https://pyet.readthedocs.io/en/latest/?badge=latest"><img src="https://readthedocs.org/projects/pyet/badge/?version=latest"><a>   
 <a href="https://doi.org/10.5281/zenodo.5896800"><img src=https://zenodo.org/badge/DOI/10.5281/zenodo.5896800.svg><a>
 
-pyet is an open source python package for calculating reference and potential evaporation (PE) for 1D (pandas.Series)
-and 3D (xarray.DataArrray) data. Currently, eighteen methods for calculating daily PE are implemented:
+pyet is an open source python package for calculating reference and potential Evapotranspiration (PET) for 1D (pandas.Series)
+and 3D (xarray.DataArrray) data. Currently, eighteen methods for calculating daily PET are implemented:
 
 | Classification | Common method name        | Data needed | pyet Method         | Reference                    |
 |----------------|---------------------------|-------------|---------------------|------------------------------|
@@ -42,9 +42,9 @@ T, Temperature; U, Wind Speed; D, Radiation; RH, Relative Humidity. Adapted from
 
 Examples of using pyet can be found in the example folder:
 
-*   [Example 1](/examples/01_example_zamg.ipynb): Estimating PE using pandas.Series
+*   [Example 1](/examples/01_example_zamg.ipynb): Estimating PET using pandas.Series
 
-*   [Example 2](/examples/02_example_zamg_netcdf.ipynb): Estimating PE using xarray.DataArray
+*   [Example 2](/examples/02_example_zamg_netcdf.ipynb): Estimating PET using xarray.DataArray
 
 *   [Example 3](/examples/03_example_knmi.ipynb): Benchmarking Makkink
   against [KNMI data](https://www.knmi.nl/over-het-knmi/about)
@@ -55,16 +55,16 @@ Examples of using pyet can be found in the example folder:
 *   [Example 5](/examples/05_example_calibration.ipynb): Calibrating the Romanenko and Abtew method against the PM-FAO56
 
 *   [Example 6](/examples/06_worked_examples_McMahon_etal_2013.ipynb): Worked examples for estimating meteorological
-  variables and potential evaporation after McMahon et al., 2013
+  variables and potential evapotranspiration after McMahon et al., 2013
 
-*   [Example 7](/examples/07_example_climate_change.ipynb): Example for estimating potential evaporation under 
+*   [Example 7](/examples/07_example_climate_change.ipynb): Example for estimating potential evapotranspiration under 
   warming and elevated $CO_2$ concentrations following Yang et al., (2019) 
 
 *   [Example 8](/examples/08_crop_coefficient.ipynb): Determining the crop coefficient function with Python 
 
 Documentation is hosted on [ReadTheDocs](https://pyet.readthedocs.io).
 
-After defining the input data, evaporation is estimated using only one
+After defining the input data, evapotranspiration is estimated using only one
 line of python code:
 
 `>>> pyet.pm_fao56(tmean, wind, rn=rn, tmax=tmax, tmin=tmin, rh=rh, elevation=elevation)`
@@ -77,16 +77,16 @@ Most of the methods implemented in pyet are benchmarked against literature value
 drainage paper 56](https://www.fao.org/3/x0490e/x0490e00.htm), [McMahon et al., 2013 (supplementary)](https://hess.copernicus.org/articles/17/4865/2013/) and [Schrödter, 1985](https://link.springer.com/book/10.1007/978-3-642-70434-5). In addition, two comparative analysis between daily PE estimated with pyet and other organizations is
 made:
 
-*   `pyet.pm_fao56` against daily PE estimated with ASCE Penman-Monteith from [CoAgMET](https://coagmet.colostate.edu/) (
+*   `pyet.pm_fao56` against daily PET estimated with ASCE Penman-Monteith from [CoAgMET](https://coagmet.colostate.edu/) (
   Colorado State University),
 
-*   `pyet.makkink` against daily PE estimated with Makkink from The Royal Netherlands Meteorological
+*   `pyet.makkink` against daily PET estimated with Makkink from The Royal Netherlands Meteorological
   Institute ([KNMI](https://www.knmi.nl/over-het-knmi/about)).
 
 ## Dimensions
 
 As of version v1.2., pyet is compatible with both Pandas.Series and xarray.DataArray, which means you can now estimate
-potential evaporation for both point and gridded data.
+potential evapotranspiration for both point and gridded data.
 
 ## Bug reports and Questions
 

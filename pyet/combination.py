@@ -294,8 +294,8 @@ def pm(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None, rhmax=None,
     r_s: pandas.series/float, optional
         bulk surface resistance [s m-1]
     ra_method: float, optional
-        1 => ra = 208/wind
-        2 => ra is calculated based on equation 36 in FAO (1990), ANNEX V.
+        0 => ra = 208/wind
+        1 => ra is calculated based on equation 36 in FAO (1990), ANNEX V.
     a_s: float, optional
         Fraction of one-sided leaf area covered by stomata (1 if stomata are 1
         on one side only, 2 if they are on both sides)
@@ -850,7 +850,7 @@ def calculate_all(tmean, wind, rs, elevation, lat, tmax, tmin, rh):
     pe_df["Haude"] = haude(tmax, rh)
 
     pe_df["Turc"] = turc(tmean, rs, rh)
-    pe_df["Jensen-Haise"] = jensen_haise(tmean, rs=rs, method=1)
+    pe_df["Jensen-Haise"] = jensen_haise(tmean, rs=rs, method=0)
     pe_df["Mcguinness-Bordne"] = mcguinness_bordne(tmean, lat=lat)
     pe_df["Hargreaves"] = hargreaves(tmean, tmax, tmin, lat)
     pe_df["FAO-24"] = fao_24(tmean, wind, rs=rs, rh=rh, elevation=elevation)
