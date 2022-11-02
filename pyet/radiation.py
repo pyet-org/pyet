@@ -109,7 +109,7 @@ def jensen_haise(tmean, rs=None, cr=0.025, tx=-3, lat=None, method=0,
         pe = rs / lambd * cr * (tmean - tx)
     elif method == 1:
         index = get_index(tmean)
-        ra = extraterrestrial_r(index, lat)
+        ra = extraterrestrial_r(index, check_lat(lat))
         pe = ra * (tmean + 5) / 68 / lambd
     pe = clip_zeros(pe, clip_zero)
     return pe.rename("Jensen_Haise")
@@ -153,7 +153,7 @@ def mcguinness_bordne(tmean, lat, k=0.0147, clip_zero=True):
     """
     lambd = calc_lambda(tmean)
     index = get_index(tmean)
-    ra = extraterrestrial_r(index, lat)
+    ra = extraterrestrial_r(index, check_lat(lat))
     pe = k * ra * (tmean + 5) / lambd
     pe = clip_zeros(pe, clip_zero)
     return pe.rename("Mcguinness_Bordne")
@@ -206,7 +206,7 @@ def hargreaves(tmean, tmax, tmin, lat, k=0.0135, method=0, clip_zero=True):
     lambd = calc_lambda(tmean)
     index = get_index(tmean)
 
-    ra = extraterrestrial_r(index, lat)
+    ra = extraterrestrial_r(index, check_lat(lat))
     chs = 0.00185 * (tmax - tmin) ** 2 - 0.0433 * (tmax - tmin) + 0.4023
     if method == 0:
         pe = k / 0.0135 * 0.0023 * (tmean + 17.8) * sqrt(
@@ -398,7 +398,7 @@ def oudin(tmean, lat, k1=100, k2=5, clip_zero=True):
     lambd = calc_lambda(tmean)
     index = get_index(tmean)
     # Add transpose to be able to work with lat in float or xarray.DataArray
-    ra = extraterrestrial_r(index, lat)
+    ra = extraterrestrial_r(index, check_lat(lat))
     pe = ra * (tmean + k2) / lambd / k1
     pe = pe.where(((tmean + k2) > 0) | (pe.isnull()), 0)
     pe = clip_zeros(pe, clip_zero)

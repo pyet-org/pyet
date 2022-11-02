@@ -74,16 +74,16 @@ def blaney_criddle(tmean, lat, a=-1.55, b=0.96, k=0.65, wind=None, rhmin=None,
         synthesis, Hydrol. Earth Syst. Sci., 17, 1331–1363.
     """
     index = get_index(tmean)
-    dl = daylight_hours(index, lat)
+    if nn is None:
+        nn = daylight_hours(index, check_lat(lat))
     if py is None:
-        py = dl / (365 * 12) * 100
+        py = nn / (365 * 12) * 100
     if method == 0:
         pe = a + b * (py * (0.457 * tmean + 8.128))
     if method == 1:
         pe = k * py * (0.46 * tmean + 8.13)
     elif method == 2:
-        if nn is None:
-            nn = daylight_hours(index, lat)
+
         k1 = (0.0043 * rhmin - n / nn - 1.41)
         e0, e1, e2, e3, e4, e5 = (0.81917, -0.0040922, 1.0705, 0.065649,
                                   -0.0059684, -0.0005967)
@@ -201,7 +201,7 @@ def hamon(tmean, lat, k=1, c=13.97, cc=218.527, method=0, clip_zero=True):
     """
     index = get_index(tmean)
     # Use transpose to work with lat either as int or xarray.DataArray
-    dl = daylight_hours(index, lat)
+    dl = daylight_hours(index, check_lat(lat))
     if method == 0:
         pe = k * (dl / 12) ** 2 * exp(tmean / 16)
     if method == 1:
@@ -302,6 +302,7 @@ def linacre(tmean, elevation, lat, tdew=None, tmax=None, tmin=None,
     if tdew is None:
         tdew = 0.52 * tmin + 0.6 * tmax - 0.009 * tmax ** 2 - 2
     tm = tmean + 0.006 * elevation
-    pe = (500 * tm / (100 - lat) + 15 * (tmean - tdew)) / (80 - tmean)
+    pe = (500 * tm / (100 - check_lat(lat)) + 15 * (tmean - tdew)) / (
+                80 - tmean)
     pe = clip_zeros(pe, clip_zero)
     return pe.rename("Linacre")

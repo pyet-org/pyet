@@ -35,10 +35,8 @@ setup(
         'Topic :: Scientific/Engineering :: Hydrology',
     ],
     install_requires=['numpy>=1.15',
-                      'matplotlib>=2.0',
+                      'xarray>=0.18.0',
                       'pandas>=1.0',
-                      'scipy>=1.1'
-                      'xarray>=0.18.0'
                       ],
     packages=find_packages(exclude=[]),
 

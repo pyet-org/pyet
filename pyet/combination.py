@@ -108,8 +108,8 @@ def penman(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
     es = calc_es(tmean=tmean, tmax=tmax, tmin=tmin)
 
     if rn is None:
-        rn = get_rn(tmean, rs, lat, n, nn, tmax, tmin, rhmax, rhmin, rh,
-                    elevation, rso, a, b, ea, albedo)
+        rn = get_rn(tmean, rs, check_lat(lat), n, nn, tmax, tmin, rhmax, rhmin,
+                    rh, elevation, rso, a, b, ea, albedo)
 
     fu = aw * (1 + bw * wind)
 
@@ -223,8 +223,8 @@ def pm_asce(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
                  rhmin=rhmin, rh=rh, ea=ea)
     es = calc_es(tmean=tmean, tmax=tmax, tmin=tmin)
     if rn is None:
-        rn = get_rn(tmean, rs, lat, n, nn, tmax, tmin, rhmax, rhmin, rh,
-                    elevation, rso, a, b, ea, albedo, as1, bs1, kab)
+        rn = get_rn(tmean, rs, check_lat(lat), n, nn, tmax, tmin, rhmax, rhmin,
+                    rh, elevation, rso, a, b, ea, albedo, as1, bs1, kab)
 
     if etype == "rs":
         cn = 1600
@@ -364,8 +364,8 @@ def pm(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None, rhmax=None,
     gamma1 = gamma * a_sh / a_s * (1 + res_s / res_a)
 
     if rn is None:
-        rn = get_rn(tmean, rs, lat, n, nn, tmax, tmin, rhmax, rhmin, rh,
-                    elevation, rso, a, b, ea, albedo, as1, bs1, kab)
+        rn = get_rn(tmean, rs, check_lat(lat), n, nn, tmax, tmin, rhmax, rhmin,
+                    rh, elevation, rso, a, b, ea, albedo, as1, bs1, kab)
 
     kmin = 86400  # unit conversion s d-1
     rho_a = calc_rho(pressure, tmean, ea)
@@ -465,8 +465,8 @@ def pm_fao56(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
     es = calc_es(tmean=tmean, tmax=tmax, tmin=tmin)
 
     if rn is None:
-        rn = get_rn(tmean, rs, lat, n, nn, tmax, tmin, rhmax, rhmin, rh,
-                    elevation, rso, a, b, ea, albedo, as1, bs1, kab)
+        rn = get_rn(tmean, rs, check_lat(lat), n, nn, tmax, tmin, rhmax, rhmin,
+                    rh, elevation, rso, a, b, ea, albedo, as1, bs1, kab)
 
     den = dlt + gamma1
     num1 = (0.408 * dlt * (rn - g)) / den
@@ -553,8 +553,8 @@ def priestley_taylor(tmean, rs=None, rn=None, g=0, tmax=None, tmin=None,
     lambd = calc_lambda(tmean)
 
     if rn is None:
-        rn = get_rn(tmean, rs, lat, n, nn, tmax, tmin, rhmax, rhmin, rh,
-                    elevation, rso, a, b, albedo=albedo)
+        rn = get_rn(tmean, rs, check_lat(lat), n, nn, tmax, tmin, rhmax, rhmin,
+                    rh, elevation, rso, a, b, albedo=albedo)
 
     pe = (alpha * dlt * (rn - g)) / (lambd * (dlt + gamma))
     pe = clip_zeros(pe, clip_zero)
@@ -642,8 +642,8 @@ def kimberly_penman(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
     es = calc_es(tmean=tmean, tmax=tmax, tmin=tmin)
 
     if rn is None:
-        rn = get_rn(tmean, rs, lat, n, nn, tmax, tmin, rhmax, rhmin, rh,
-                    elevation, rso, a, b, ea, albedo)
+        rn = get_rn(tmean, rs, check_lat(lat), n, nn, tmax, tmin, rhmax, rhmin,
+                    rh, elevation, rso, a, b, ea, albedo)
 
     j = day_of_year(tmean.index)
     w = wind * (0.4 + 0.14 * exp(-((j - 173) / 58) ** 2) + (
@@ -768,8 +768,8 @@ def thom_oliver(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
     gamma1 = gamma * (1 + res_s / res_a)
 
     if rn is None:
-        rn = get_rn(tmean, rs, lat, n, nn, tmax, tmin, rhmax, rhmin, rh,
-                    elevation, rso, a, b, ea, albedo)
+        rn = get_rn(tmean, rs, check_lat(lat), n, nn, tmax, tmin, rhmax, rhmin,
+                    rh, elevation, rso, a, b, ea, albedo)
 
     w = aw * (1 + bw * wind)
 

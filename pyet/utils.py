@@ -1,3 +1,4 @@
+import numpy
 import pandas
 
 
@@ -21,6 +22,16 @@ def show_versions():
         f"Pyet version: {ps_version}"
     )
     return print(msg)
+
+
+def check_lat(lat):
+    """Method to check if latitude was given in radians and transforms to
+    radians, if latitude given in degrees. """
+    if -1.6 < numpy.mean(lat) < 1.6:
+        return lat
+    else:
+        print("Latitude must be provided in radians!")
+        return lat
 
 
 def clip_zeros(s, clip_zero):
