@@ -87,16 +87,12 @@ exclude_patterns = ['_build', '**.ipynb_checkpoints']
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
-#
+
 html_theme = "pydata_sphinx_theme"
-
-html_context = {
-    "github_user": "phydrus",
-    "github_repo": "pyet",
-    "github_version": "master",
-    "doc_path": "docs",
+html_theme_options = {
+    "github_url": "https://github.com/phydrus/pyet",
+    "use_edit_page_button": False
 }
-
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
