@@ -1,4 +1,4 @@
-"""The temeprature module contains functions of temeprature PET methods
+"""The temperature module contains functions of temperature PET methods
 
 """
 
@@ -6,7 +6,7 @@ from numpy import exp
 
 from .meteo_utils import daylight_hours, calc_ea, calc_es, calc_e0
 
-from .utils import *
+from pyet.utils import get_index, check_lat, clip_zeros
 
 
 def blaney_criddle(tmean, lat, a=-1.55, b=0.96, k=0.65, wind=None, rhmin=None,
@@ -94,7 +94,7 @@ def blaney_criddle(tmean, lat, a=-1.55, b=0.96, k=0.65, wind=None, rhmin=None,
     return pe.rename("Blaney_Criddle")
 
 
-def haude(tmean, rh=None, ea=None, k=1, clip_zero=True):
+def haude(tmean, rh, ea=None, k=1, clip_zero=True):
     """Potential evaporation calculated according to [haude]_.
 
     Parameters
@@ -303,6 +303,6 @@ def linacre(tmean, elevation, lat, tdew=None, tmax=None, tmin=None,
         tdew = 0.52 * tmin + 0.6 * tmax - 0.009 * tmax ** 2 - 2
     tm = tmean + 0.006 * elevation
     pe = (500 * tm / (100 - check_lat(lat)) + 15 * (tmean - tdew)) / (
-                80 - tmean)
+            80 - tmean)
     pe = clip_zeros(pe, clip_zero)
     return pe.rename("Linacre")
