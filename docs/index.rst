@@ -5,14 +5,10 @@ Pyet is an open source Python package for the estimation of reference and potent
 time series data (Pandas) and gridded data (xarray). This allows users to estimate potential evapotranspiration
 and calibrate the models with just a few lines of python code.
 
-.. toctree::
-   :maxdepth: 1
-   :caption: Contents:
 
-   Getting started <getting_started/index>
-   Methods <methods/index>
-   Examples <examples/index>
-   API-docs <api/index>
-   References <references>
+Citing PyET
+-----------
+If you find PyET helpful in your work, please consider citing PyET. This way you support the project and we can keep
+track of the usage of the package.
 
-   
+

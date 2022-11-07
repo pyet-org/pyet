@@ -5,6 +5,8 @@ Before being able to run a pyet model from Python Console you need to
 install the pyet package
 
 .. toctree::
-    :maxdepth: 2
+    :maxdepth: 1
 
     ./installation
+    ./methods
+    ./units

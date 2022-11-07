@@ -1,6 +1,11 @@
 Notation and units
 ------------------
 
+Many issues and errors in the evapotranspiration estimation come from the wrong units of the input data. Throughout
+PyET we have tried to be consistent in the notation of the variables and their units. Table 1 provides an
+overview of the different variables, their units, and python function argument name. When providing arguments to any
+the evapotranspiration methods, it is important to make sure the units of each variable are as listed in Table 1.
+
 .. list-table::
    :widths: 25 50 25
    :header-rows: 1
@@ -64,13 +69,13 @@ Notation and units
      - .. math:: MJ m^{-2} d^{-1}
    * - .. math::  RH
      - Relative humidity
-     - .. math::  %
+     - .. math::  \%
    * - .. math::  DL
      - Day length
      - .. math:: h d^{-1}
    * - .. math::  \alpha
      - Surface albedo
-     - -
+     - .. math::  \%
    * - .. math::  J_D
      - Julian day
      - ordinal date
