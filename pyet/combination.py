@@ -317,10 +317,12 @@ def pm(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None, rhmax=None,
 
     Examples
     --------
+    
     >>> et_pm = pm(tmean, wind, rn=rn, rh=rh)
 
     Notes
     -----
+
     Following :cite:t:`monteith_evaporation_1965`, :cite:t:`allen_crop_1998`,
     :cite:t:`zhang_comparison_2008`, :cite:t:`schymanski_leaf-scale_2017` and
     :cite:t:`yang_hydrologic_2019`.
@@ -461,7 +463,7 @@ def priestley_taylor(tmean, rs=None, rn=None, g=0, tmax=None, tmin=None,
                      elevation=None, lat=None, n=None, nn=None, rso=None,
                      a=1.35, b=-0.35, alpha=1.26, albedo=0.23, clip_zero=True):
     """Potential evaporation calculated according to
-        :cite:t:`priestley_assessment_1972`.
+    :cite:t:`priestley_assessment_1972`.
 
     Parameters
     ----------

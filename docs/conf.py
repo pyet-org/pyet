@@ -69,6 +69,7 @@ extensions = [
 
 bibtex_bibfiles = ['references.bib', 'publications.bib']
 bibtex_reference_style = "author_year"
+bibtex_default_style = 'plain'
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -90,6 +91,13 @@ exclude_patterns = ['_build', '**.ipynb_checkpoints']
 #
 html_theme = "pydata_sphinx_theme"
 
+html_context = {
+    "github_user": "phydrus",
+    "github_repo": "pyet",
+    "github_version": "master",
+    "doc_path": "docs",
+}
+
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
@@ -98,3 +106,11 @@ html_logo = "_static/logo.png"
 
 autosummary_generate = True
 numpydoc_show_class_members = False
+
+# Example configuration for intersphinx: refer to the Python standard library.
+intersphinx_mapping = {
+    "numpy": ("https://numpy.org/doc/stable/", None),
+    "pandas": ("https://pandas.pydata.org/pandas-docs/stable/", None),
+    "python": ("https://docs.python.org/3/", None),
+    "xarray": ("https://docs.xarray.dev/en/stable/", None),
+}
