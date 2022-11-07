@@ -11,6 +11,5 @@ Peer-reviewed journals
 
 .. bibliography:: references.bib
     :list: bullet
-    :cited:
     :all:
 
