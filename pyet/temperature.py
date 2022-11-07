@@ -11,7 +11,8 @@ from pyet.utils import get_index, check_lat, clip_zeros
 
 def blaney_criddle(tmean, lat, a=-1.55, b=0.96, k=0.65, wind=None, rhmin=None,
                    n=None, nn=None, py=None, method=0, clip_zero=True):
-    """Potential evaporation calculated according to [blaney_1952]_.
+    """Potential evaporation calculated according to
+    :cite:t:`blaney_determining_1952`.
 
     Parameters
     ----------
@@ -57,11 +58,6 @@ def blaney_criddle(tmean, lat, a=-1.55, b=0.96, k=0.65, wind=None, rhmin=None,
     Based on equation 6 in :cite:p:`xu_evaluation_2001`.
 
     .. math:: PE=kp(0.46 * T_a + 8.13)
-
-    References
-    ----------
-    .. [blaney_1952] Blaney, H. F. (1952). Determining water requirements in
-       irrigated areas from climatological and irrigation data.
 
     """
     index = get_index(tmean)

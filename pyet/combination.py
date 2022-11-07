@@ -21,7 +21,8 @@ def penman(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
            rhmax=None, rhmin=None, rh=None, pressure=None, elevation=None,
            lat=None, n=None, nn=None, rso=None, aw=2.6, bw=0.536, a=1.35,
            b=-0.35, ea=None, albedo=0.23, clip_zero=True):
-    """Potential evaporation calculated according to [penman_1948]_.
+    """Potential evaporation calculated according to
+    :cite:t:`penman_natural_1948`.
 
     Parameters
     ----------
@@ -83,19 +84,11 @@ def penman(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
 
     Notes
     -----
-    Following [penman_1948]_ and [valiantzas_2006]_.
+    Following :cite:t:`penman_natural_1948` and
+    :cite:t:`valiantzas_simplified_2006`.
 
     .. math:: PE = \\frac{\\Delta (R_n-G) + \\gamma 2.6 (1 + 0.536 u_2)
         (e_s-e_a)}{\\lambda (\\Delta +\\gamma)}
-
-    References
-    ----------
-    .. [penman_1948] Penman, H. L. (1948). Natural evaporation from open water,
-       bare soil and grass. Proceedings of the Royal Society of London. Series
-       A. Mathematical and Physical Sciences, 193, 120-145.
-    .. [valiantzas_2006] Valiantzas, J. D. (2006). Simplified versions for the
-       Penman evaporation equation using routine weather data. Journal of
-       Hydrology, 331(3-4), 690-702.
 
     """
     pressure = calc_press(elevation, pressure)
@@ -126,7 +119,8 @@ def pm_asce(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
             lat=None, n=None, nn=None, rso=None, a=1.35, b=-0.35, cn=900,
             cd=0.34, ea=None, albedo=0.23, kab=None, as1=0.25, bs1=0.5,
             clip_zero=True, etype="os"):
-    """Potential evaporation calculated according to [monteith_1965]_.
+    """Potential evaporation calculated according to
+    :cite:t:`monteith_evaporation_1965`.
 
     Parameters
     ----------
@@ -201,20 +195,12 @@ def pm_asce(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
 
     Notes
     -----
-    Following [monteith_1965]_ and [walter_2000]_
+    Following :cite:t:`monteith_evaporation_1965` and
+    :cite:t:`walter_asces_2000`
 
     .. math:: PE = \\frac{\\Delta (R_{n}-G)+ \\rho_a c_p K_{min}
         \\frac{e_s-e_a}{r_a}}{\\lambda(\\Delta +\\gamma(1+\\frac{r_s}{r_a}))}
 
-    References
-    ----------
-    .. [monteith_1965] Monteith, J. L. (1965). Evaporation and environment.
-       In Symposia of the society for experimental biology (Vol. 19, pp.
-       205-234). Cambridge University Press (CUP) Cambridge.
-    .. [walter_2000] Walter, I. A., Allen, R. G., Elliott, R., Jensen, M. E.,
-       Itenfisu, D., Mecham, B., ... & Martin, D. (2000). ASCE's standardized
-       reference evapotranspiration equation. In Watershed management and
-       operations management 2000 (pp. 1-11).
     """
     pressure = calc_press(elevation, pressure)
     gamma = calc_psy(pressure)
@@ -243,7 +229,8 @@ def pm(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None, rhmax=None,
        nn=None, rso=None, ea=None, a=1.35, b=-0.35, lai=None, croph=0.12,
        r_l=100, r_s=None, ra_method=0, a_sh=1, a_s=1, lai_eff=0, srs=0.0009,
        co2=300, albedo=0.23, kab=None, as1=0.25, bs1=0.5, clip_zero=True):
-    """Potential evaporation calculated according to [monteith_1965]_.
+    """Potential evaporation calculated according to
+    :cite:t:`monteith_evaporation_1965`.
 
     Parameters
     ----------
@@ -305,7 +292,7 @@ def pm(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None, rhmax=None,
         0 => LAI_eff = 0.5 * LAI
         1 => LAI_eff = lai / (0.3 * lai + 1.2)
         2 => LAI_eff = 0.5 * LAI; (LAI>4=4)
-        3 => see [zhang_2008]_.
+        3 => see :cite:t:`zhang_comparison_2008`.
     srs: float/pandas.Series/xarray.DataArray, optional
         Relative sensitivity of rl to Δ[CO2]
     co2: float/pandas.Series/xarray.DataArray, optional
@@ -334,20 +321,13 @@ def pm(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None, rhmax=None,
 
     Notes
     -----
-    Following [monteith_1965]_, [allen_1998]_, [zhang_2008]_,
-        [schymanski_2016]_ and [yang_2019]_.
+    Following :cite:t:`monteith_evaporation_1965`, :cite:t:`allen_crop_1998`,
+    :cite:t:`zhang_comparison_2008`, :cite:t:`schymanski_leaf-scale_2017` and
+    :cite:t:`yang_hydrologic_2019`.
 
     .. math:: PE = \\frac{\\Delta (R_{n}-G)+ \\rho_a c_p K_{min}
         \\frac{e_s-e_a}{r_a}}{\\lambda(\\Delta +\\gamma(1+\\frac{r_s}{r_a}))}
 
-    References
-    ----------
-    .. [monteith_1965] Monteith, J. L. (1965). Evaporation and environment.
-       In Symposia of the society for experimental biology (Vol. 19, pp.
-       205-234). Cambridge University Press (CUP) Cambridge.
-    .. [schymanski_2016] Schymanski, S. J., & Or, D. (2017). Leaf-scale
-       experiments reveal an important omission in the Penman–Monteith
-       equation. Hydrology and Earth System Sciences, 21(2), 685-706.
     """
     pressure = calc_press(elevation, pressure)
     gamma = calc_psy(pressure)
@@ -382,7 +362,7 @@ def pm_fao56(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
              rhmax=None, rhmin=None, rh=None, pressure=None, elevation=None,
              lat=None, n=None, nn=None, rso=None, a=1.35, b=-0.35, ea=None,
              albedo=0.23, kab=None, as1=0.25, bs1=0.5, clip_zero=True):
-    """Potential evaporation calculated according to [allen_1998]_.
+    """Potential evaporation calculated according to :cite:t:`allen_crop_1998`.
 
     Parameters
     ----------
@@ -481,7 +461,7 @@ def priestley_taylor(tmean, rs=None, rn=None, g=0, tmax=None, tmin=None,
                      elevation=None, lat=None, n=None, nn=None, rso=None,
                      a=1.35, b=-0.35, alpha=1.26, albedo=0.23, clip_zero=True):
     """Potential evaporation calculated according to
-        [priestley_and_taylor_1965]_.
+        :cite:t:`priestley_assessment_1972`.
 
     Parameters
     ----------
@@ -540,12 +520,6 @@ def priestley_taylor(tmean, rs=None, rn=None, g=0, tmax=None, tmin=None,
     .. math:: PE = \\frac{\\alpha_{PT} \\Delta (R_n-G)}
         {\\lambda(\\Delta +\\gamma)}
 
-    References
-    ----------
-    .. [priestley_and_taylor_1965] Priestley, C. H. B., & TAYLOR, R. J. (1972).
-       On the assessment of surface heat flux and evaporation using large-scale
-       parameters. Monthly weather review, 100(2), 81-92.
-
     """
     pressure = calc_press(elevation, pressure)
     gamma = calc_psy(pressure)
@@ -565,7 +539,7 @@ def kimberly_penman(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
                     rhmax=None, rhmin=None, rh=None, pressure=None,
                     elevation=None, lat=None, n=None, nn=None, rso=None,
                     a=1.35, b=-0.35, ea=None, albedo=0.23, clip_zero=True):
-    """Potential evaporation calculated according to [wright_1982]_.
+    """Potential evaporation calculated according to :cite:t:`wright_new_1982`.
 
     Parameters
     ----------
@@ -619,18 +593,13 @@ def kimberly_penman(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
 
     Notes
     -----
-    Following [oudin_2005]_.
+    Following :cite:t:`oudin_which_2005`.
 
     .. math:: PE = \\frac{\\Delta (R_n-G)+ \\gamma (e_s-e_a) w}
         {\\lambda(\\Delta +\\gamma)}
     .. math:: w =  u_2 * (0.4 + 0.14 * exp(-(\\frac{J_D-173}{58})^2)) +
             (0.605 + 0.345 * exp(-(\\frac{J_D-243}{80})^2))
 
-    References
-    ----------
-    .. [wright_1982] Wright, J. L. (1982). New evapotranspiration crop
-       coefficients. Proceedings of the American Society of Civil Engineers,
-       Journal of the Irrigation and Drainage Division, 108(IR2), 57-74.
     """
     pressure = calc_press(elevation, pressure)
     gamma = calc_psy(pressure)
@@ -663,7 +632,8 @@ def thom_oliver(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
                 b=-0.35, lai=None, croph=0.12, r_l=100, r_s=None, ra_method=0,
                 lai_eff=0, srs=0.0009, co2=300, ea=None, albedo=0.23,
                 clip_zero=True):
-    """Potential evaporation calculated according to [thom_1977]_.
+    """Potential evaporation calculated according to
+    :cite:t:`thom_penmans_1977`.
 
     Parameters
     ----------
@@ -722,7 +692,7 @@ def thom_oliver(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
         0 => LAI_eff = 0.5 * LAI
         1 => LAI_eff = lai / (0.3 * lai + 1.2)
         2 => LAI_eff = 0.5 * LAI; (LAI>4=4)
-        3 => see [zhang_2008]_.
+        3 => see :cite:t:`zhang_comparison_2008`.
     srs: float, optional
         Relative sensitivity of rl to Δ[CO2]
     co2: float
@@ -741,17 +711,12 @@ def thom_oliver(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
 
     Notes
     -----
-    Following [oudin_2005]_.
+    Following :cite:t:`oudin_which_2005`.
 
     .. math:: PE = \\frac{\\Delta (R_{n}-G)+ 2.5 \\gamma (e_s-e_a) w}
         {\\lambda(\\Delta +\\gamma(1+\\frac{r_s}{r_a}))}$
         $w=2.6(1+0.53u_2)
 
-    References
-    ----------
-    .. [thom_1977] Thom, A. S., & Oliver, H. R. (1977). On Penman's equation
-       for estimating regional evaporation. Quarterly Journal of the Royal
-       Meteorological Society, 103(436), 345-357.
     """
     pressure = calc_press(elevation, pressure)
     gamma = calc_psy(pressure)
