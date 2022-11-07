@@ -19,5 +19,6 @@ Contents
    Getting started <getting_started/index>
    Examples <examples/index>
    API-docs <api/index>
+   Publications <publications>
    References <references>
 

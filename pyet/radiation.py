@@ -8,11 +8,11 @@ from .combination import calc_lambda
 
 from .meteo_utils import extraterrestrial_r, calc_press, calc_psy, calc_vpc
 
-from .utils import *
+from pyet.utils import get_index, clip_zeros, check_lat
 
 
 def turc(tmean, rs, rh, k=0.31, clip_zero=True):
-    """Evaporation calculated according to [turc_1961]_.
+    """Evaporation calculated according to :cite:t:`turc_estimation_1961`.
 
     Parameters
     ----------
@@ -38,18 +38,10 @@ def turc(tmean, rs, rh, k=0.31, clip_zero=True):
 
     Notes
     -----
-    Based on equation 2 and 3 in [xu_2000]_.
+    Based on equation 2 and 3 in :cite:t:`xu_evaluation_2000`.
 
     .. math:: PE=k(\\frac{T_a}{T_a+15})(R_s/4.184 + 50)*4.184; for RH>50
 
-    References
-    ----------
-    .. [turc_1961] Xu, C‐Y., and V. P. Singh. "Evaluation and generalization of
-       radiation‐based methods for calculating evaporation." Hydrological
-       processes 14.2 (2000): 339-349.
-    .. [xu_2000] Xu, C. Y., & Singh, V. P. (2000). Evaluation and
-       generalization of radiation‐based methods for calculating evaporation.
-       Hydrological processes, 14(2), 339-349.
     """
     c = tmean / tmean
     c.where(rh > 50, 1 + (50 - rh) / 70)
@@ -60,7 +52,8 @@ def turc(tmean, rs, rh, k=0.31, clip_zero=True):
 
 def jensen_haise(tmean, rs=None, cr=0.025, tx=-3, lat=None, method=0,
                  clip_zero=True):
-    """Potential evaporation calculated accordinf to [jensen_haise_1963]_.
+    """Potential evaporation calculated accordinf to
+    :cite:t:`jensen_estimating_1963`.
 
     Parameters
     ----------
@@ -75,8 +68,8 @@ def jensen_haise(tmean, rs=None, cr=0.025, tx=-3, lat=None, method=0,
     lat: float/xarray.DataArray
         the site latitude [rad]
     method: float, optional
-        0 => after [jensen_allen_2016]
-        1 => after [oudin_2005]
+        0 => after :cite:t:`jensen_evaporation_2016`
+        1 => after :cite:t:`oudin_which_2005`
     clip_zero: bool, optional
         if True, replace all negative values with 0.
 
@@ -91,18 +84,10 @@ def jensen_haise(tmean, rs=None, cr=0.025, tx=-3, lat=None, method=0,
 
     Notes
     -----
-    Based on equation (K-15) in [jensen_allen_2016]_.
+    Based on equation (K-15) in :cite:t:`jensen_evaporation_2016`.
 
     .. math:: PE = \\frac{C_r(T-T_x)R_s}{\\lambda}
 
-    References
-    ----------
-    .. [jensen_haise_1963] Jensen, M.E., Haise, H.R., 1963. Estimating
-       evapotranspiration from solar radiation. Journal of Irrigation and
-       Drainage Division, ASCE 89 (LR4), 15–41.
-    .. [jensen_allen_2016] Task Committee on Revision of Manual 70. (2016).
-       Evaporation, evapotranspiration, and irrigation water requirements.
-       American Society of Civil Engineers.
     """
     lambd = calc_lambda(tmean)
     if method == 0:
@@ -116,7 +101,8 @@ def jensen_haise(tmean, rs=None, cr=0.025, tx=-3, lat=None, method=0,
 
 
 def mcguinness_bordne(tmean, lat, k=0.0147, clip_zero=True):
-    """Potential evaporation calculated according to [mcguinness_bordne_1972]_.
+    """Potential evaporation calculated according to
+    :cite:t:`mcguinness_comparison_1972`.
 
     Parameters
     ----------
@@ -140,16 +126,10 @@ def mcguinness_bordne(tmean, lat, k=0.0147, clip_zero=True):
 
     Notes
     -----
-    Based on equation 13 in [xu_2000]_.
+    Based on equation 13 in :cite:t:`xu_evaluation_2000`.
 
     .. math:: PE = \\frac{0.0147 R_a (T_a + 5)}{\\lambda}
 
-    References
-    ----------
-    .. [mcguinness_bordne_1972] McGuinness, J. L., & Bordne, E. F. (1972).
-       A comparison of lysimeter derived potential evapotranspiration with
-       computed values, Tech. Bull., 1452. Agric. Res. Serv., US Dep. of
-       Agric., Washington, DC.
     """
     lambd = calc_lambda(tmean)
     index = get_index(tmean)
@@ -160,7 +140,8 @@ def mcguinness_bordne(tmean, lat, k=0.0147, clip_zero=True):
 
 
 def hargreaves(tmean, tmax, tmin, lat, k=0.0135, method=0, clip_zero=True):
-    """Potential evaporation calculated according to [hargreaves_samani_1982]_.
+    """Potential evaporation calculated according to
+    :cite:t:`hargreaves_estimating_1982`.
 
     Parameters
     ----------
@@ -175,7 +156,7 @@ def hargreaves(tmean, tmax, tmin, lat, k=0.0135, method=0, clip_zero=True):
     k: float, optional
         calirbation coefficient [-]
     method: float, optional
-        0 => after [jensen_allen_2016]
+        0 => after :cite:t:`jensen_evaporation_2016`
         1 => after [mcmahon_2013]
     clip_zero: bool, optional
         if True, replace all negative values with 0.
@@ -191,16 +172,10 @@ def hargreaves(tmean, tmax, tmin, lat, k=0.0135, method=0, clip_zero=True):
 
     Notes
     -----
-    Based on equation (8-16) in [jensen_allen_2016]_.
+    Based on equation (8-16) in :cite:t:`jensen_evaporation_2016`.
 
     .. math:: PE = 0.0023 \\frac{R_a (T_a+17.8)\\sqrt{(T_{max}-T_{min})}}\
         {\\lambda}
-
-    References
-    ----------
-    .. [hargreaves_samani_1982] Hargreaves, G. H., & Samani, Z. A. (1982).
-        Estimating potential evapotranspiration. Journal of the irrigation
-        and Drainage Division, 108(3), 225-230.
 
     """
     lambd = calc_lambda(tmean)
@@ -219,7 +194,8 @@ def hargreaves(tmean, tmax, tmin, lat, k=0.0135, method=0, clip_zero=True):
 
 def fao_24(tmean, wind, rs, rh, pressure=None, elevation=None, albedo=0.23,
            clip_zero=True):
-    """Potential evaporation calculated according to [jensen_1990]_.
+    """Potential evaporation calculated according to
+    :cite:t:`jensen_evapotranspiration_1990`.
 
     Parameters
     ----------
@@ -254,11 +230,6 @@ def fao_24(tmean, wind, rs, rh, pressure=None, elevation=None, albedo=0.23,
     .. math:: w = 1.066-0.13*\\frac{rh}{100}+0.045*u_2-0.02*\\frac{rh}{100}\
         *u_2-3.15*(\\frac{rh}{100})^2-0.0011*u_2$
 
-    References
-    ----------
-    .. [jensen_1990] Jensen, M. E., Burman, R. D., & Allen, R. G. (1990).
-       Evapotranspiration and irrigation water requirements. ASCE.
-
     """
     pressure = calc_press(elevation, pressure)
     gamma = calc_psy(pressure)
@@ -273,7 +244,8 @@ def fao_24(tmean, wind, rs, rh, pressure=None, elevation=None, albedo=0.23,
 
 
 def abtew(tmean, rs, k=0.53, clip_zero=True):
-    """Potential evaporation calculated according to [abtew_1996]_.
+    """Potential evaporation calculated according to
+    :cite:t:`abtew_evapotranspiration_1996`.
 
     Parameters
     ----------
@@ -297,15 +269,10 @@ def abtew(tmean, rs, k=0.53, clip_zero=True):
 
     Notes
     -----
-    Based on equation 14 in [xu_2000]_.
+    Based on equation 14 in :cite:t:`xu_evaluation_2000`.
 
     .. math:: PE = \\frac{k R_s}{\\lambda}
 
-    References
-    -----
-    .. [abtew_1996] Abtew, W. (1996). Evapotranspiration measurements and
-       modeling for three wetland systems in South Florida 1. JAWRA Journal of
-       the American Water Resources Association, 32(3), 465-473.
     """
     lambd = calc_lambda(tmean)
     pe = k * rs / lambd
@@ -314,7 +281,8 @@ def abtew(tmean, rs, k=0.53, clip_zero=True):
 
 
 def makkink(tmean, rs, pressure=None, elevation=None, k=0.65, clip_zero=True):
-    """"Potential evaporation calculated according to [makkink1957]_.
+    """Potential evaporation calculated according to
+    :cite:t:`makkink_testing_1957`.
 
     Parameters
     ----------
@@ -345,11 +313,6 @@ def makkink(tmean, rs, pressure=None, elevation=None, k=0.65, clip_zero=True):
 
     .. math:: PE = \\frac{0.65 \\Delta (R_s)}{\\lambda(\\Delta +\\gamma)}
 
-    References
-    ----------
-    .. [makkink1957] Makkink, G.F., 1957. Testing the Penman formula by means
-        of lysimeters. Journal of the Institution of Water Engineers 11,
-        277–288.
     """
     pressure = calc_press(elevation, pressure)
     gamma = calc_psy(pressure)
@@ -361,7 +324,7 @@ def makkink(tmean, rs, pressure=None, elevation=None, k=0.65, clip_zero=True):
 
 
 def oudin(tmean, lat, k1=100, k2=5, clip_zero=True):
-    """Potential evaporation calculated according to [oudin_2005]_.
+    """Potential evaporation calculated according to :cite:t:`oudin_which_2005`.
 
     Parameters
     ----------
@@ -389,7 +352,7 @@ def oudin(tmean, lat, k1=100, k2=5, clip_zero=True):
 
     Notes
     -----
-    Based on equation 3 in [oudin_2005]_.
+    Based on equation 3 in :cite:t:`oudin_which_2005`.
 
     .. math:: PE = \\frac{R_a (T_a +5)}{\\lambda 100}; if T_a+5>0
         else: P = 0

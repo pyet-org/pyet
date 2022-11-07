@@ -6,4 +6,4 @@ library with the references. If you have used PyET in your work, please add the 
 `Zotero library <https://www.zotero.org/groups/4846265/pyet>`_ and it will show up here!
 
 .. bibliography:: publications.bib
-
+    :all:

@@ -38,7 +38,7 @@ def blaney_criddle(tmean, lat, a=-1.55, b=0.96, k=0.65, wind=None, rhmin=None,
         number of day-light hour during the entire year [-]
     method: float, optional
         0 => Blaney Criddle after :cite:t:`schrodter_hinweise_1985`
-        1 => Blaney Criddle after :cite:t:`xu_evaluation_2001`_
+        1 => Blaney Criddle after :cite:t:`xu_evaluation_2001`
         2 => FAO-24 Blaney Criddle after :cite:t:`mcmahon_estimating_2013`
     clip_zero: bool, optional
         if True, replace all negative values with 0.
@@ -54,7 +54,7 @@ def blaney_criddle(tmean, lat, a=-1.55, b=0.96, k=0.65, wind=None, rhmin=None,
 
     Notes
     -----
-    Based on equation 6 in :cite:p:`xu_evaluation_2001`_.
+    Based on equation 6 in :cite:p:`xu_evaluation_2001`.
 
     .. math:: PE=kp(0.46 * T_a + 8.13)
 
@@ -149,7 +149,7 @@ def hamon(tmean, lat, k=1, c=13.97, cc=218.527, method=0, clip_zero=True):
     cc: float, optional
         calibration coefficient if method = 2 [-].
     method: float, optional
-        0 => Hamon after :cite:p:`oudin_which_2005`
+        0 => Hamon after :cite:t:`oudin_which_2005`
         1 => Hamon after equation 7 in :cite:t:`ansorge_performance_2019`
         2 => Hamon after equation 12 in :cite:t:`ansorge_performance_2019`.
     clip_zero: bool, optional
@@ -166,7 +166,7 @@ def hamon(tmean, lat, k=1, c=13.97, cc=218.527, method=0, clip_zero=True):
 
     Notes
     -----
-    Following :cite:t:`hamon_estimating_1963` and :cite:p:`oudin_which_2005`.
+    Following :cite:t:`hamon_estimating_1963` and :cite:t:`oudin_which_2005`.
 
     .. math:: PE = (\\frac{DL}{12})^2 exp(\\frac{T_a}{16})
 
@@ -213,7 +213,7 @@ def romanenko(tmean, rh, k=4.5, clip_zero=True):
 
     Notes
     -----
-    Based on equation 11 in :cite:p:`xu_evaluation_2001`_.
+    Based on equation 11 in :cite:p:`xu_evaluation_2001`.
 
     .. math:: PE=4.5(1 + (\\frac{T_a}{25})^2 (1  \\frac{e_a}{e_s})
 
@@ -258,7 +258,7 @@ def linacre(tmean, elevation, lat, tdew=None, tmax=None, tmin=None,
 
     Notes
     -----
-    Based on equation 5 in :cite:p:`xu_evaluation_2001`_.
+    Based on equation 5 in :cite:p:`xu_evaluation_2001`.
 
     .. math:: PE = \\frac{\\frac{500 T_m}{(100-A)}+15 (T_a-T_d)}{80-T_a}
 
