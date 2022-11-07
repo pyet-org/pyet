@@ -1,5 +1,5 @@
- Temperature
-===============================
+Temperature
+===========
 
 
 Blaney-Criddle (1950)
