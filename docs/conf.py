@@ -12,8 +12,21 @@
 #
 import os
 import sys
+import requests
+
 sys.path.insert(0, os.path.abspath('.'))
 
+# Can we get the reference file from Zotero here?
+url = "https://api.zotero.org/groups/4846265/collections/9R2TMSRK/items/"
+params = {
+    "format": "bibtex",
+    "style": "apa",
+    "limit": 100,
+}
+
+r = requests.get(url=url, params=params)
+with open("refs.bib", mode="w") as file:
+    file.write(r.text)
 
 # -- Project information -----------------------------------------------------
 
@@ -44,7 +57,11 @@ extensions = [
     'sphinx.ext.autosectionlabel',
     'nbsphinx',
     'nbsphinx_link',
+    'sphinxcontrib.bibtex'
 ]
+
+bibtex_bibfiles = ['refs.bib']
+bibtex_reference_style = "label"
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
