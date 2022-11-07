@@ -6,5 +6,5 @@ references are listed for all the methods implemented in PyET, and the reference
 list is automatically generated from a public Zotero library. For a list of publications using
 PyET we refer to the `Publications` page of this website.
 
-.. bibliography::
+.. bibliography:: references.bib
    :all:

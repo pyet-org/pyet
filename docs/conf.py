@@ -18,14 +18,22 @@ sys.path.insert(0, os.path.abspath('.'))
 
 # Get a Bibtex reference file from the Zotero group for referencing
 url = "https://api.zotero.org/groups/4846265/collections/M9ZRDX2U/items/"
-params = {
-    "format": "bibtex",
-    "style": "apa",
-    "limit": 100,
-}
+params = {"format": "bibtex",
+          "style": "apa",
+          "limit": 100}
 
 r = requests.get(url=url, params=params)
-with open("refs.bib", mode="w") as file:
+with open("references.bib", mode="w") as file:
+    file.write(r.text)
+
+# Get a Bibtex reference file from the Zotero group for publications list
+url = "https://api.zotero.org/groups/4846265/collections/UR7PHVDK/items/"
+params = {"format": "bibtex",
+          "style": "apa",
+          "limit": 100}
+
+r = requests.get(url=url, params=params)
+with open("publications.bib", mode="w") as file:
     file.write(r.text)
 
 # -- Project information -----------------------------------------------------
@@ -36,7 +44,6 @@ author = 'M. Vremec, R.A. Collenteur'
 
 # The full version, including alpha/beta/rc tags
 release = '2020'
-
 
 # -- General configuration ---------------------------------------------------
 
@@ -60,7 +67,7 @@ extensions = [
     'sphinxcontrib.bibtex'
 ]
 
-bibtex_bibfiles = ['refs.bib']
+bibtex_bibfiles = ['references.bib', 'publications.bib']
 bibtex_reference_style = "label"
 
 # Add any paths that contain templates here, relative to this directory.
@@ -75,7 +82,6 @@ master_doc = 'index'
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
 exclude_patterns = ['_build', '**.ipynb_checkpoints']
-
 
 # -- Options for HTML output -------------------------------------------------
 
