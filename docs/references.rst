@@ -10,6 +10,5 @@ Peer-reviewed journals
 ----------------------
 
 .. bibliography:: references.bib
-    :list: bullet
     :all:
 
