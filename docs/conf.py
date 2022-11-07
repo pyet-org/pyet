@@ -16,8 +16,8 @@ import requests
 
 sys.path.insert(0, os.path.abspath('.'))
 
-# Can we get the reference file from Zotero here?
-url = "https://api.zotero.org/groups/4846265/collections/9R2TMSRK/items/"
+# Get a Bibtex reference file from the Zotero group for referencing
+url = "https://api.zotero.org/groups/4846265/collections/M9ZRDX2U/items/"
 params = {
     "format": "bibtex",
     "style": "apa",

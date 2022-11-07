@@ -37,9 +37,9 @@ def blaney_criddle(tmean, lat, a=-1.55, b=0.96, k=0.65, wind=None, rhmin=None,
         percentage of actual day-light hours for the day compared to the
         number of day-light hour during the entire year [-]
     method: float, optional
-        0 => Blaney Criddle after [schrodter_2013]_
-        1 => Blaney Criddle after [Xu_2001]_
-        2 => FAO-24 Blaney Criddle after [mcmahon_2013]_
+        0 => Blaney Criddle after :cite:t:`schrodter_hinweise_1985`
+        1 => Blaney Criddle after :cite:t:`xu_evaluation_2001`_
+        2 => FAO-24 Blaney Criddle after :cite:t:`mcmahon_estimating_2013`
     clip_zero: bool, optional
         if True, replace all negative values with 0.
 
@@ -54,24 +54,15 @@ def blaney_criddle(tmean, lat, a=-1.55, b=0.96, k=0.65, wind=None, rhmin=None,
 
     Notes
     -----
-    Based on equation 6 in [xu_2001]_.
+    Based on equation 6 in :cite:p:`xu_evaluation_2001`_.
 
     .. math:: PE=kp(0.46 * T_a + 8.13)
 
     References
     ----------
-    .. [schrodter_2013] Schrödter, H. (2013). Verdunstung:
-        Anwendungsorientierte Meßverfahren und Bestimmungsmethoden.
-        Springer-Verlag.
     .. [blaney_1952] Blaney, H. F. (1952). Determining water requirements in
        irrigated areas from climatological and irrigation data.
-    .. [xu_2001] Xu, C. Y., & Singh, V. P. (2001). Evaluation and
-       generalization of temperature‐based methods for calculating evaporation.
-       Hydrological processes, 15(2), 305-319.
-    .. [mcmahon_2013] McMahon, T. A., Peel, M. C., Lowe, L., Srikanthan, R.,
-        and McVicar, T. R. (2013): Estimating actual, potential, reference crop
-        and pan evaporation using standard meteorological data: a pragmatic
-        synthesis, Hydrol. Earth Syst. Sci., 17, 1331–1363.
+
     """
     index = get_index(tmean)
     if nn is None:
@@ -95,7 +86,8 @@ def blaney_criddle(tmean, lat, a=-1.55, b=0.96, k=0.65, wind=None, rhmin=None,
 
 
 def haude(tmean, rh, ea=None, k=1, clip_zero=True):
-    """Potential evaporation calculated according to [haude]_.
+    """Potential evaporation calculated according to
+    :cite:t:`haude_determination_1955`.
 
     Parameters
     ----------
@@ -121,23 +113,16 @@ def haude(tmean, rh, ea=None, k=1, clip_zero=True):
 
     Notes
     -----
-    Following [haude_1955]_ and [schiff_1975]_.
+    Following :cite:t:`haude_determination_1955` and
+    :cite:t:`schiff_berechnung_1975`.
 
     .. math:: PE = f * (e_s-e_a)
 
-    References
-    ----------
-    .. [haude_1955] Haude, W. (1955). Determination of evapotranspiration by
-        an approach as simple as possible. Mitt Dt Wetterdienst, 2(11).
-    .. [schiff_1975] Schiff, H. (1975). Berechnung der potentiellen Verdunstung
-        und deren Vergleich mit aktuellen Verdunstungswerten von Lysimetern.
-        Archiv für Meteorologie, Geophysik und Bioklimatologie, Serie B, 23(4),
-        331-342.
     """
     e0 = calc_e0(tmean)
     if ea is None:
         ea = rh * e0 / 100
-    # Haude coefficients from [schiff_1975]_
+    # Haude coefficients from :cite:t:`schiff_berechnung_1975`
     fk = [0.27, 0.27, 0.28, 0.39, 0.39, 0.37, 0.35, 0.33, 0.31, 0.29, 0.27,
           0.27]
     index = get_index(tmean)
@@ -148,7 +133,8 @@ def haude(tmean, rh, ea=None, k=1, clip_zero=True):
 
 
 def hamon(tmean, lat, k=1, c=13.97, cc=218.527, method=0, clip_zero=True):
-    """Potential evaporation calculated according to [hamon_1961]_.
+    """Potential evaporation calculated according to
+    :cite:t:`hamon_estimating_1963`.
 
     Parameters
     ----------
@@ -163,9 +149,9 @@ def hamon(tmean, lat, k=1, c=13.97, cc=218.527, method=0, clip_zero=True):
     cc: float, optional
         calibration coefficient if method = 2 [-].
     method: float, optional
-        0 => Hamon after [oudin_2005]_
-        1 => Hamon after equation 7 in [ansorge_2019]_
-        2 => Hamon after equation 12 in [ansorge_2019]_.
+        0 => Hamon after :cite:p:`oudin_which_2005`
+        1 => Hamon after equation 7 in :cite:t:`ansorge_performance_2019`
+        2 => Hamon after equation 12 in :cite:t:`ansorge_performance_2019`.
     clip_zero: bool, optional
         if True, replace all negative values with 0.
 
@@ -180,24 +166,10 @@ def hamon(tmean, lat, k=1, c=13.97, cc=218.527, method=0, clip_zero=True):
 
     Notes
     -----
-    Following [hamon_1961]_ and [oudin_2005]_.
+    Following :cite:t:`hamon_estimating_1963` and :cite:p:`oudin_which_2005`.
 
     .. math:: PE = (\\frac{DL}{12})^2 exp(\\frac{T_a}{16})
 
-    References
-    ----------
-    .. [hamon_1961] Hamon, W. R. (1963). Estimating potential
-       evapotranspiration. Transactions of the American Society of Civil
-       Engineers, 128(1), 324-338.
-    .. [oudin_2005] Oudin, L., Hervieu, F., Michel, C., Perrin, C.,
-       Andréassian, V., Anctil, F., & Loumagne, C. (2005). Which potential
-       evapotranspiration input for a lumped rainfall–runoff model?:
-       Part 2—Towards a simple and efficient potential evapotranspiration model
-       for rainfall–runoff modelling. Journal of hydrology, 303(1-4), 290-306.
-    .. [ansorge_2019] Ansorge, L., & Beran, A. (2019). Performance of simple
-       temperature-based evaporation methods compared with a time series of pan
-       evaporation measures from a standard 20 m 2 tank. Journal of Water and
-       Land Development.
     """
     index = get_index(tmean)
     # Use transpose to work with lat either as int or xarray.DataArray
@@ -216,7 +188,8 @@ def hamon(tmean, lat, k=1, c=13.97, cc=218.527, method=0, clip_zero=True):
 
 
 def romanenko(tmean, rh, k=4.5, clip_zero=True):
-    """Potential evaporation calculated according to [romanenko_1961]_.
+    """Potential evaporation calculated according to
+    :cite:t:`romanenko_computation_1961`.
 
     Parameters
     ----------
@@ -240,15 +213,10 @@ def romanenko(tmean, rh, k=4.5, clip_zero=True):
 
     Notes
     -----
-    Based on equation 11 in [xu_2001]_.
+    Based on equation 11 in :cite:p:`xu_evaluation_2001`_.
 
     .. math:: PE=4.5(1 + (\\frac{T_a}{25})^2 (1  \\frac{e_a}{e_s})
 
-    References
-    ----------
-    .. [romanenko_1961] Romanenko, V. A. (1961). Computation of the autumn soil
-       moisture using a universal relationship for a large area. Proc. of
-       Ukrainian Hydrometeorological Research Institute, 3, 12-25.
     """
     ea = calc_ea(tmean=tmean, rh=rh)
     es = calc_es(tmean=tmean)
@@ -259,7 +227,8 @@ def romanenko(tmean, rh, k=4.5, clip_zero=True):
 
 def linacre(tmean, elevation, lat, tdew=None, tmax=None, tmin=None,
             clip_zero=True):
-    """Potential evaporation calculated according to [linacre_1977]_.
+    """Potential evaporation calculated according to
+    :cite:t:`linacre_simple_1977`.
 
     Parameters
     ----------
@@ -289,15 +258,10 @@ def linacre(tmean, elevation, lat, tdew=None, tmax=None, tmin=None,
 
     Notes
     -----
-    Based on equation 5 in [xu_2001]_.
+    Based on equation 5 in :cite:p:`xu_evaluation_2001`_.
 
     .. math:: PE = \\frac{\\frac{500 T_m}{(100-A)}+15 (T_a-T_d)}{80-T_a}
 
-    References
-    -----
-    .. [linacre_1977] Linacre, E. T. (1977). A simple formula for estimating
-       evaporation rates in various climates, using temperature data alone.
-       Agricultural meteorology, 18(6), 409-424.
     """
     if tdew is None:
         tdew = 0.52 * tmin + 0.6 * tmax - 0.009 * tmax ** 2 - 2
