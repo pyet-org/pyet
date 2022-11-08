@@ -64,10 +64,8 @@ def calc_rad_long(rs, tmean=None, tmax=None, tmin=None, rhmax=None, rhmin=None,
 
     Notes
     -----
-    Based on equation 39 in [allen_1998]_.
+    Based on equation 39 in :cite:t:`allen_crop_1998`.
 
-    References
-    ----------
     """
     if ea is None:
         ea = calc_ea(tmean=tmean, tmax=tmax, tmin=tmin, rhmax=rhmax,
@@ -119,7 +117,8 @@ def calc_rad_short(rs=None, lat=None, albedo=0.23, n=None, nn=None, as1=0.25,
 
     Notes
     -----
-    Based on equation 38 in [allen_1998]_.
+    Based on equation 38 in :cite:t:`allen_crop_1998`.
+
     """
     if rs is not None:
         return (1 - albedo) * rs
@@ -150,7 +149,8 @@ def calc_rad_sol_in(n, lat, as1=0.25, bs1=0.5, nn=None):
 
     Notes
     -----
-    Based on equation 35 in [allen_1998]_.
+    Based on equation 35 in :cite:t:`allen_crop_1998`.
+
     """
     tindex = get_index(n)
     ra = extraterrestrial_r(tindex, lat)
@@ -181,7 +181,7 @@ def calc_rso(ra, elevation, kab=None):
 
     Notes
     -----
-    Based on equation 37 in [allen_1998]_.
+    Based on equation 37 in :cite:t:`allen_crop_1998`.
 
     """
     if isinstance(elevation, DataArray):

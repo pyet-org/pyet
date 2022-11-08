@@ -13,7 +13,7 @@
 pyet is an open source python package for calculating reference and potential Evapotranspiration (PET) for 1D (pandas.Series)
 and 3D (xarray.DataArrray) data. Currently, eighteen methods for calculating daily PET are implemented:
 
-| Classification | Common method name        | Data needed | pyet Method         | Reference                    |
+| Classification | Common method name        | Data needed | *pyet* Method         | Reference                    |
 |----------------|---------------------------|-------------|---------------------|------------------------------|
 | Combination    | Penman                    | RH, T, U, R | `penman`            | Penman (1948)                |
 |                | Penman-Monteith           | RH, T, U, R | `pm`                | Monteith (1965)              |
@@ -40,7 +40,7 @@ T, Temperature; U, Wind Speed; D, Radiation; RH, Relative Humidity. Adapted from
 
 ## Examples and Documentation
 
-Examples of using pyet can be found in the example folder:
+Examples of using *pyet* can be found in the example folder:
 
 *   [Example 1](/examples/01_example_zamg.ipynb): Estimating PET using pandas.Series
 
@@ -73,8 +73,8 @@ We support Python >= 3.8.
 
 ## Benchmarking
 
-Most of the methods implemented in pyet are benchmarked against literature values from the [FAO Irrigation and
-drainage paper 56](https://www.fao.org/3/x0490e/x0490e00.htm), [McMahon et al., 2013 (supplementary)](https://hess.copernicus.org/articles/17/4865/2013/) and [Schrödter, 1985](https://link.springer.com/book/10.1007/978-3-642-70434-5). In addition, two comparative analysis between daily PE estimated with pyet and other organizations is
+Most of the methods implemented in *pyet* are benchmarked against literature values from the [FAO Irrigation and
+drainage paper 56](https://www.fao.org/3/x0490e/x0490e00.htm), [McMahon et al., 2013 (supplementary)](https://hess.copernicus.org/articles/17/4865/2013/) and [Schrödter, 1985](https://link.springer.com/book/10.1007/978-3-642-70434-5). In addition, two comparative analysis between daily PE estimated with *pyet* and other organizations is
 made:
 
 *   `pyet.pm_fao56` against daily PET estimated with ASCE Penman-Monteith from [CoAgMET](https://coagmet.colostate.edu/) (
@@ -85,7 +85,7 @@ made:
 
 ## Dimensions
 
-As of version v1.2., pyet is compatible with both Pandas.Series and xarray.DataArray, which means you can now estimate
+As of version v1.2., *pyet* is compatible with both Pandas.Series and xarray.DataArray, which means you can now estimate
 potential evapotranspiration for both point and gridded data.
 
 ## Bug reports and Questions
@@ -97,7 +97,7 @@ General questions or discussions are possible through
 
 ## Installation
 
-The pyet package is available from the Pypi package index and can be installed
+The *pyet* package is available from the Pypi package index and can be installed
 as follows::
 
 `>>> pip install pyet`
@@ -108,9 +108,9 @@ To install in developer mode, use the following syntax:
 
 ## Citing
 
-If you use pyet in one of your studies, please cite the PyEt EGU abstract:
+If you use *pyet* in one of your studies, please cite the *pyet* EGU abstract:
 
-*   Vremec, M. and Collenteur, R.: PyEt - a Python package to estimate potential and reference evapotranspiration, EGU
+*   Vremec, M. and Collenteur, R.: *pyet* - a Python package to estimate potential and reference evapotranspiration, EGU
   General Assembly 2021, online, 19–30 Apr 2021, EGU21-15008, https://doi.org/10.5194/egusphere-egu21-15008, 2021.
 
 ```Reference
