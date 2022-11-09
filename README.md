@@ -13,29 +13,31 @@
 pyet is an open source python package for calculating reference and potential Evapotranspiration (PET) for 1D (pandas.Series)
 and 3D (xarray.DataArrray) data. Currently, eighteen methods for calculating daily PET are implemented:
 
-|    | Method            | pyet func.        | T             | RH             | R           | u2         | Lat.          | El.          | Bench.  |
-|---:|:------------------|:------------------|:--------------|:---------------|:------------|:-----------|:--------------|:-------------|:--------|
-|  0 | Penman            | penman            | &check;$^a$   | &check;^b,c^   | &check;^d^  | &check;    | &check;^d^    | &check;^e^   | -       |
-|  1 | Penman-Monteith   | pm                | &check;^a^    | &check;^b,c^   | &check;^d^  | &check;    | &check;^d^    | &check;^e^   | &check; |
-|  2 | ASCE-PM           | pm_asce           | &check;^a^    | &check;^b,c^   | &check;^d^  | &check;    | &check;^d^    | &check;^e^   | &check; |
-|  3 | FAO-56            | pm_fao56          | &check;^a^    | &check;^b,c^   | &check;^d^  | &check;    | &check;^d^    | &check;^e^   | &check; |
-|  4 | Priestley-Taylor  | priestley_taylor  | &check;       | &check;^h^     | &check;h    | -          | &check;^h^    | &check;^e^   | &check; |
-|  5 | Kimberly-Penman   | kimberly_penman   | &check;^a^    | &check;^b,c^   | &check;^d^  | &check;    | &check;^d^    | &check;^e^   | -       |
-|  6 | Thom-Oliver       | thom_oliver       | &check;^a^    | &check;^b,c^   | &check;^d^  | &check;    | &check;^d^    | &check;^e^   | -       |
-|  7 | Blaney-Criddle    | blaney_criddle    | &check;       | -^i^           | -^i^        | -^i^       | &check;       | -            | &check; |
-|  8 | Hamon             | hamon             | &check;       | -              | -           | -          | &check;       | -            | -       |
-|  9 | Romanenko         | romanenko         | &check;       | &check;        | -           | -          | -             | -            | -       |
-| 10 | Linacre           | linacre           | &check;^j^    | -              | -           | -          | -             | &check;      | -       |
-| 11 | Haude             | haude             | &check;       | &check;^k^     | -           | -          | -             | -            | &check; |
-| 12 | Turc              | turc              | &check;       | &check;        | &check;     | -          | -             | -            | &check; |
-| 13 | Jensen-Haise      | jensen_haise      | &check;       | -              | &check;^l^  | -          | &check;^l^    | -            | -       |
-| 14 | McGuinness-Bordne | mcguinness_bordne | &check;       | -              | -           | -          | &check;       | -            | -       |
-| 15 | Hargreaves        | hargreaves        | &check;^m^    | -              | -           | -          | &check;       | -            | &check; |
-| 16 | FAO-24            | fao_24            | &check;       | &check;        | &check;     | &check;    | -             | &check;^e^   | -       |
-| 17 | Abtew             | abtew             | &check;       | -              | &check;     | -          | -             | -            | -       |
-| 18 | Makkink           | makkink           | &check;       | -              | &check;     | -          | -             | &check;^e^   | &check; |
-| 19 | Oudin             | oudin             | &check;       | -              | -           | -          | &check;       | -            | -       |
+|    | Method            | pyet func.        | T      | RH         | R      | u2     | Lat.   | El.    | Bench.   |
+|---:|:------------------|:------------------|:-------|:-----------|:-------|:-------|:-------|:-------|:---------|
+|  0 | Penman            | penman            | &check; $^a$ | &check; $^{b,c}$ | &check; $^d$ | &check;      | &check; $^d$ | &check; $^e$ | -        |
+|  1 | Penman-Monteith   | pm                | &check; $^a$ | &check; $^{b,c}$ | &check; $^d$ | &check;      | &check; $^d$ | &check; $^e$ | &check;        |
+|  2 | ASCE-PM           | pm_asce           | &check; $^a$ | &check; $^{b,c}$ | &check; $^d$ | &check;      | &check; $^d$ | &check; $^e$ | &check;        |
+|  3 | FAO-56            | pm_fao56          | &check; $^a$ | &check; $^{b,c}$ | &check; $^d$ | &check;      | &check; $^d$ | &check; $^e$ | &check;        |
+|  4 | Priestley-Taylor  | priestley_taylor  | &check;      | &check; $^h$     | &check; $^h$ | -      | &check; $^h$ | &check; $^e$ | &check;        |
+|  5 | Kimberly-Penman   | kimberly_penman   | &check; $^a$ | &check; $^{b,c}$ | &check; $^d$ | &check;      | &check; $^d$ | &check; $^e$ | -        |
+|  6 | Thom-Oliver       | thom_oliver       | &check; $^a$ | &check; $^{b,c}$ | &check; $^d$ | &check;      | &check; $^d$ | &check; $^e$ | -        |
+|  7 | Blaney-Criddle    | blaney_criddle    | &check;      | - $^i$     | - $^i$ | - $^i$ | &check;      | -      | &check;        |
+|  8 | Hamon             | hamon             | &check;      | -          | -      | -      | &check;      | -      | -        |
+|  9 | Romanenko         | romanenko         | &check;      | &check;          | -      | -      | -      | -      | -        |
+| 10 | Linacre           | linacre           | &check; $^j$ | -          | -      | -      | -      | &check;      | -        |
+| 11 | Haude             | haude             | &check;      | &check; $^k$     | -      | -      | -      | -      | &check;        |
+| 12 | Turc              | turc              | &check;      | &check;          | &check;      | -      | -      | -      | &check;        |
+| 13 | Jensen-Haise      | jensen_haise      | &check;      | -          | &check; $^l$ | -      | &check; $^l$ | -      | -        |
+| 14 | McGuinness-Bordne | mcguinness_bordne | &check;      | -          | -      | -      | &check;      | -      | -        |
+| 15 | Hargreaves        | hargreaves        | &check; $^m$ | -          | -      | -      | &check;      | -      | &check;        |
+| 16 | FAO-24            | fao_24            | &check;      | &check;          | &check;      | &check;      | -      | &check; $^e$ | -        |
+| 17 | Abtew             | abtew             | &check;      | -          | &check;      | -      | -      | -      | -        |
+| 18 | Makkink           | makkink           | &check;      | -          | &check;      | -      | -      | &check; $^e$ | &check;        |
+| 19 | Oudin             | oudin             | &check;      | -          | -      | -      | &check;      | -      | -        |
 
+$^a$ $T_{max}$ and $T_{min}$ can also be provided. $^b$ $RH_{max}$ and $RH_{min}$ can also be provided. $^c$ If actual vapor pressure is provided, RH is not needed.  $^d$ Input for radiation can be (1) Net radiation, (2) solar radiation or (3) sunshine hours. If (1), then latitude is not needed. If (1, 3) latitude and elevation is needed. $^e$ One must provide either the atmospheric pressure or elevation. $^f$ The PM method can be used to estimate potential crop evapotranspiration, if leaf area index or crop height data is available. $^g$ The effect of $CO_2$ on stomatal resistance can be included using the formulation of Yang et al. 2019.  $^h$ If net radiation is provided, RH and Lat are not needed. $^i$ If method==2, $u_2$, $RH_{min}$ and sunshine hours are required. $^j$ Additional input of $T_{max}$ and $T_{min}$, or $T_{dew}$. $^k$ Input can be $RH$ or actual vapor pressure. $^l$ If method==1, latitude is needed instead of $R_s$. $^m$ $T_{max}$ and $T_{min}$ also needed.
+ 
 ## Examples and Documentation
 
 Examples of using *pyet* can be found in the example folder:
