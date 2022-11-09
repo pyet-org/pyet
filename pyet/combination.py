@@ -326,7 +326,6 @@ def pm(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None, rhmax=None,
 
     Examples
     --------
-    
     >>> et_pm = pm(tmean, wind, rn=rn, rh=rh)
 
     Notes

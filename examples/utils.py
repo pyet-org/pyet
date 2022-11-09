@@ -30,12 +30,8 @@ def scatter_1(ax, x, y, label="treatment", xlabel="obs", ylabel="sim",
         x_new = np.linspace(0, 10, y.size)
         y_new = f(x_new)
 
-        # Formatting the best fit equation to be able to display in latex
-        equation = "{}x + {}".format(np.round(p[0], 4), np.round(p[1], 4))
-
         # Plotting the best fit line with the equation as a legend in latex
         ax.plot(x_new, y_new, "r--", linewidth="0.8")
-    #
     ax.text(0.02, 0.9, f"{label}", color="k", zorder=10,
             transform=ax.transAxes)
     ax.text(0.6, 0.04, "$Bias$ = " + str(
