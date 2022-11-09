@@ -22,11 +22,14 @@ def show_versions():
 
 def check_lat(lat):
     """Method to check if latitude was (most likely) given in radians."""
-    if -1.6 < numpy.mean(lat) < 1.6:
-        return lat
+    if lat is None:
+        pass
     else:
-        print("Latitude must be provided in radians!")
-        return lat
+        if -1.6 < numpy.mean(lat) < 1.6:
+            return lat
+        else:
+            print("Latitude must be provided in radians!")
+            return lat
 
 
 def clip_zeros(s, clip_zero):

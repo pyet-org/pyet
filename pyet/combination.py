@@ -20,7 +20,8 @@ STEFAN_BOLTZMANN_DAY = 4.903 * 10 ** -9
 def penman(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
            rhmax=None, rhmin=None, rh=None, pressure=None, elevation=None,
            lat=None, n=None, nn=None, rso=None, aw=2.6, bw=0.536, a=1.35,
-           b=-0.35, ea=None, albedo=0.23, clip_zero=True):
+           b=-0.35, ea=None, albedo=0.23, kab=None, as1=0.25, bs1=0.5,
+           clip_zero=True):
     """Potential evaporation calculated according to
     :cite:t:`penman_natural_1948`.
 
@@ -70,6 +71,14 @@ def penman(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
         actual vapor pressure [kPa]
     albedo: float, optional
         surface albedo [-]
+    kab: float, optional
+        coefficient derived from as1, bs1 for estimating clear-sky radiation
+        [degrees].
+    as1: float, optional
+        regression constant,  expressing the fraction of extraterrestrial
+        reaching the earth on overcast days (n = 0) [-]
+    bs1: float, optional
+        empirical coefficient for extraterrestrial radiation [-]
     clip_zero: bool, optional
         if True, replace all negative values with 0.
 
@@ -100,9 +109,9 @@ def penman(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
                  rhmin=rhmin, rh=rh, ea=ea)
     es = calc_es(tmean=tmean, tmax=tmax, tmin=tmin)
 
-    if rn is None:
-        rn = get_rn(tmean, rs, check_lat(lat), n, nn, tmax, tmin, rhmax, rhmin,
-                    rh, elevation, rso, a, b, ea, albedo)
+    rn = calc_rad_net(tmean, rn, rs, check_lat(lat), n, nn, tmax, tmin, rhmax,
+                      rhmin, rh, elevation, rso, a, b, ea, albedo, as1, bs1,
+                      kab)
 
     fu = aw * (1 + bw * wind)
 
@@ -208,9 +217,9 @@ def pm_asce(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
     ea = calc_ea(tmean=tmean, tmax=tmax, tmin=tmin, rhmax=rhmax,
                  rhmin=rhmin, rh=rh, ea=ea)
     es = calc_es(tmean=tmean, tmax=tmax, tmin=tmin)
-    if rn is None:
-        rn = get_rn(tmean, rs, check_lat(lat), n, nn, tmax, tmin, rhmax, rhmin,
-                    rh, elevation, rso, a, b, ea, albedo, as1, bs1, kab)
+    rn = calc_rad_net(tmean, rn, rs, check_lat(lat), n, nn, tmax, tmin, rhmax,
+                      rhmin, rh, elevation, rso, a, b, ea, albedo, as1, bs1,
+                      kab)
 
     if etype == "rs":
         cn = 1600
@@ -345,9 +354,9 @@ def pm(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None, rhmax=None,
                           co2=co2, croph=croph)
     gamma1 = gamma * a_sh / a_s * (1 + res_s / res_a)
 
-    if rn is None:
-        rn = get_rn(tmean, rs, check_lat(lat), n, nn, tmax, tmin, rhmax, rhmin,
-                    rh, elevation, rso, a, b, ea, albedo, as1, bs1, kab)
+    rn = calc_rad_net(tmean, rn, rs, check_lat(lat), n, nn, tmax, tmin, rhmax,
+                      rhmin, rh, elevation, rso, a, b, ea, albedo, as1, bs1,
+                      kab)
 
     kmin = 86400  # unit conversion s d-1
     rho_a = calc_rho(pressure, tmean, ea)
@@ -446,9 +455,9 @@ def pm_fao56(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
                  rhmin=rhmin, rh=rh, ea=ea)
     es = calc_es(tmean=tmean, tmax=tmax, tmin=tmin)
 
-    if rn is None:
-        rn = get_rn(tmean, rs, check_lat(lat), n, nn, tmax, tmin, rhmax, rhmin,
-                    rh, elevation, rso, a, b, ea, albedo, as1, bs1, kab)
+    rn = calc_rad_net(tmean, rn, rs, check_lat(lat), n, nn, tmax, tmin, rhmax,
+                      rhmin, rh, elevation, rso, a, b, ea, albedo, as1, bs1,
+                      kab)
 
     den = dlt + gamma1
     num1 = (0.408 * dlt * (rn - g)) / den
@@ -461,7 +470,8 @@ def pm_fao56(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
 def priestley_taylor(tmean, rs=None, rn=None, g=0, tmax=None, tmin=None,
                      rhmax=None, rhmin=None, rh=None, pressure=None,
                      elevation=None, lat=None, n=None, nn=None, rso=None,
-                     a=1.35, b=-0.35, alpha=1.26, albedo=0.23, clip_zero=True):
+                     a=1.35, b=-0.35, alpha=1.26, albedo=0.23, kab=None,
+                     as1=0.25, bs1=0.5, clip_zero=True):
     """Potential evaporation calculated according to
     :cite:t:`priestley_assessment_1972`.
 
@@ -505,6 +515,14 @@ def priestley_taylor(tmean, rs=None, rn=None, g=0, tmax=None, tmin=None,
         calibration coeffiecient [-]
     albedo: float, optional
         surface albedo [-]
+    kab: float, optional
+        coefficient derived from as1, bs1 for estimating clear-sky radiation
+        [degrees].
+    as1: float, optional
+        regression constant,  expressing the fraction of extraterrestrial
+        reaching the earth on overcast days (n = 0) [-]
+    bs1: float, optional
+        empirical coefficient for extraterrestrial radiation [-]
     clip_zero: bool, optional
         if True, replace all negative values with 0.
 
@@ -528,9 +546,9 @@ def priestley_taylor(tmean, rs=None, rn=None, g=0, tmax=None, tmin=None,
     dlt = calc_vpc(tmean)
     lambd = calc_lambda(tmean)
 
-    if rn is None:
-        rn = get_rn(tmean, rs, check_lat(lat), n, nn, tmax, tmin, rhmax, rhmin,
-                    rh, elevation, rso, a, b, albedo=albedo)
+    rn = calc_rad_net(tmean, rn, rs, check_lat(lat), n, nn, tmax, tmin, rhmax,
+                      rhmin, rh, elevation, rso, a, b, None, albedo, as1, bs1,
+                      kab)
 
     pe = (alpha * dlt * (rn - g)) / (lambd * (dlt + gamma))
     pe = clip_zeros(pe, clip_zero)
@@ -540,7 +558,8 @@ def priestley_taylor(tmean, rs=None, rn=None, g=0, tmax=None, tmin=None,
 def kimberly_penman(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
                     rhmax=None, rhmin=None, rh=None, pressure=None,
                     elevation=None, lat=None, n=None, nn=None, rso=None,
-                    a=1.35, b=-0.35, ea=None, albedo=0.23, clip_zero=True):
+                    a=1.35, b=-0.35, ea=None, albedo=0.23, kab=None, as1=0.25,
+                    bs1=0.5, clip_zero=True):
     """Potential evaporation calculated according to :cite:t:`wright_new_1982`.
 
     Parameters
@@ -585,6 +604,14 @@ def kimberly_penman(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
         actual vapor pressure [kPa]
     albedo: float, optional
         surface albedo [-]
+    kab: float, optional
+        coefficient derived from as1, bs1 for estimating clear-sky radiation
+        [degrees].
+    as1: float, optional
+        regression constant,  expressing the fraction of extraterrestrial
+        reaching the earth on overcast days (n = 0) [-]
+    bs1: float, optional
+        empirical coefficient for extraterrestrial radiation [-]
     clip_zero: bool, optional
         if True, replace all negative values with 0.
 
@@ -612,9 +639,9 @@ def kimberly_penman(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
                  rhmin=rhmin, rh=rh, ea=ea)
     es = calc_es(tmean=tmean, tmax=tmax, tmin=tmin)
 
-    if rn is None:
-        rn = get_rn(tmean, rs, check_lat(lat), n, nn, tmax, tmin, rhmax, rhmin,
-                    rh, elevation, rso, a, b, ea, albedo)
+    rn = calc_rad_net(tmean, rn, rs, check_lat(lat), n, nn, tmax, tmin, rhmax,
+                      rhmin, rh, elevation, rso, a, b, ea, albedo, as1, bs1,
+                      kab)
 
     j = day_of_year(tmean.index)
     w = wind * (0.4 + 0.14 * exp(-((j - 173) / 58) ** 2) + (
@@ -632,8 +659,8 @@ def thom_oliver(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
                 rhmax=None, rhmin=None, rh=None, pressure=None, elevation=None,
                 lat=None, n=None, nn=None, rso=None, aw=2.6, bw=0.536, a=1.35,
                 b=-0.35, lai=None, croph=0.12, r_l=100, r_s=None, ra_method=0,
-                lai_eff=0, srs=0.0009, co2=300, ea=None, albedo=0.23,
-                clip_zero=True):
+                lai_eff=0, srs=0.0009, co2=300, ea=None, albedo=0.23, kab=None,
+                as1=0.25, bs1=0.5, clip_zero=True):
     """Potential evaporation calculated according to
     :cite:t:`thom_penmans_1977`.
 
@@ -703,6 +730,14 @@ def thom_oliver(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
         actual vapor pressure [kPa]
     albedo: float, optional
         surface albedo [-]
+    kab: float, optional
+        coefficient derived from as1, bs1 for estimating clear-sky radiation
+        [degrees].
+    as1: float, optional
+        regression constant,  expressing the fraction of extraterrestrial
+        reaching the earth on overcast days (n = 0) [-]
+    bs1: float, optional
+        empirical coefficient for extraterrestrial radiation [-]
     clip_zero: bool, optional
         if True, replace all negative values with 0.
 
@@ -734,9 +769,9 @@ def thom_oliver(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
                           co2=co2, croph=croph)
     gamma1 = gamma * (1 + res_s / res_a)
 
-    if rn is None:
-        rn = get_rn(tmean, rs, check_lat(lat), n, nn, tmax, tmin, rhmax, rhmin,
-                    rh, elevation, rso, a, b, ea, albedo)
+    rn = calc_rad_net(tmean, rn, rs, check_lat(lat), n, nn, tmax, tmin, rhmax,
+                      rhmin, rh, elevation, rso, a, b, ea, albedo, as1, bs1,
+                      kab)
 
     w = aw * (1 + bw * wind)
 
@@ -746,20 +781,6 @@ def thom_oliver(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
     pe = num1 + num2
     pe = clip_zeros(pe, clip_zero)
     return pe.rename("Thom_Oliver")
-
-
-def get_rn(tmean, rs=None, lat=None, n=None, nn=None, tmax=None, tmin=None,
-           rhmax=None, rhmin=None, rh=None, elevation=None, rso=None,
-           a=1.35, b=-0.35, ea=None, albedo=0.23, as1=0.25, bs1=0.5, kab=None):
-    if rs is None:
-        rs = calc_rad_sol_in(n, lat, as1=as1, bs1=bs1, nn=nn)
-    rns = calc_rad_short(rs=rs, lat=lat, n=n, nn=nn, albedo=albedo, as1=as1,
-                         bs1=bs1)  # [MJ/m2/d]
-    rnl = calc_rad_long(rs=rs, tmean=tmean, tmax=tmax, tmin=tmin, rhmax=rhmax,
-                        rhmin=rhmin, rh=rh, elevation=elevation, lat=lat,
-                        rso=rso, a=a, b=b, ea=ea, kab=kab)  # [MJ/m2/d]
-    rn = rns - rnl
-    return rn
 
 
 def calculate_all(tmean, wind, rs, elevation, lat, tmax, tmin, rh):
@@ -817,12 +838,11 @@ def calculate_all(tmean, wind, rs, elevation, lat, tmax, tmin, rh):
     pe_df["Haude"] = haude(tmax, rh)
 
     pe_df["Turc"] = turc(tmean, rs, rh)
-    pe_df["Jensen-Haise"] = jensen_haise(tmean, rs=rs, method=0)
+    pe_df["Jensen-Haise"] = jensen_haise(tmean, rs=rs)
     pe_df["Mcguinness-Bordne"] = mcguinness_bordne(tmean, lat=lat)
     pe_df["Hargreaves"] = hargreaves(tmean, tmax, tmin, lat)
     pe_df["FAO-24"] = fao_24(tmean, wind, rs=rs, rh=rh, elevation=elevation)
     pe_df["Abtew"] = abtew(tmean, rs)
     pe_df["Makkink"] = makkink(tmean, rs, elevation=elevation)
     pe_df["Oudin"] = oudin(tmean, lat=lat)
-
     return pe_df
