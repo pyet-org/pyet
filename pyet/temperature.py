@@ -81,7 +81,7 @@ def blaney_criddle(tmean, lat, a=-1.55, b=0.96, k=0.65, wind=None, rhmin=None,
     return pe.rename("Blaney_Criddle")
 
 
-def haude(tmean, rh, ea=None, k=1, clip_zero=True):
+def haude(tmean, rh, k=1, clip_zero=True):
     """Potential evaporation calculated according to
     :cite:t:`haude_determination_1955`.
 
@@ -91,8 +91,6 @@ def haude(tmean, rh, ea=None, k=1, clip_zero=True):
         temperature at 2pm or maximum dailty temperature [°C]
     rh: float/pandas.Series/xarray.DataArray
         average relative humidity at 2pm [%]
-    ea: float/pandas.Series/xarray.DataArray, optional
-        actual vapor pressure [kPa]
     k: float, optional
         calibration coefficient [-]
     clip_zero: bool, optional
@@ -116,8 +114,7 @@ def haude(tmean, rh, ea=None, k=1, clip_zero=True):
 
     """
     e0 = calc_e0(tmean)
-    if ea is None:
-        ea = rh * e0 / 100
+    ea = rh * e0 / 100
     # Haude coefficients from :cite:t:`schiff_berechnung_1975`
     fk = [0.27, 0.27, 0.28, 0.39, 0.39, 0.37, 0.35, 0.33, 0.31, 0.29, 0.27,
           0.27]

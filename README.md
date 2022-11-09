@@ -13,30 +13,29 @@
 pyet is an open source python package for calculating reference and potential Evapotranspiration (PET) for 1D (pandas.Series)
 and 3D (xarray.DataArrray) data. Currently, eighteen methods for calculating daily PET are implemented:
 
-| Classification | Common method name        | Data needed | *pyet* Method         | Reference                    |
-|----------------|---------------------------|-------------|---------------------|------------------------------|
-| Combination    | Penman                    | RH, T, U, R | `penman`            | Penman (1948)                |
-|                | Penman-Monteith           | RH, T, U, R | `pm`                | Monteith (1965)              |
-|                | Penman-Monteith ASCE      | RH, T, U, R | `pm`                | ASCE (2005)                  |
-|                | FAO-56                    | RH, T, U, R | `pm_fao56`          | Allen et al. (1998)          |
-|                | Priestley-Taylor          | RH, T, R    | `priestley_taylor`  | Priestley and Taylor (1972)  |
-|                | Kimberly-Penman           | RH, T, U, R | `kimberly_penman`   | Wright (1982)                |
-|                | Thom-Oliver               | RH, T, U, R | `thom_oliver`       | Thom and Oliver (1977)       |
-| Temperature    | Blaney–Criddle            | T           | `blaney_criddle`    | Blaney and Criddle (1952)    |
-|                | Hamon                     | T           | `hamon`             | Hamon (1963), 3 options      |
-|                | Romanenko                 | RH, T       | `romanenko`         | Xu and Singh (2001)          |
-|                | Linacre                   | T           | `linacre`           | Linacre (1977)               |
-|                | Haude                     | RH, T       | `haude`             | Haude (1955)                 |
-| Radiation      | Turc                      | RH, T, R    | `turc`              | Xu and Singh (2001)          |
-|                | Jensen–Haise              | T, (R)      | `jensen_haise`      | Jensen (1963)                |
-|                | McGuinness–Bordne         | T           | `mcguinness_bordne` | McGuinness (1972)            |
-|                | Hargreaves                | T           | `hargreaves`        | Hargreaves and Samani (1982) |
-|                | Doorenbos–Pruitt (FAO-24) | RH, T, U, R | `fao_24`            | Jensen et al. (1990)         |
-|                | Abtew                     | T, R        | `abtew`             | Abtew (1996)                 |
-|                | Makkink                   | T, R        | `makkink`           | Makkink (1957)               |
-|                | Oudin                     | T           | `oudin`             | Oudin (2005)                 |
+|    | Method            | pyet func.        | T            | RH            | R            | u2        | Lat.         | El.          | Bench.   |
+|---:|:------------------|:------------------|:-------------|:--------------|:-------------|:----------|:-------------|:-------------|:---------|
+|  0 | Penman            | penman            | &check;^a^   | &check;^b,c^  | &check;^d^   | &check;   | &check;^d^   | &check;^e^   | -        |
+|  1 | Penman-Monteith   | pm                | &check;^a^   | &check;^b,c^  | &check;^d^   | &check;   | &check;^d^   | &check;^e^   | &check;        |
+|  2 | ASCE-PM           | pm_asce           | &check;^a^   | &check;^b,c^  | &check;^d^   | &check;   | &check;^d^   | &check;^e^   | &check;        |
+|  3 | FAO-56            | pm_fao56          | &check;^a^   | &check;^b,c^  | &check;^d^   | &check;   | &check;^d^   | &check;^e^   | &check;        |
+|  4 | Priestley-Taylor  | priestley_taylor  | &check;      | &check;^h^    | &check;h     | -         | &check;^h^   | &check;^e^   | &check;        |
+|  5 | Kimberly-Penman   | kimberly_penman   | &check;^a^   | &check;^b,c^  | &check;^d^   | &check;   | &check;^d^   | &check;^e^   | -        |
+|  6 | Thom-Oliver       | thom_oliver       | &check;^a^   | &check;^b,c^  | &check;^d^   | &check;   | &check;^d^   | &check;^e^   | -        |
+|  7 | Blaney-Criddle    | blaney_criddle    | &check;      | -^i^          | -^i^         | -^i^      | &check;      | -            | &check;        |
+|  8 | Hamon             | hamon             | &check;      | -             | -            | -         | &check;      | -            | -        |
+|  9 | Romanenko         | romanenko         | &check;      | &check;       | -            | -         | -            | -            | -        |
+| 10 | Linacre           | linacre           | &check;^j^   | -             | -            | -         | -            | &check;      | -        |
+| 11 | Haude             | haude             | &check;      | &check;^k^    | -            | -         | -            | -            | &check;        |
+| 12 | Turc              | turc              | &check;      | &check;       | &check;      | -         | -            | -            | &check;        |
+| 13 | Jensen-Haise      | jensen_haise      | &check;      | -             | &check;^l^   | -         | &check;^l^   | -            | -        |
+| 14 | McGuinness-Bordne | mcguinness_bordne | &check;      | -             | -            | -         | &check;      | -            | -        |
+| 15 | Hargreaves        | hargreaves        | &check;^m^   | -             | -            | -         | &check;      | -            | &check;        |
+| 16 | FAO-24            | fao_24            | &check;      | &check;       | &check;      | &check;   | -            | &check;^e^   | -        |
+| 17 | Abtew             | abtew             | &check;      | -             | &check;      | -         | -            | -            | -        |
+| 18 | Makkink           | makkink           | &check;      | -             | &check;      | -         | -            | &check;^e^   | &check;        |
+| 19 | Oudin             | oudin             | &check;      | -             | -            | -         | &check;      | -            | -        |
 
-T, Temperature; U, Wind Speed; D, Radiation; RH, Relative Humidity. Adapted from Oudin et al. (2005).
 
 ## Examples and Documentation
 

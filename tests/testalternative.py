@@ -84,5 +84,7 @@ class Testalternative(unittest.TestCase):
         tmean = pd.Series([21.5], index=pd.DatetimeIndex(["1980-07-20"]))
         ea = pd.Series([1.19], index=pd.DatetimeIndex(["1980-07-20"]))
         k = 0.26 / 0.35  # 0.35 value is taken in pyet
-        haude = et.haude(tmean, ea=ea, k=k)
+        e0 = et.calc_e0(tmean)
+        rh = ea / e0 * 100
+        haude = et.haude(tmean, rh=rh, k=k)
         self.assertAlmostEqual(float(haude), 3.6, 1)
