@@ -96,7 +96,7 @@ def penman(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
     Following :cite:t:`penman_natural_1948` and
     :cite:t:`valiantzas_simplified_2006`.
 
-    .. math:: PE = \\frac{\\Delta (R_n-G) + \\gamma 2.6 (1 + 0.536 u_2)
+    .. math:: PET = \\frac{\\Delta (R_n-G) + \\gamma 2.6 (1 + 0.536 u_2)
         (e_s-e_a)}{\\lambda (\\Delta +\\gamma)}
 
     """
@@ -118,9 +118,9 @@ def penman(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
     den = lambd * (dlt + gamma)
     num1 = dlt * (rn - g) / den
     num2 = gamma * (es - ea) * fu / den
-    pe = num1 + num2
-    pe = clip_zeros(pe, clip_zero)
-    return pe.rename("Penman")
+    pet = num1 + num2
+    pet = clip_zeros(pet, clip_zero)
+    return pet.rename("Penman")
 
 
 def pm_asce(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
@@ -207,7 +207,7 @@ def pm_asce(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
     Following :cite:t:`monteith_evaporation_1965` and
     :cite:t:`walter_asces_2000`
 
-    .. math:: PE = \\frac{\\Delta (R_{n}-G)+ \\rho_a c_p K_{min}
+    .. math:: PET = \\frac{\\Delta (R_{n}-G)+ \\rho_a c_p K_{min}
         \\frac{e_s-e_a}{r_a}}{\\lambda(\\Delta +\\gamma(1+\\frac{r_s}{r_a}))}
 
     """
@@ -228,9 +228,9 @@ def pm_asce(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
     den = dlt + gamma * (1 + cd * wind)
     num1 = (0.408 * dlt * (rn - g)) / den
     num2 = gamma * cn / (tmean + 273) * wind * (es - ea) / den
-    pe = num1 + num2
-    pe = clip_zeros(pe, clip_zero)
-    return pe.rename("PM_ASCE")
+    pet = num1 + num2
+    pet = clip_zeros(pet, clip_zero)
+    return pet.rename("PM_ASCE")
 
 
 def pm(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None, rhmax=None,
@@ -326,7 +326,7 @@ def pm(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None, rhmax=None,
 
     Examples
     --------
-    >>> et_pm = pm(tmean, wind, rn=rn, rh=rh)
+    >>> tet_pm = pm(tmean, wind, rn=rn, rh=rh)
 
     Notes
     -----
@@ -335,8 +335,23 @@ def pm(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None, rhmax=None,
     :cite:t:`zhang_comparison_2008`, :cite:t:`schymanski_leaf-scale_2017` and
     :cite:t:`yang_hydrologic_2019`.
 
-    .. math:: PE = \\frac{\\Delta (R_{n}-G)+ \\rho_a c_p K_{min}
+    .. math:: PET = \\frac{\\Delta (R_{n}-G)+ \\rho_a c_p K_{min}
         \\frac{e_s-e_a}{r_a}}{\\lambda(\\Delta +\\gamma(1+\\frac{r_s}{r_a}))}
+
+    , where
+
+    .. math:: r_s = f_{co2} * r_l / LAI_{eff}
+
+    .. math:: f_{co2} = (1+S_{r_s}*(CO_2-300))
+
+    ra_method == 0:
+
+    .. math:: r_a = \\frac{208}{u_2}
+
+    ra_method == 1:
+
+    .. math:: r_a = log(\\frac{(zw - d)}{zom}) *
+        \\frac{log(\\frac{(zh - d)}{zoh})}{(0.41^2)u_2}
 
     """
     pressure = calc_press(elevation, pressure)
@@ -363,9 +378,9 @@ def pm(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None, rhmax=None,
     den = lambd * (dlt + gamma1)
     num1 = dlt * (rn - g) / den
     num2 = rho_a * CP * kmin * (es - ea) * a_sh / res_a / den
-    pe = num1 + num2
-    pe = clip_zeros(pe, clip_zero)
-    return pe.rename("Penman_Monteith")
+    pet = num1 + num2
+    pet = clip_zeros(pet, clip_zero)
+    return pet.rename("Penman_Monteith")
 
 
 def pm_fao56(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
@@ -438,7 +453,7 @@ def pm_fao56(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
 
     Notes
     -----
-    .. math:: PE = \\frac{0.408 \\Delta (R_{n}-G)+\\gamma \\frac{900}{T+273}
+    .. math:: PET = \\frac{0.408 \\Delta (R_{n}-G)+\\gamma \\frac{900}{T+273}
         (e_s-e_a) u_2}{\\Delta+\\gamma(1+0.34 u_2)}
 
     """
@@ -461,9 +476,9 @@ def pm_fao56(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
     den = dlt + gamma1
     num1 = (0.408 * dlt * (rn - g)) / den
     num2 = (gamma * (es - ea) * 900 * wind / (tmean + 273)) / den
-    pe = num1 + num2
-    pe = clip_zeros(pe, clip_zero)
-    return pe.rename("PM_FAO_56")
+    pet = num1 + num2
+    pet = clip_zeros(pet, clip_zero)
+    return pet.rename("PM_FAO_56")
 
 
 def priestley_taylor(tmean, rs=None, rn=None, g=0, tmax=None, tmin=None,
@@ -536,7 +551,7 @@ def priestley_taylor(tmean, rs=None, rn=None, g=0, tmax=None, tmin=None,
     Notes
     -----
 
-    .. math:: PE = \\frac{\\alpha_{PT} \\Delta (R_n-G)}
+    .. math:: PET = \\frac{\\alpha_{PT} \\Delta (R_n-G)}
         {\\lambda(\\Delta +\\gamma)}
 
     """
@@ -549,9 +564,9 @@ def priestley_taylor(tmean, rs=None, rn=None, g=0, tmax=None, tmin=None,
                       rhmin, rh, elevation, rso, a, b, None, albedo, as1, bs1,
                       kab)
 
-    pe = (alpha * dlt * (rn - g)) / (lambd * (dlt + gamma))
-    pe = clip_zeros(pe, clip_zero)
-    return pe.rename("Priestley_Taylor")
+    pet = (alpha * dlt * (rn - g)) / (lambd * (dlt + gamma))
+    pet = clip_zeros(pet, clip_zero)
+    return pet.rename("Priestley_Taylor")
 
 
 def kimberly_penman(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
@@ -623,7 +638,7 @@ def kimberly_penman(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
     -----
     Following :cite:t:`oudin_which_2005`.
 
-    .. math:: PE = \\frac{\\Delta (R_n-G)+ \\gamma (e_s-e_a) w}
+    .. math:: PET = \\frac{\\Delta (R_n-G)+ \\gamma (e_s-e_a) w}
         {\\lambda(\\Delta +\\gamma)}
     .. math:: w =  u_2 * (0.4 + 0.14 * exp(-(\\frac{J_D-173}{58})^2)) +
             (0.605 + 0.345 * exp(-(\\frac{J_D-243}{80})^2))
@@ -649,9 +664,9 @@ def kimberly_penman(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
     den = lambd * (dlt + gamma)
     num1 = dlt * (rn - g) / den
     num2 = gamma * (es - ea) * w / den
-    pe = num1 + num2
-    pe = clip_zeros(pe, clip_zero)
-    return pe.rename("Kimberly_Penman")
+    pet = num1 + num2
+    pet = clip_zeros(pet, clip_zero)
+    return pet.rename("Kimberly_Penman")
 
 
 def thom_oliver(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
@@ -749,7 +764,7 @@ def thom_oliver(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
     -----
     Following :cite:t:`oudin_which_2005`.
 
-    .. math:: PE = \\frac{\\Delta (R_{n}-G)+ 2.5 \\gamma (e_s-e_a) w}
+    .. math:: PET = \\frac{\\Delta (R_{n}-G)+ 2.5 \\gamma (e_s-e_a) w}
         {\\lambda(\\Delta +\\gamma(1+\\frac{r_s}{r_a}))}$
         $w=2.6(1+0.53u_2)
 
@@ -777,9 +792,9 @@ def thom_oliver(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
     den = lambd * (dlt + gamma1)
     num1 = dlt * (rn - g) / den
     num2 = 2.5 * gamma * (es - ea) * w / den
-    pe = num1 + num2
-    pe = clip_zeros(pe, clip_zero)
-    return pe.rename("Thom_Oliver")
+    pet = num1 + num2
+    pet = clip_zeros(pet, clip_zero)
+    return pet.rename("Thom_Oliver")
 
 
 def calculate_all(tmean, wind, rs, elevation, lat, tmax, tmin, rh):

@@ -34,20 +34,24 @@ def turc(tmean, rs, rh, k=0.31, clip_zero=True):
 
     Examples
     --------
-    >>> et_turc = turc(tmean, rs, rh)
+    >>> iet_turc = turc(tmean, rs, rh)
 
     Notes
     -----
     Based on equation 2 and 3 in :cite:t:`xu_evaluation_2000`.
 
-    .. math:: PE=k(\\frac{T_a}{T_a+15})(R_s/4.184 + 50)*4.184; for RH>50
+    .. math:: PET=k(\\frac{T_{mean}}}{T_{mean}+15})(R_s/4.184 + 50)*4.184;
+    for RH>50
+
+    .. math:: PET=k(1+\\frac{50-RH}{70}(\\frac{T_{mean}}}{T_{mean}+15})
+        (R_s/4.184 + 50)*4.184; for RH<50
 
     """
     c = tmean / tmean
     c.where(rh > 50, 1 + (50 - rh) / 70)
-    pe = k * c * tmean / (tmean + 15) * (rs + 2.094)
-    pe = clip_zeros(pe, clip_zero)
-    return pe.rename("Turc")
+    pet = k * c * tmean / (tmean + 15) * (rs + 2.094)
+    pet = clip_zeros(pet, clip_zero)
+    return pet.rename("Turc")
 
 
 def jensen_haise(tmean, rs=None, cr=0.025, tx=-3, lat=None, method=0,
@@ -80,24 +84,28 @@ def jensen_haise(tmean, rs=None, cr=0.025, tx=-3, lat=None, method=0,
 
     Examples
     --------
-    >>> jh_et = jensen_haise(tmean, rs)
+    >>> pet_jh = jensen_haise(tmean, lat)
 
     Notes
     -----
-    Based on equation (K-15) in :cite:t:`jensen_evaporation_2016`.
+    Method = 0: Based on :cite:t:`oudin_which_2005`.
 
-    .. math:: PE = \\frac{C_r(T-T_x)R_s}{\\lambda}
+    .. math:: PET = \\frac{R_a(T_{mean}+5)}{68\\lambda}
+
+    Method = 1: Based on :cite:t:`jensen_evaporation_2016`.
+
+    .. math:: PET = \\frac{C_r(T_{mean}-T_x)R_s}{\\lambda}
 
     """
     lambd = calc_lambda(tmean)
-    if method == 0:
-        pe = rs / lambd * cr * (tmean - tx)
-    elif method == 1:
+    if method == 2:
         index = get_index(tmean)
         ra = extraterrestrial_r(index, check_lat(lat))
-        pe = ra * (tmean + 5) / 68 / lambd
-    pe = clip_zeros(pe, clip_zero)
-    return pe.rename("Jensen_Haise")
+        pet = ra * (tmean + 5) / 68 / lambd
+    elif method == 1:
+        pet = rs / lambd * cr * (tmean - tx)
+    pet = clip_zeros(pet, clip_zero)
+    return pet.rename("Jensen_Haise")
 
 
 def mcguinness_bordne(tmean, lat, k=0.0147, clip_zero=True):
@@ -122,21 +130,21 @@ def mcguinness_bordne(tmean, lat, k=0.0147, clip_zero=True):
 
     Examples
     --------
-    >>> et_mcguinness_bordne = mcguinness_bordne(tmean, lat)
+    >>> pet_mcguinness_bordne = mcguinness_bordne(tmean, lat)
 
     Notes
     -----
     Based on equation 13 in :cite:t:`xu_evaluation_2000`.
 
-    .. math:: PE = \\frac{0.0147 R_a (T_a + 5)}{\\lambda}
+    .. math:: PET = k\\frac{R_a (T_{mean} + 5)}{\\lambda}
 
     """
     lambd = calc_lambda(tmean)
     index = get_index(tmean)
     ra = extraterrestrial_r(index, check_lat(lat))
-    pe = k * ra * (tmean + 5) / lambd
-    pe = clip_zeros(pe, clip_zero)
-    return pe.rename("Mcguinness_Bordne")
+    pet = k * ra * (tmean + 5) / lambd
+    pet = clip_zeros(pet, clip_zero)
+    return pet.rename("Mcguinness_Bordne")
 
 
 def hargreaves(tmean, tmax, tmin, lat, k=0.0135, method=0, clip_zero=True):
@@ -157,7 +165,7 @@ def hargreaves(tmean, tmax, tmin, lat, k=0.0135, method=0, clip_zero=True):
         calirbation coefficient [-]
     method: float, optional
         0 => after :cite:t:`jensen_evaporation_2016`
-        1 => after [mcmahon_2013]
+        1 => after :cite:t:`mcmahon_estimating_2013`
     clip_zero: bool, optional
         if True, replace all negative values with 0.
 
@@ -168,14 +176,23 @@ def hargreaves(tmean, tmax, tmin, lat, k=0.0135, method=0, clip_zero=True):
 
     Examples
     --------
-    >>> et_har = hargreaves(tmean, tmax, tmin, lat)
+    >>> pet_har = hargreaves(tmean, tmax, tmin, lat)
 
     Notes
     -----
-    Based on equation (8-16) in :cite:t:`jensen_evaporation_2016`.
+    Method = 0; Based on equation (8-16) in :cite:t:`jensen_evaporation_2016`.
 
-    .. math:: PE = 0.0023 \\frac{R_a (T_a+17.8)\\sqrt{(T_{max}-T_{min})}}\
+    .. math:: PET = k \\frac{R_a (T_{mean}+17.8)\\sqrt{(T_{max}-T_{min})}}\
         {\\lambda}
+
+    Method = 1; Based on :cite:t:`mcmahon_estimating_2013`.
+
+    .. math:: PET = chs k \\frac{R_a (T_{mean}+17.8)\\sqrt{(T_{max}-T_{min})}}\
+        {\\lambda}
+
+    , where
+
+    .. math:: chs=0.00185*(T_{max}-T_{min})^2-0.0433*(T_{max}-T_{min})+0.4023
 
     """
     lambd = calc_lambda(tmean)
@@ -184,12 +201,12 @@ def hargreaves(tmean, tmax, tmin, lat, k=0.0135, method=0, clip_zero=True):
     ra = extraterrestrial_r(index, check_lat(lat))
     chs = 0.00185 * (tmax - tmin) ** 2 - 0.0433 * (tmax - tmin) + 0.4023
     if method == 0:
-        pe = k / 0.0135 * 0.0023 * (tmean + 17.8) * sqrt(
+        pet = k / 0.0135 * 0.0023 * (tmean + 17.8) * sqrt(
             tmax - tmin) * ra / lambd
     elif method == 1:
-        pe = k * chs * sqrt(tmax - tmin) * ra / lambd * (tmean + 17.8)
-    pe = clip_zeros(pe, clip_zero)
-    return pe.rename("Hargreaves")
+        pet = k * chs * sqrt(tmax - tmin) * ra / lambd * (tmean + 17.8)
+    pet = clip_zeros(pet, clip_zero)
+    return pet.rename("Hargreaves")
 
 
 def fao_24(tmean, wind, rs, rh, pressure=None, elevation=None, albedo=0.23,
@@ -223,7 +240,7 @@ def fao_24(tmean, wind, rs, rh, pressure=None, elevation=None, albedo=0.23,
 
     Examples
     --------
-    >>> et_fao24 = fao_24(tmean, wind, rs, rh, pressure=pressure)
+    >>> pet_fao24 = fao_24(tmean, wind, rs, rh, elevation=elevation)
 
     .. math:: PE = \\frac{- 0.3 \\Delta + R_s (1-\\alpha) w}\
         {\\lambda(\\Delta +\\gamma)}
@@ -265,7 +282,7 @@ def abtew(tmean, rs, k=0.53, clip_zero=True):
 
     Examples
     --------
-    >>> et_abtew = abtew(tmean, rs)
+    >>> pet_abtew = abtew(tmean, rs)
 
     Notes
     -----
@@ -306,25 +323,26 @@ def makkink(tmean, rs, pressure=None, elevation=None, k=0.65, clip_zero=True):
 
     Examples
     --------
-    >>> mak = makkink(tmean, rs)
+    >>> pet_mak = makkink(tmean, rs, elevation=elevation)
 
     Notes
     -----
 
-    .. math:: PE = \\frac{0.65 \\Delta (R_s)}{\\lambda(\\Delta +\\gamma)}
+    .. math:: PET = \\frac{0.65 \\Delta (R_s)}{\\lambda(\\Delta +\\gamma)}
 
     """
     pressure = calc_press(elevation, pressure)
     gamma = calc_psy(pressure)
     dlt = calc_vpc(tmean)
     lambd = calc_lambda(tmean)
-    pe = k * dlt / (dlt + gamma) * rs / lambd
-    pe = clip_zeros(pe, clip_zero)
-    return pe.rename("Makkink")
+    pet = k * dlt / (dlt + gamma) * rs / lambd
+    pet = clip_zeros(pet, clip_zero)
+    return pet.rename("Makkink")
 
 
 def oudin(tmean, lat, k1=100, k2=5, clip_zero=True):
-    """Potential evaporation calculated according to :cite:t:`oudin_which_2005`.
+    """Potential evaporation calculated according to
+     :cite:t:`oudin_which_2005`.
 
     Parameters
     ----------
@@ -348,21 +366,20 @@ def oudin(tmean, lat, k1=100, k2=5, clip_zero=True):
 
     Examples
     --------
-    >>> et_oudin = oudin(tmean, lat)
+    >>> pet_oudin = oudin(tmean, lat)
 
     Notes
     -----
     Based on equation 3 in :cite:t:`oudin_which_2005`.
 
-    .. math:: PE = \\frac{R_a (T_a +5)}{\\lambda 100}; if T_a+5>0
-        else: P = 0
+    .. math:: PET = \\frac{R_a (T_{mean} +5)}{\\lambda 100}; if T_{mean}+5>0
+        else: PET = 0
 
     """
     lambd = calc_lambda(tmean)
     index = get_index(tmean)
-    # Add transpose to be able to work with lat in float or xarray.DataArray
     ra = extraterrestrial_r(index, check_lat(lat))
-    pe = ra * (tmean + k2) / lambd / k1
-    pe = pe.where(((tmean + k2) > 0) | (pe.isnull()), 0)
-    pe = clip_zeros(pe, clip_zero)
-    return pe.rename("Oudin")
+    pet = ra * (tmean + k2) / lambd / k1
+    pet = pet.where(((tmean + k2) > 0) | (pet.isnull()), 0)
+    pet = clip_zeros(pet, clip_zero)
+    return pet.rename("Oudin")

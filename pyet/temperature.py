@@ -51,7 +51,7 @@ def blaney_criddle(tmean, lat, a=-1.55, b=0.96, k=0.65, wind=None, rhmin=None,
 
     Examples
     --------
-    >>> et_blaney_criddle = blaney_criddle(tmean, lat)
+    >>> pet_blaney_criddle = blaney_criddle(tmean, lat)
 
     Notes
     -----
@@ -69,13 +69,13 @@ def blaney_criddle(tmean, lat, a=-1.55, b=0.96, k=0.65, wind=None, rhmin=None,
 
     , where:
 
-    .. math:: k1 = (0.0043RH_{min} - \frac{n}{N} - 1.41)
+    .. math:: k1 = (0.0043RH_{min} - \\frac{n}{N} - 1.41)
 
-    .. math:: bvar = e_0 + e1 RH_{min} + e_2 \frac{n}{N} + e_3 u_2 +
-    e_4 RH_{min} \frac{n}{N} + e_5 * RH_{min} * u_2
+    .. math:: bvar = e_0 + e1 RH_{min} + e_2 \\frac{n}{N} + e_3 u_2 +
+        e_4 RH_{min} \\frac{n}{N} + e_5 * RH_{min} * u_2
 
     and e_0 = 0.81917, e_1 = -0.0040922, e_2 = 1.0705, e_3 = 0.065649,
-    e_4 = -0.0059684, e_5 = -0.0005967.
+        e_4 = -0.0059684, e_5 = -0.0005967.
 
     """
     index = get_index(tmean)
@@ -120,14 +120,14 @@ def haude(tmean, rh, k=1, clip_zero=True):
 
     Examples
     --------
-    >>> et_haude = haude(tmean, rh)
+    >>> pet_haude = haude(tmean, rh)
 
     Notes
     -----
     Following :cite:t:`haude_determination_1955` and
     :cite:t:`schiff_berechnung_1975`.
 
-    .. math:: PE = f * (e_s-e_a)
+    .. math:: PET = k * f * (e_s-e_a)
 
     """
     e0 = calc_e0(tmean)
@@ -137,9 +137,9 @@ def haude(tmean, rh, k=1, clip_zero=True):
           0.27]
     index = get_index(tmean)
     f = ([fk[x - 1] for x in index.month] * (tmean / tmean).T).T
-    pe = k * f * (e0 - ea) * 10  # kPa to hPa
-    pe = clip_zeros(pe, clip_zero)
-    return pe.rename("Haude")
+    pet = k * f * (e0 - ea) * 10  # kPa to hPa
+    pet = clip_zeros(pet, clip_zero)
+    return pet.rename("Haude")
 
 
 def hamon(tmean, lat, k=1, c=13.97, cc=218.527, method=0, clip_zero=True):
@@ -172,29 +172,42 @@ def hamon(tmean, lat, k=1, c=13.97, cc=218.527, method=0, clip_zero=True):
 
     Examples
     --------
-    >>> et_hamon = hamon(tmean, lat)
+    >>> pet_hamon = hamon(tmean, lat)
 
     Notes
     -----
-    Following :cite:t:`hamon_estimating_1963` and :cite:t:`oudin_which_2005`.
+    Method = 0; Based on cite:t:`oudin_which_2005`.
 
-    .. math:: PE = (\\frac{DL}{12})^2 exp(\\frac{T_a}{16})
+    .. math:: PET = k(\\frac{DL}{12})^2 exp(\\frac{T_{mean}}{16})
+
+    Method = 1; Based on equation 7 in cite:t:`ansorge_performance_2019`.
+
+    .. math:: PET = c(\\frac{DL}{12})^2 pt
+
+    where
+
+    .. math:: pt = 4.95 \\frac{exp(0.062T_{mean})}{16}
+
+    Method = 2; Based on equation 12 in cite:t:`ansorge_performance_2019`.
+
+    .. math:: PET = cc\\frac{DL}{12} \\frac{1}{T_{mean} + 273.3}
+        exp(\\frac{17.27T_{mean}}{T_{mean} + 273.3})
 
     """
     index = get_index(tmean)
     # Use transpose to work with lat either as int or xarray.DataArray
     dl = daylight_hours(index, check_lat(lat))
     if method == 0:
-        pe = k * (dl / 12) ** 2 * exp(tmean / 16)
+        pet = k * (dl / 12) ** 2 * exp(tmean / 16)
     if method == 1:
         # saturated water content after Xu and Singh (2001)
         pt = 4.95 * exp(0.062 * tmean) / 100
-        pe = c * (dl / 12) ** 2 * pt
+        pet = c * (dl / 12) ** 2 * pt
     elif method == 2:
-        pe = cc * (dl / 12) * 1 / (tmean + 273.3) * exp(
+        pet = cc * (dl / 12) * 1 / (tmean + 273.3) * exp(
             (17.26939 * tmean) / (tmean + 273.3))
-    pe = clip_zeros(pe, clip_zero)
-    return pe.rename("Hamon")
+    pet = clip_zeros(pet, clip_zero)
+    return pet.rename("Hamon")
 
 
 def romanenko(tmean, rh, k=4.5, clip_zero=True):
@@ -219,20 +232,20 @@ def romanenko(tmean, rh, k=4.5, clip_zero=True):
 
     Examples
     --------
-    >>> et_romanenko = romanenko(tmean, rh)
+    >>> pet_romanenko = romanenko(tmean, rh)
 
     Notes
     -----
     Based on equation 11 in :cite:p:`xu_evaluation_2001`.
 
-    .. math:: PE=4.5(1 + (\\frac{T_a}{25})^2 (1  \\frac{e_a}{e_s})
+    .. math:: PET=k(1 + (\\frac{T_{mean}}{25})^2 (1 - \\frac{e_a}{e_s})
 
     """
     ea = calc_ea(tmean=tmean, rh=rh)
     es = calc_es(tmean=tmean)
-    pe = k * (1 + tmean / 25) ** 2 * (1 - ea / es)
-    pe = clip_zeros(pe, clip_zero)
-    return pe.rename("Romanenko")
+    pet = k * (1 + tmean / 25) ** 2 * (1 - ea / es)
+    pet = clip_zeros(pet, clip_zero)
+    return pet.rename("Romanenko")
 
 
 def linacre(tmean, elevation, lat, tdew=None, tmax=None, tmin=None,
@@ -264,19 +277,19 @@ def linacre(tmean, elevation, lat, tdew=None, tmax=None, tmin=None,
 
     Examples
     --------
-    >>> et_linacre = linacre(tmean, elevation, lat)
+    >>> pet_linacre = linacre(tmean, elevation, lat)
 
     Notes
     -----
     Based on equation 5 in :cite:p:`xu_evaluation_2001`.
 
-    .. math:: PE = \\frac{\\frac{500 T_m}{(100-A)}+15 (T_a-T_d)}{80-T_a}
+    .. math:: PET = \\frac{\\frac{500 T_m}{(100-lat)}+15 (T_a-T_d)}{80-T_a}
 
     """
     if tdew is None:
         tdew = 0.52 * tmin + 0.6 * tmax - 0.009 * tmax ** 2 - 2
     tm = tmean + 0.006 * elevation
-    pe = (500 * tm / (100 - check_lat(lat)) + 15 * (tmean - tdew)) / (
+    pet = (500 * tm / (100 - check_lat(lat)) + 15 * (tmean - tdew)) / (
             80 - tmean)
-    pe = clip_zeros(pe, clip_zero)
-    return pe.rename("Linacre")
+    pet = clip_zeros(pet, clip_zero)
+    return pet.rename("Linacre")
