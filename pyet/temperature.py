@@ -55,9 +55,27 @@ def blaney_criddle(tmean, lat, a=-1.55, b=0.96, k=0.65, wind=None, rhmin=None,
 
     Notes
     -----
-    Based on equation 6 in :cite:p:`xu_evaluation_2001`.
+    Method = 0; Based on :cite:p:`schrodter_hinweise_1985`.
 
-    .. math:: PE=kp(0.46 * T_a + 8.13)
+    .. math:: PET=a+b(py(0.46 * T_{mean} + 8.13))
+
+    Method = 1; Based on :cite:p:`xu_evaluation_2001`.
+
+    .. math:: PET=kpy(0.46 * T_{mean} + 8.13)
+
+    Method = 2; Based on :cite:p:`mcmahon_estimating_2013`.
+
+    .. math:: PET=k_1+b_{var}(py(0.46 * T_{mean} + 8.13))
+
+    , where:
+
+    .. math:: k1 = (0.0043RH_{min} - \frac{n}{N} - 1.41)
+
+    .. math:: bvar = e_0 + e1 RH_{min} + e_2 \frac{n}{N} + e_3 u_2 +
+    e_4 RH_{min} \frac{n}{N} + e_5 * RH_{min} * u_2
+
+    and e_0 = 0.81917, e_1 = -0.0040922, e_2 = 1.0705, e_3 = 0.065649,
+    e_4 = -0.0059684, e_5 = -0.0005967.
 
     """
     index = get_index(tmean)
@@ -66,19 +84,18 @@ def blaney_criddle(tmean, lat, a=-1.55, b=0.96, k=0.65, wind=None, rhmin=None,
     if py is None:
         py = nn / (365 * 12) * 100
     if method == 0:
-        pe = a + b * (py * (0.457 * tmean + 8.128))
+        pet = a + b * (py * (0.457 * tmean + 8.128))
     if method == 1:
-        pe = k * py * (0.46 * tmean + 8.13)
+        pet = k * py * (0.46 * tmean + 8.13)
     elif method == 2:
-
         k1 = (0.0043 * rhmin - n / nn - 1.41)
         e0, e1, e2, e3, e4, e5 = (0.81917, -0.0040922, 1.0705, 0.065649,
                                   -0.0059684, -0.0005967)
         bvar = e0 + e1 * rhmin + e2 * n / nn + e3 * wind + e4 * rhmin * n / \
                nn + e5 * rhmin * wind
-        pe = k1 + bvar * py * (0.46 * tmean + 8.13)
-    pe = clip_zeros(pe, clip_zero)
-    return pe.rename("Blaney_Criddle")
+        pet = k1 + bvar * py * (0.46 * tmean + 8.13)
+    pet = clip_zeros(pet, clip_zero)
+    return pet.rename("Blaney_Criddle")
 
 
 def haude(tmean, rh, k=1, clip_zero=True):
