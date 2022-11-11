@@ -22,7 +22,7 @@ def penman(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
            lat=None, n=None, nn=None, rso=None, aw=2.6, bw=0.536, a=1.35,
            b=-0.35, ea=None, albedo=0.23, kab=None, as1=0.25, bs1=0.5,
            clip_zero=True):
-    """Potential evaporation calculated according to
+    """Potential evapotranspiration calculated according to
     :cite:t:`penman_natural_1948`.
 
     Parameters
@@ -85,7 +85,7 @@ def penman(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
     Returns
     -------
     pandas.Series/xarray.DataArray containing the calculated
-            potential evaporation [mm d-1].
+            Potential evapotranspiration [mm d-1].
 
     Examples
     --------
@@ -128,7 +128,7 @@ def pm_asce(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
             lat=None, n=None, nn=None, rso=None, a=1.35, b=-0.35, cn=900,
             cd=0.34, ea=None, albedo=0.23, kab=None, as1=0.25, bs1=0.5,
             clip_zero=True, etype="os"):
-    """Potential evaporation calculated according to
+    """Potential evapotranspiration calculated according to
     :cite:t:`monteith_evaporation_1965`.
 
     Parameters
@@ -196,7 +196,7 @@ def pm_asce(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
     Returns
     -------
     pandas.Series/xarray.DataArray containing the calculated
-            potential evaporation [mm d-1].
+            Potential evapotranspiration [mm d-1].
 
     Examples
     --------
@@ -238,7 +238,7 @@ def pm(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None, rhmax=None,
        nn=None, rso=None, ea=None, a=1.35, b=-0.35, lai=None, croph=0.12,
        r_l=100, r_s=None, ra_method=0, a_sh=1, a_s=1, lai_eff=0, srs=0.0009,
        co2=300, albedo=0.23, kab=None, as1=0.25, bs1=0.5, clip_zero=True):
-    """Potential evaporation calculated according to
+    """Potential evapotranspiration calculated according to
     :cite:t:`monteith_evaporation_1965`.
 
     Parameters
@@ -322,7 +322,7 @@ def pm(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None, rhmax=None,
     Returns
     -------
     pandas.Series/xarray.DataArray containing the calculated
-            potential evaporation [mm d-1].
+            Potential evapotranspiration [mm d-1].
 
     Examples
     --------
@@ -387,7 +387,8 @@ def pm_fao56(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
              rhmax=None, rhmin=None, rh=None, pressure=None, elevation=None,
              lat=None, n=None, nn=None, rso=None, a=1.35, b=-0.35, ea=None,
              albedo=0.23, kab=None, as1=0.25, bs1=0.5, clip_zero=True):
-    """Potential evaporation calculated according to :cite:t:`allen_crop_1998`.
+    """Potential evapotranspiration calculated according to
+    :cite:t:`allen_crop_1998`.
 
     Parameters
     ----------
@@ -445,7 +446,7 @@ def pm_fao56(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
     Returns
     -------
     pandas.Series/xarray.DataArray containing the calculated
-            potential evaporation [mm d-1].
+            Potential evapotranspiration [mm d-1].
 
     Examples
     --------
@@ -486,7 +487,7 @@ def priestley_taylor(tmean, rs=None, rn=None, g=0, tmax=None, tmin=None,
                      elevation=None, lat=None, n=None, nn=None, rso=None,
                      a=1.35, b=-0.35, alpha=1.26, albedo=0.23, kab=None,
                      as1=0.25, bs1=0.5, clip_zero=True):
-    """Potential evaporation calculated according to
+    """Potential evapotranspiration calculated according to
     :cite:t:`priestley_assessment_1972`.
 
     Parameters
@@ -543,7 +544,7 @@ def priestley_taylor(tmean, rs=None, rn=None, g=0, tmax=None, tmin=None,
     Returns
     -------
     pandas.Series/xarray.DataArray containing the calculated
-            potential evaporation [mm d-1].
+            Potential evapotranspiration [mm d-1].
     Examples
     --------
     >>> pt = priestley_taylor(tmean, rn=rn, rh=rh)
@@ -574,7 +575,8 @@ def kimberly_penman(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
                     elevation=None, lat=None, n=None, nn=None, rso=None,
                     a=1.35, b=-0.35, ea=None, albedo=0.23, kab=None, as1=0.25,
                     bs1=0.5, clip_zero=True):
-    """Potential evaporation calculated according to :cite:t:`wright_new_1982`.
+    """Potential evapotranspiration calculated according to
+    :cite:t:`wright_new_1982`.
 
     Parameters
     ----------
@@ -632,7 +634,7 @@ def kimberly_penman(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
     Returns
     -------
     pandas.Series/xarray.DataArray containing the calculated
-            potential evaporation [mm d-1].
+            Potential evapotranspiration [mm d-1].
 
     Notes
     -----
@@ -675,7 +677,7 @@ def thom_oliver(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
                 b=-0.35, lai=None, croph=0.12, r_l=100, r_s=None, ra_method=0,
                 lai_eff=0, srs=0.0009, co2=300, ea=None, albedo=0.23, kab=None,
                 as1=0.25, bs1=0.5, clip_zero=True):
-    """Potential evaporation calculated according to
+    """Potential evapotranspiration calculated according to
     :cite:t:`thom_penmans_1977`.
 
     Parameters
@@ -758,15 +760,16 @@ def thom_oliver(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
     Returns
     -------
     pandas.Series/xarray.DataArray containing the calculated
-            potential evaporation [mm d-1].
+            Potential evapotranspiration [mm d-1].
 
     Notes
     -----
     Following :cite:t:`oudin_which_2005`.
 
     .. math:: PET = \\frac{\\Delta (R_{n}-G)+ 2.5 \\gamma (e_s-e_a) w}
-        {\\lambda(\\Delta +\\gamma(1+\\frac{r_s}{r_a}))}$
-        $w=2.6(1+0.53u_2)
+        {\\lambda(\\Delta +\\gamma(1+\\frac{r_s}{r_a}))}
+
+    .. math:: w=2.6(1+0.53u_2)
 
     """
     pressure = calc_press(elevation, pressure)
@@ -798,8 +801,8 @@ def thom_oliver(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
 
 
 def calculate_all(tmean, wind, rs, elevation, lat, tmax, tmin, rh):
-    """Potential evaporation estimated based on all available methods in pyet
-     with time series data.
+    """Potential evapotranspiration estimated based on all available methods
+    in pyet with time series data.
 
      Parameters
      ----------
@@ -822,7 +825,7 @@ def calculate_all(tmean, wind, rs, elevation, lat, tmax, tmin, rh):
 
      Returns
      -------
-     pandas.DataFrame containing the calculated potential evaporation
+     pandas.DataFrame containing the calculated Potential evapotranspiration
 
      Examples
      --------

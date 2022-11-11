@@ -12,7 +12,8 @@ from pyet.utils import get_index, clip_zeros, check_lat
 
 
 def turc(tmean, rs, rh, k=0.31, clip_zero=True):
-    """Evaporation calculated according to :cite:t:`turc_estimation_1961`.
+    """Potential evapotranspiration calculated according to
+    :cite:t:`turc_estimation_1961`.
 
     Parameters
     ----------
@@ -30,7 +31,7 @@ def turc(tmean, rs, rh, k=0.31, clip_zero=True):
     Returns
     -------
     float/pandas.Series/xarray.DataArray containing the calculated
-            potential evaporation [mm d-1].
+            Potential evapotranspiration [mm d-1].
 
     Examples
     --------
@@ -40,11 +41,11 @@ def turc(tmean, rs, rh, k=0.31, clip_zero=True):
     -----
     Based on equation 2 and 3 in :cite:t:`xu_evaluation_2000`.
 
-    .. math:: PET=k(\\frac{T_{mean}}}{T_{mean}+15})(R_s/4.184 + 50)*4.184;
-    for RH>50
+    .. math:: PET=k(\\frac{T_{mean}}{T_{mean}+15})(\\frac{R_s}{4.184}+50)4.184;
+        for RH>50
 
-    .. math:: PET=k(1+\\frac{50-RH}{70}(\\frac{T_{mean}}}{T_{mean}+15})
-        (R_s/4.184 + 50)*4.184; for RH<50
+    .. math:: PET=k(1+\\frac{50-RH}{70})(\\frac{T_{mean}}{T_{mean}+15})
+        (\\frac{R_s}{4.184}+50)4.184; for RH<50
 
     """
     c = tmean / tmean
@@ -56,7 +57,7 @@ def turc(tmean, rs, rh, k=0.31, clip_zero=True):
 
 def jensen_haise(tmean, rs=None, cr=0.025, tx=-3, lat=None, method=0,
                  clip_zero=True):
-    """Potential evaporation calculated accordinf to
+    """Potential evapotranspiration calculated accordinf to
     :cite:t:`jensen_estimating_1963`.
 
     Parameters
@@ -80,7 +81,7 @@ def jensen_haise(tmean, rs=None, cr=0.025, tx=-3, lat=None, method=0,
     Returns
     -------
     float/pandas.Series/xarray.DataArray containing the calculated
-            potential evaporation [mm d-1].
+            Potential evapotranspiration [mm d-1].
 
     Examples
     --------
@@ -109,7 +110,7 @@ def jensen_haise(tmean, rs=None, cr=0.025, tx=-3, lat=None, method=0,
 
 
 def mcguinness_bordne(tmean, lat, k=0.0147, clip_zero=True):
-    """Potential evaporation calculated according to
+    """Potential evapotranspiration calculated according to
     :cite:t:`mcguinness_comparison_1972`.
 
     Parameters
@@ -126,7 +127,7 @@ def mcguinness_bordne(tmean, lat, k=0.0147, clip_zero=True):
     Returns
     -------
     float/pandas.Series/xarray.DataArray containing the calculated
-            potential evaporation [mm d-1].
+            Potential evapotranspiration [mm d-1].
 
     Examples
     --------
@@ -148,7 +149,7 @@ def mcguinness_bordne(tmean, lat, k=0.0147, clip_zero=True):
 
 
 def hargreaves(tmean, tmax, tmin, lat, k=0.0135, method=0, clip_zero=True):
-    """Potential evaporation calculated according to
+    """Potential evapotranspiration calculated according to
     :cite:t:`hargreaves_estimating_1982`.
 
     Parameters
@@ -172,7 +173,7 @@ def hargreaves(tmean, tmax, tmin, lat, k=0.0135, method=0, clip_zero=True):
     Returns
     -------
     float/pandas.Series/xarray.DataArray containing the calculated
-            potential evaporation [mm d-1].
+            Potential evapotranspiration [mm d-1].
 
     Examples
     --------
@@ -211,7 +212,7 @@ def hargreaves(tmean, tmax, tmin, lat, k=0.0135, method=0, clip_zero=True):
 
 def fao_24(tmean, wind, rs, rh, pressure=None, elevation=None, albedo=0.23,
            clip_zero=True):
-    """Potential evaporation calculated according to
+    """Potential evapotranspiration calculated according to
     :cite:t:`jensen_evapotranspiration_1990`.
 
     Parameters
@@ -236,7 +237,7 @@ def fao_24(tmean, wind, rs, rh, pressure=None, elevation=None, albedo=0.23,
     Returns
     -------
     float/pandas.Series/xarray.DataArray containing the calculated
-            potential evaporation [mm d-1].
+            Potential evapotranspiration [mm d-1].
 
     Examples
     --------
@@ -245,7 +246,7 @@ def fao_24(tmean, wind, rs, rh, pressure=None, elevation=None, albedo=0.23,
     .. math:: PE = \\frac{- 0.3 \\Delta + R_s (1-\\alpha) w}\
         {\\lambda(\\Delta +\\gamma)}
     .. math:: w = 1.066-0.13*\\frac{rh}{100}+0.045*u_2-0.02*\\frac{rh}{100}\
-        *u_2-3.15*(\\frac{rh}{100})^2-0.0011*u_2$
+        *u_2-3.15*(\\frac{rh}{100})^2-0.0011*u_2
 
     """
     pressure = calc_press(elevation, pressure)
@@ -261,7 +262,7 @@ def fao_24(tmean, wind, rs, rh, pressure=None, elevation=None, albedo=0.23,
 
 
 def abtew(tmean, rs, k=0.53, clip_zero=True):
-    """Potential evaporation calculated according to
+    """Potential evapotranspiration calculated according to
     :cite:t:`abtew_evapotranspiration_1996`.
 
     Parameters
@@ -278,7 +279,7 @@ def abtew(tmean, rs, k=0.53, clip_zero=True):
     Returns
     -------
     float/pandas.Series/xarray.DataArray containing the calculated
-            potential evaporation [mm d-1].
+            Potential evapotranspiration [mm d-1].
 
     Examples
     --------
@@ -298,7 +299,7 @@ def abtew(tmean, rs, k=0.53, clip_zero=True):
 
 
 def makkink(tmean, rs, pressure=None, elevation=None, k=0.65, clip_zero=True):
-    """Potential evaporation calculated according to
+    """Potential evapotranspiration calculated according to
     :cite:t:`makkink_testing_1957`.
 
     Parameters
@@ -319,7 +320,7 @@ def makkink(tmean, rs, pressure=None, elevation=None, k=0.65, clip_zero=True):
     Returns
     -------
     float/pandas.Series/xarray.DataArray containing the calculated
-            potential evaporation [mm d-1].
+            Potential evapotranspiration [mm d-1].
 
     Examples
     --------
@@ -341,7 +342,7 @@ def makkink(tmean, rs, pressure=None, elevation=None, k=0.65, clip_zero=True):
 
 
 def oudin(tmean, lat, k1=100, k2=5, clip_zero=True):
-    """Potential evaporation calculated according to
+    """Potential evapotranspiration calculated according to
      :cite:t:`oudin_which_2005`.
 
     Parameters
@@ -360,7 +361,7 @@ def oudin(tmean, lat, k1=100, k2=5, clip_zero=True):
     Returns
     -------
     float/pandas.Series/xarray.DataArray containing the calculated
-            potential evaporation [mm d-1].
+            Potential evapotranspiration [mm d-1].
     clip_zero: bool, optional
         if True, replace all negative values with 0.
 

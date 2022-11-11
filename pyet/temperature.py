@@ -11,7 +11,7 @@ from pyet.utils import get_index, check_lat, clip_zeros
 
 def blaney_criddle(tmean, lat, a=-1.55, b=0.96, k=0.65, wind=None, rhmin=None,
                    n=None, nn=None, py=None, method=0, clip_zero=True):
-    """Potential evaporation calculated according to
+    """Potential evapotranspiration calculated according to
     :cite:t:`blaney_determining_1952`.
 
     Parameters
@@ -47,7 +47,7 @@ def blaney_criddle(tmean, lat, a=-1.55, b=0.96, k=0.65, wind=None, rhmin=None,
     Returns
     -------
     float/pandas.Series/xarray.DataArray containing the calculated
-            potential evaporation [mm d-1].
+            Potential evapotranspiration [mm d-1].
 
     Examples
     --------
@@ -65,16 +65,16 @@ def blaney_criddle(tmean, lat, a=-1.55, b=0.96, k=0.65, wind=None, rhmin=None,
 
     Method = 2; Based on :cite:p:`mcmahon_estimating_2013`.
 
-    .. math:: PET=k_1+b_{var}(py(0.46 * T_{mean} + 8.13))
+    .. math:: PET=k_1+b_{var}(py(0.46*T_{mean} + 8.13))
 
     , where:
 
-    .. math:: k1 = (0.0043RH_{min} - \\frac{n}{N} - 1.41)
+    .. math:: k1 = (0.0043RH_{min}-\\frac{n}{N}-1.41)
 
-    .. math:: bvar = e_0 + e1 RH_{min} + e_2 \\frac{n}{N} + e_3 u_2 +
+    .. math:: bvar =e_0+e1 RH_{min}+e_2 \\frac{n}{N} + e_3 u_2 +
         e_4 RH_{min} \\frac{n}{N} + e_5 * RH_{min} * u_2
 
-    and e_0 = 0.81917, e_1 = -0.0040922, e_2 = 1.0705, e_3 = 0.065649,
+    .. math:: e_0=0.81917, e_1 = -0.0040922, e_2 = 1.0705, e_3 = 0.065649,
         e_4 = -0.0059684, e_5 = -0.0005967.
 
     """
@@ -99,7 +99,7 @@ def blaney_criddle(tmean, lat, a=-1.55, b=0.96, k=0.65, wind=None, rhmin=None,
 
 
 def haude(tmean, rh, k=1, clip_zero=True):
-    """Potential evaporation calculated according to
+    """Potential evapotranspiration calculated according to
     :cite:t:`haude_determination_1955`.
 
     Parameters
@@ -116,7 +116,7 @@ def haude(tmean, rh, k=1, clip_zero=True):
     Returns
     -------
     float/pandas.Series/xarray.DataArray containing the calculated
-            potential evaporation [mm d-1].
+            Potential evapotranspiration [mm d-1].
 
     Examples
     --------
@@ -143,7 +143,7 @@ def haude(tmean, rh, k=1, clip_zero=True):
 
 
 def hamon(tmean, lat, k=1, c=13.97, cc=218.527, method=0, clip_zero=True):
-    """Potential evaporation calculated according to
+    """Potential evapotranspiration calculated according to
     :cite:t:`hamon_estimating_1963`.
 
     Parameters
@@ -168,7 +168,7 @@ def hamon(tmean, lat, k=1, c=13.97, cc=218.527, method=0, clip_zero=True):
     Returns
     -------
     float/pandas.Series/xarray.DataArray containing the calculated
-            potential evaporation [mm d-1].
+            Potential evapotranspiration [mm d-1].
 
     Examples
     --------
@@ -211,7 +211,7 @@ def hamon(tmean, lat, k=1, c=13.97, cc=218.527, method=0, clip_zero=True):
 
 
 def romanenko(tmean, rh, k=4.5, clip_zero=True):
-    """Potential evaporation calculated according to
+    """Potential evapotranspiration calculated according to
     :cite:t:`romanenko_computation_1961`.
 
     Parameters
@@ -228,7 +228,7 @@ def romanenko(tmean, rh, k=4.5, clip_zero=True):
     Returns
     -------
     float/pandas.Series/xarray.DataArray containing the calculated
-            potential evaporation [mm d-1].
+            Potential evapotranspiration [mm d-1].
 
     Examples
     --------
@@ -250,7 +250,7 @@ def romanenko(tmean, rh, k=4.5, clip_zero=True):
 
 def linacre(tmean, elevation, lat, tdew=None, tmax=None, tmin=None,
             clip_zero=True):
-    """Potential evaporation calculated according to
+    """Potential evapotranspiration calculated according to
     :cite:t:`linacre_simple_1977`.
 
     Parameters
@@ -273,7 +273,7 @@ def linacre(tmean, elevation, lat, tdew=None, tmax=None, tmin=None,
     Returns
     -------
     float/pandas.Series/xarray.DataArray containing the calculated
-            potential evaporation [mm d-1].
+            Potential evapotranspiration [mm d-1].
 
     Examples
     --------
