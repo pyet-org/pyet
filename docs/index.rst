@@ -1,16 +1,23 @@
-*pyet* - Estimation of Potential Evaporation
-===============================
+*pyet* - Estimation of Potential Evapotranspiration
+===================================================
 
-pyet is an open source Python package for estimating reference and potential evaporation (PE) using time series data. This enables the user to estimate evaporation and calibrate the models with just a few lines of python code.
+Pyet is an open source Python package for the estimation of reference and potential evapotranspiration (PET) from
+time series data (`Pandas <https://pandas.pydata.org>`_) and gridded data (`Xarray <https://xarray.dev>`_). This
+allows users to estimate potential evapotranspiration and calibrate the models with just a few lines of python code.
 
+Citing PyET
+-----------
+If you find *pyet* helpful in your work, please consider citing PyET. This way you support the project and we can keep
+track of the usage of the package.
+
+Contents
+--------
 .. toctree::
-   :maxdepth: 2
-   :caption: Contents:
+   :maxdepth: 1
 
-   Getting started <getting_started/index>
-   Methods <methods/index>
+   Getting started <user_guide/index>
    Examples <examples/index>
    API-docs <api/index>
+   Publications <publications>
    References <references>
 
-   

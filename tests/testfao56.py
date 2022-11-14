@@ -37,7 +37,7 @@ class TestFAO56(unittest.TestCase):
     def test_e0_calc(self):
         # Based on Example 3 and 4, p. 36 FAO.
         e0_1 = et.calc_e0(24.5)
-        e0_2 = et.calc_e0(15)
+        e0_2 = et.calc_e0(15.)
         e0_3 = et.calc_e0(19.75)
         e0_4 = et.calc_e0(19.5)
         self.assertAlmostEqual(e0_1, 3.075, 2)
@@ -47,14 +47,14 @@ class TestFAO56(unittest.TestCase):
 
     def test_es_calc(self):
         # Based on Example 3 and 6, p. 36 FAO.
-        es = et.calc_es(tmax=24.5, tmin=15)
+        es = et.calc_es(tmax=24.5, tmin=15.)
         self.assertAlmostEqual(es, 2.39, 3)
 
     def test_ea_calc(self):
         # Based on Example 5, p. 39 FAO.
-        ea1 = et.calc_ea(tmax=25, tmin=18, rhmax=82, rhmin=54)
+        ea1 = et.calc_ea(tmax=25., tmin=18., rhmax=82., rhmin=54.)
         rhmean = (82 + 54) / 2
-        ea2 = et.calc_ea(tmax=25, tmin=18, rh=rhmean)
+        ea2 = et.calc_ea(tmax=25., tmin=18., rh=rhmean)
         self.assertAlmostEqual(ea1, 1.70, 2)
         self.assertAlmostEqual(ea2, 1.78, 2)
 
@@ -75,8 +75,8 @@ class TestFAO56(unittest.TestCase):
 
     def test_day_of_year(self):
         # Based on Example 8, p. 47 FAO.
-        doy = et.day_of_year(pd.to_datetime("2015-09-03"))
-        self.assertAlmostEqual(doy, 246, 1)
+        doy = et.day_of_year(pd.DatetimeIndex(["2015-09-03"]))
+        self.assertAlmostEqual(doy.values, 246, 1)
         # Based on ASCD Table C-3
         dindex = pd.date_range("2020-07-01", "2020-07-10")
         doy1 = et.day_of_year(dindex).tolist()
@@ -86,19 +86,20 @@ class TestFAO56(unittest.TestCase):
 
     def test_extraterrestrial_r(self):
         # Based on Example 8, p. 47 FAO.
-        extrar = et.extraterrestrial_r(pd.to_datetime("2015-09-03"), -0.35)
-        self.assertAlmostEqual(extrar, 32.2, 1)
+        extrar = et.extraterrestrial_r(pd.DatetimeIndex(["2015-09-03"]), -0.35)
+        self.assertAlmostEqual(float(extrar), 32.2, 1)
 
     def test_daylight_hours(self):
         # Based on Example 9, p. 47 FAO.
-        dayhours = et.daylight_hours(pd.to_datetime("2015-09-03"), -0.35)
-        self.assertAlmostEqual(dayhours, 11.7, 1)
-# Check
-#    def test_calc_rad_long(self):
-#        # Based on Example 10, p. 52 FAO.
-#        rs = pd.Series([14.5], index=pd.DatetimeIndex(["2015-05-15"]))
-#        rnl = et.calc_rad_long(rs, tmax=25.1, tmin=19, ea=2.1, rso=18.8)
-#        self.assertAlmostEqual(float(rnl), 3.6, 1)
+        dayhours = et.daylight_hours(pd.DatetimeIndex(["2015-09-03"]), -0.35)
+        self.assertAlmostEqual(float(dayhours), 11.7, 1)
+
+    # Check
+    #    def test_calc_rad_long(self):
+    #        # Based on Example 10, p. 52 FAO.
+    #        rs = pd.Series([14.5], index=pd.DatetimeIndex(["2015-05-15"]))
+    #        rnl = et.calc_rad_long(rs, tmax=25.1, tmin=19, ea=2.1, rso=18.8)
+    #        self.assertAlmostEqual(float(rnl), 3.6, 1)
 
     def test_et_fao56(self):
         # Based on Example 18, p. 72 FAO.

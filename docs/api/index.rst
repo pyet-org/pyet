@@ -17,3 +17,4 @@ left-hand menu you will find the different categories of the API documentation.
     radiation
     meteo_utils
     rad_utils
+    utils

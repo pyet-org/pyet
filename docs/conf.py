@@ -12,8 +12,29 @@
 #
 import os
 import sys
+import requests
+
 sys.path.insert(0, os.path.abspath('.'))
 
+# Get a Bibtex reference file from the Zotero group for referencing
+url = "https://api.zotero.org/groups/4846265/collections/M9ZRDX2U/items/"
+params = {"format": "bibtex",
+          "style": "apa",
+          "limit": 100}
+
+r = requests.get(url=url, params=params)
+with open("references.bib", mode="w") as file:
+    file.write(r.text)
+
+# Get a Bibtex reference file from the Zotero group for publications list
+url = "https://api.zotero.org/groups/4846265/collections/UR7PHVDK/items/"
+params = {"format": "bibtex",
+          "style": "apa",
+          "limit": 100}
+
+r = requests.get(url=url, params=params)
+with open("publications.bib", mode="w") as file:
+    file.write(r.text)
 
 # -- Project information -----------------------------------------------------
 
@@ -23,7 +44,6 @@ author = 'M. Vremec, R.A. Collenteur'
 
 # The full version, including alpha/beta/rc tags
 release = '2020'
-
 
 # -- General configuration ---------------------------------------------------
 
@@ -44,7 +64,42 @@ extensions = [
     'sphinx.ext.autosectionlabel',
     'nbsphinx',
     'nbsphinx_link',
+    'sphinxcontrib.bibtex'
 ]
+
+# Create custom bracket style with round brackets
+# From https://sphinxcontrib-bibtex.readthedocs.io/en/latest/usage.html
+
+from dataclasses import dataclass, field
+import sphinxcontrib.bibtex.plugin
+
+from sphinxcontrib.bibtex.style.referencing import BracketStyle
+from sphinxcontrib.bibtex.style.referencing.author_year \
+    import AuthorYearReferenceStyle
+
+
+def bracket_style() -> BracketStyle:
+    return BracketStyle(
+        left='(',
+        right=')',
+    )
+
+
+@dataclass
+class MyReferenceStyle(AuthorYearReferenceStyle):
+    bracket_parenthetical: BracketStyle = field(default_factory=bracket_style)
+    bracket_textual: BracketStyle = field(default_factory=bracket_style)
+    bracket_author: BracketStyle = field(default_factory=bracket_style)
+    bracket_label: BracketStyle = field(default_factory=bracket_style)
+    bracket_year: BracketStyle = field(default_factory=bracket_style)
+
+
+sphinxcontrib.bibtex.plugin.register_plugin(
+    'sphinxcontrib.bibtex.style.referencing',
+    'author_year_round', MyReferenceStyle)
+
+bibtex_bibfiles = ['references.bib', 'publications.bib']
+bibtex_reference_style = "author_year_round"
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -59,14 +114,16 @@ master_doc = 'index'
 # This pattern also affects html_static_path and html_extra_path.
 exclude_patterns = ['_build', '**.ipynb_checkpoints']
 
-
 # -- Options for HTML output -------------------------------------------------
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
-#
-html_theme = "pydata_sphinx_theme"
 
+html_theme = "pydata_sphinx_theme"
+html_theme_options = {
+    "github_url": "https://github.com/phydrus/pyet",
+    "use_edit_page_button": False
+}
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
@@ -75,3 +132,11 @@ html_logo = "_static/logo.png"
 
 autosummary_generate = True
 numpydoc_show_class_members = False
+
+# Example configuration for intersphinx: refer to the Python standard library.
+intersphinx_mapping = {
+    "numpy": ("https://numpy.org/doc/stable/", None),
+    "pandas": ("https://pandas.pydata.org/pandas-docs/stable/", None),
+    "python": ("https://docs.python.org/3/", None),
+    "xarray": ("https://docs.xarray.dev/en/stable/", None),
+}

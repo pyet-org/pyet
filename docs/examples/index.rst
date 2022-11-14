@@ -1,6 +1,6 @@
 Example Gallery
 ===============
-Below you can find examples of how pyet models are used for estimating (potential) 
+Below you can find examples of how *pyet* models are used for estimating (potential)
 evaporation. 
 
 .. toctree::

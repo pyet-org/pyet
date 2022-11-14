@@ -1,10 +1,13 @@
-"""The combination module contains functions of combination PET methods
+"""The combination module contains functions of combination PE methods
 
 """
+import pandas
 
-from pandas import Series
 from .meteo_utils import *
 from .rad_utils import *
+from .temperature import *
+from .radiation import *
+from .utils import *
 
 # Specific heat of air [MJ kg-1 °C-1]
 CP = 1.013 * 10 ** -3
@@ -17,42 +20,44 @@ STEFAN_BOLTZMANN_DAY = 4.903 * 10 ** -9
 def penman(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
            rhmax=None, rhmin=None, rh=None, pressure=None, elevation=None,
            lat=None, n=None, nn=None, rso=None, aw=2.6, bw=0.536, a=1.35,
-           b=-0.35):
-    """Evaporation calculated according to [penman_1948]_.
+           b=-0.35, ea=None, albedo=0.23, kab=None, as1=0.25, bs1=0.5,
+           clip_zero=True):
+    """Potential evapotranspiration calculated according to
+    :cite:t:`penman_natural_1948`.
 
     Parameters
     ----------
-    tmean: pandas.Series
+    tmean: pandas.Series/xarray.DataArray
         average day temperature [°C]
-    wind: pandas.Series
+    wind: float/pandas.Series/xarray.DataArray
         mean day wind speed [m/s]
-    rs: pandas.Series, optional
+    rs: float/pandas.Series/xarray.DataArray, optional
         incoming solar radiation [MJ m-2 d-1]
-    rn: pandas.Series, optional
+    rn: float/pandas.Series/xarray.DataArray, optional
         net radiation [MJ m-2 d-1]
-    g: pandas.Series/int, optional
+    g: float/pandas.Series/xarray.DataArray, optional
         soil heat flux [MJ m-2 d-1]
-    tmax: pandas.Series, optional
+    tmax: float/pandas.Series/xarray.DataArray, optional
         maximum day temperature [°C]
-    tmin: pandas.Series, optional
+    tmin: float/pandas.Series/xarray.DataArray, optional
         minimum day temperature [°C]
-    rhmax: pandas.Series, optional
+    rhmax: float/pandas.Series/xarray.DataArray, optional
         maximum daily relative humidity [%]
-    rhmin: pandas.Series, optional
+    rhmin: float/pandas.Series/xarray.DataArray, optional
         mainimum daily relative humidity [%]
-    rh: pandas.Series, optional
+    rh: float/pandas.Series/xarray.DataArray, optional
         mean daily relative humidity [%]
-    pressure: float, optional
+    pressure: float/pandas.Series/xarray.DataArray, optional
         atmospheric pressure [kPa]
-    elevation: float, optional
+    elevation: float/xarray.DataArray, optional
         the site elevation [m]
-    lat: float, optional
+    lat: float/xarray.DataArray, optional
         the site latitude [rad]
-    n: pandas.Series/float, optional
+    n: float/pandas.Series/xarray.DataArray, optional
         actual duration of sunshine [hour]
-    nn: pandas.Series/float, optional
+    nn: float/pandas.Series/xarray.DataArray, optional
         maximum possible duration of sunshine or daylight hours [hour]
-    rso: pandas.Series/float, optional
+    rso: float/pandas.Series/xarray.DataArray, optional
         clear-sky solar radiation [MJ m-2 day-1]
     aw: float, optional
         wind coefficient [-]
@@ -62,10 +67,25 @@ def penman(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
         empirical coefficient for Net Long-Wave radiation [-]
     b: float, optional
         empirical coefficient for Net Long-Wave radiation [-]
+    ea: float/pandas.Series/xarray.DataArray, optional
+        actual vapor pressure [kPa]
+    albedo: float, optional
+        surface albedo [-]
+    kab: float, optional
+        coefficient derived from as1, bs1 for estimating clear-sky radiation
+        [degrees].
+    as1: float, optional
+        regression constant,  expressing the fraction of extraterrestrial
+        reaching the earth on overcast days (n = 0) [-]
+    bs1: float, optional
+        empirical coefficient for extraterrestrial radiation [-]
+    clip_zero: bool, optional
+        if True, replace all negative values with 0.
 
     Returns
     -------
-    pandas.Series containing the calculated evaporation
+    pandas.Series/xarray.DataArray containing the calculated
+            Potential evapotranspiration [mm d-1].
 
     Examples
     --------
@@ -73,87 +93,77 @@ def penman(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
 
     Notes
     -----
-    Following [penman_1948]_ and [valiantzas_2006]_.
+    Following :cite:t:`penman_natural_1948` and
+    :cite:t:`valiantzas_simplified_2006`.
 
-    .. math:: PE = \\frac{\\Delta (R_n-G) + \\gamma 2.6 (1 + 0.536 u_2)
+    .. math:: PET = \\frac{\\Delta (R_n-G) + \\gamma 2.6 (1 + 0.536 u_2)
         (e_s-e_a)}{\\lambda (\\Delta +\\gamma)}
 
-    References
-    ----------
-    .. [penman_1948] Penman, H. L. (1948). Natural evaporation from open water,
-       bare soil and grass. Proceedings of the Royal Society of London. Series
-       A. Mathematical and Physical Sciences, 193, 120-145.
-    .. [valiantzas_2006] Valiantzas, J. D. (2006). Simplified versions for the
-       Penman evaporation equation using routine weather data. Journal of
-       Hydrology, 331(3-4), 690-702.
-
     """
-    if pressure is None:
-        pressure = calc_press(elevation)
+    pressure = calc_press(elevation, pressure)
     gamma = calc_psy(pressure)
     dlt = calc_vpc(tmean)
     lambd = calc_lambda(tmean)
 
-    ea = calc_ea(tmean=tmean, tmax=tmax, tmin=tmin, rhmax=rhmax, rhmin=rhmin,
-                 rh=rh)
+    ea = calc_ea(tmean=tmean, tmax=tmax, tmin=tmin, rhmax=rhmax,
+                 rhmin=rhmin, rh=rh, ea=ea)
     es = calc_es(tmean=tmean, tmax=tmax, tmin=tmin)
 
-    if rn is None:
-        rns = calc_rad_short(rs=rs, n=n, nn=nn)  # [MJ/m2/d]
-        rnl = calc_rad_long(rs=rs, tmean=tmean, tmax=tmax, tmin=tmin,
-                            rhmax=rhmax, rhmin=rhmin, rh=rh,
-                            elevation=elevation, lat=lat, rso=rso, a=a, b=b,
-                            ea=ea)  # [MJ/m2/d]
-        rn = rns - rnl
+    rn = calc_rad_net(tmean, rn, rs, check_lat(lat), n, nn, tmax, tmin, rhmax,
+                      rhmin, rh, elevation, rso, a, b, ea, albedo, as1, bs1,
+                      kab)
 
     fu = aw * (1 + bw * wind)
 
     den = lambd * (dlt + gamma)
     num1 = dlt * (rn - g) / den
     num2 = gamma * (es - ea) * fu / den
-    return num1 + num2
+    pet = num1 + num2
+    pet = clip_zeros(pet, clip_zero)
+    return pet.rename("Penman")
 
 
 def pm_asce(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
             rhmax=None, rhmin=None, rh=None, pressure=None, elevation=None,
             lat=None, n=None, nn=None, rso=None, a=1.35, b=-0.35, cn=900,
-            cd=0.34, ea=None, albedo=0.23, lz=0, lon=0, kab=None, as1=0.25,
-            bs1=0.5, freq="D", etype="os"):
-    """Evaporation calculated according to [monteith_1965]_.
+            cd=0.34, ea=None, albedo=0.23, kab=None, as1=0.25, bs1=0.5,
+            clip_zero=True, etype="os"):
+    """Potential evapotranspiration calculated according to
+    :cite:t:`monteith_evaporation_1965`.
 
     Parameters
     ----------
-    tmean: pandas.Series
+    tmean: pandas.Series/xarray.DataArray
         average day temperature [°C]
-    wind: pandas.Series
+    wind: float/pandas.Series/xarray.DataArray
         mean day wind speed [m/s]
-    rs: pandas.Series, optional
+    rs: float/pandas.Series/xarray.DataArray, optional
         incoming solar radiation [MJ m-2 d-1]
-    rn: pandas.Series, optional
+    rn: float/pandas.Series/xarray.DataArray, optional
         net radiation [MJ m-2 d-1]
-    g: pandas.Series/int, optional
+    g: float/pandas.Series/xarray.DataArray, optional
         soil heat flux [MJ m-2 d-1]
-    tmax: pandas.Series, optional
+    tmax: float/pandas.Series/xarray.DataArray, optional
         maximum day temperature [°C]
-    tmin: pandas.Series, optional
+    tmin: float/pandas.Series/xarray.DataArray, optional
         minimum day temperature [°C]
-    rhmax: pandas.Series, optional
+    rhmax: float/pandas.Series/xarray.DataArray, optional
         maximum daily relative humidity [%]
-    rhmin: pandas.Series, optional
+    rhmin: float/pandas.Series/xarray.DataArray, optional
         mainimum daily relative humidity [%]
-    rh: pandas.Series, optional
+    rh: float/pandas.Series/xarray.DataArray, optional
         mean daily relative humidity [%]
-    pressure: float, optional
+    pressure: float/xarray.DataArray, optional
         atmospheric pressure [kPa]
-    elevation: float, optional
+    elevation: float/xarray.DataArray, optional
         the site elevation [m]
-    lat: float, optional
+    lat: float/xarray.DataArray, optional
         the site latitude [rad]
-    n: pandas.Series/float, optional
+    n: float/pandas.Series/xarray.DataArray, optional
         actual duration of sunshine [hour]
-    nn: pandas.Series/float, optional
+    nn: float/pandas.Series/xarray.DataArray, optional
         maximum possible duration of sunshine or daylight hours [hour]
-    rso: pandas.Series/float, optional
+    rso: float/pandas.Series/xarray.DataArray, optional
         clear-sky solar radiation [MJ m-2 day-1]
     a: float, optional
         empirical coefficient for Net Long-Wave radiation [-]
@@ -167,12 +177,6 @@ def pm_asce(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
         actual vapor pressure [kPa]
     albedo: float, optional
         surface albedo [-]
-    lz: float, optional
-        longitude of the center of the local time zone [expressed as positive
-        dergrees west of Greenwich, England]. lz = 0 for Greenwich and 345 deg.
-        for Paris (France).
-    lon: float, optioonal
-        longitude [expressed as positive degrees west of Greenwich, England].
     kab: float, optional
         coefficient derived from as1, bs1 for estimating clear-sky radiation
         [degrees].
@@ -181,10 +185,8 @@ def pm_asce(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
         reaching the earth on overcast days (n = 0) [-]
     bs1: float, optional
         empirical coefficient for extraterrestrial radiation [-]
-    freq: str, optional
-        time step of the input data - "D" for daily, "H" for hourly [-]
-        "D" => daily estimation
-        "H" => hourly estimation
+    clip_zero: bool, optional
+        if True, replace all negative values with 0.
     etype: str, optional
         "os" => ASCE-PM method is applied for a reference surfaces
         representing clipped grass (a short, smooth crop)
@@ -193,7 +195,8 @@ def pm_asce(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
 
     Returns
     -------
-    pandas.Series containing the calculated evaporation
+    pandas.Series/xarray.DataArray containing the calculated
+            Potential evapotranspiration [mm d-1].
 
     Examples
     --------
@@ -201,122 +204,94 @@ def pm_asce(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
 
     Notes
     -----
-    Following [monteith_1965]_ and [walter_2000]_
+    Following :cite:t:`monteith_evaporation_1965` and
+    :cite:t:`walter_asces_2000`
 
-    .. math:: PE = \\frac{\\Delta (R_{n}-G)+ \\rho_a c_p K_{min}
+    .. math:: PET = \\frac{\\Delta (R_{n}-G)+ \\rho_a c_p K_{min}
         \\frac{e_s-e_a}{r_a}}{\\lambda(\\Delta +\\gamma(1+\\frac{r_s}{r_a}))}
 
-    References
-    ----------
-    .. [monteith_1965] Monteith, J. L. (1965). Evaporation and environment.
-       In Symposia of the society for experimental biology (Vol. 19, pp.
-       205-234). Cambridge University Press (CUP) Cambridge.
-    .. [walter_2000] Walter, I. A., Allen, R. G., Elliott, R., Jensen, M. E.,
-       Itenfisu, D., Mecham, B., ... & Martin, D. (2000). ASCE's standardized
-       reference evapotranspiration equation. In Watershed management and
-       operations management 2000 (pp. 1-11).
     """
-    if pressure is None:
-        pressure = calc_press(elevation)
+    pressure = calc_press(elevation, pressure)
     gamma = calc_psy(pressure)
     dlt = calc_vpc(tmean)
-    if ea is None:
-        ea = calc_ea(tmean=tmean, tmax=tmax, tmin=tmin, rhmax=rhmax,
-                     rhmin=rhmin, rh=rh)
+    ea = calc_ea(tmean=tmean, tmax=tmax, tmin=tmin, rhmax=rhmax,
+                 rhmin=rhmin, rh=rh, ea=ea)
     es = calc_es(tmean=tmean, tmax=tmax, tmin=tmin)
+    rn = calc_rad_net(tmean, rn, rs, check_lat(lat), n, nn, tmax, tmin, rhmax,
+                      rhmin, rh, elevation, rso, a, b, ea, albedo, as1, bs1,
+                      kab)
 
-    if rn is None:
-        rns = calc_rad_short(rs=rs, tindex=tmean.index, lat=lat, albedo=albedo,
-                             n=n, lz=lz, lon=lon, nn=nn, as1=as1,
-                             bs1=bs1, freq=freq)  # [MJ/m2/d]
-        rnl = calc_rad_long(rs=rs, tmean=tmean, tmax=tmax, tmin=tmin,
-                            rhmax=rhmax, rhmin=rhmin, rh=rh,
-                            elevation=elevation, lat=lat, rso=rso, a=a,
-                            b=b, ea=ea, lz=lz, lon=lon, kab=kab,
-                            freq=freq)  # [MJ/m2/d]
-        rn = rns - rnl
     if etype == "rs":
         cn = 1600
         cd = 0.38
-    if freq == "H":
-        if etype == "os":
-            cdd = 0.24
-            cdn = 0.96
-            cn = 37
-            g_coefd = 0.1
-            g_coefn = 0.5
-        elif etype == "rs":
-            cdd = 0.25
-            cdn = 1.7
-            cn = 66
-            g_coefd = 0.04
-            g_coefn = 0.2
-        cd = Series(cdd, rn.index)
-        cd[rn < 0] = cdn
-        g = Series(g_coefd * rn, rn.index)
-        g[rn < 0] = g_coefn * rn
 
     den = dlt + gamma * (1 + cd * wind)
     num1 = (0.408 * dlt * (rn - g)) / den
     num2 = gamma * cn / (tmean + 273) * wind * (es - ea) / den
-    return num1 + num2
+    pet = num1 + num2
+    pet = clip_zeros(pet, clip_zero)
+    return pet.rename("PM_ASCE")
 
 
 def pm(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None, rhmax=None,
        rhmin=None, rh=None, pressure=None, elevation=None, lat=None, n=None,
-       nn=None, rso=None, a=1.35, b=-0.35, lai=None, croph=None, r_l=100,
-       r_s=70, ra_method=1, a_sh=1, a_s=1, lai_eff=1, srs=0.0009, co2=300):
-    """Evaporation calculated according to [monteith_1965]_.
+       nn=None, rso=None, ea=None, a=1.35, b=-0.35, lai=None, croph=0.12,
+       r_l=100, r_s=None, ra_method=0, a_sh=1, a_s=1, lai_eff=0, srs=0.0009,
+       co2=300, albedo=0.23, kab=None, as1=0.25, bs1=0.5, clip_zero=True):
+    """Potential evapotranspiration calculated according to
+    :cite:t:`monteith_evaporation_1965`.
 
     Parameters
     ----------
-    tmean: pandas.Series
+    tmean: float/xarray.DataArray
         average day temperature [°C]
-    wind: pandas.Series
+    wind: float/pandas.Series/xarray.DataArray
         mean day wind speed [m/s]
-    rs: pandas.Series, optional
+    rs: float/pandas.Series/xarray.DataArray, optional
         incoming solar radiation [MJ m-2 d-1]
-    rn: pandas.Series, optional
+    rn: float/pandas.Series/xarray.DataArray, optional
         net radiation [MJ m-2 d-1]
-    g: pandas.Series/int, optional
+    g: float/pandas.Series/xarray.DataArray, optional
         soil heat flux [MJ m-2 d-1]
-    tmax: pandas.Series, optional
+    tmax: float/pandas.Series/xarray.DataArray, optional
         maximum day temperature [°C]
-    tmin: pandas.Series, optional
+    tmin: float/pandas.Series/xarray.DataArray, optional
         minimum day temperature [°C]
-    rhmax: pandas.Series, optional
+    rhmax: float/pandas.Series/xarray.DataArray, optional
         maximum daily relative humidity [%]
-    rhmin: pandas.Series, optional
+    rhmin: float/pandas.Series/xarray.DataArray, optional
         mainimum daily relative humidity [%]
-    rh: pandas.Series, optional
+    rh: float/pandas.Series/xarray.DataArray, optional
         mean daily relative humidity [%]
-    pressure: float, optional
+    pressure: float/xarray.DataArray, optional
         atmospheric pressure [kPa]
-    elevation: float, optional
+    elevation: float/xarray.DataArray, optional
         the site elevation [m]
-    lat: float, optional
+    lat: float/xarray.DataArray, optional
         the site latitude [rad]
-    n: pandas.Series/float, optional
+    n: float/pandas.Series/xarray.DataArray, optional
         actual duration of sunshine [hour]
-    nn: pandas.Series/float, optional
+    nn: float/pandas.Series/xarray.DataArray, optional
         maximum possible duration of sunshine or daylight hours [hour]
-    rso: pandas.Series/float, optional
+    rso: float/pandas.Series/xarray.DataArray, optional
         clear-sky solar radiation [MJ m-2 day-1]
+    ea: float/pandas.Series/xarray.DataArray, optional
+        actual vapor pressure [kPa]
     a: float, optional
         empirical coefficient for Net Long-Wave radiation [-]
     b: float, optional
         empirical coefficient for Net Long-Wave radiation [-]
-    lai: pandas.Series/float, optional
+    lai: float/pandas.Series/xarray.DataArray, optional
         leaf area index [-]
-    croph: pandas.series/float, optional
+    croph: float/pandas.Series/xarray.DataArray, optional
         crop height [m]
     r_l: pandas.series/float, optional
         bulk stomatal resistance [s m-1]
     r_s: pandas.series/float, optional
         bulk surface resistance [s m-1]
     ra_method: float, optional
-        1 => ra = 208/wind
-        2 => ra is calculated based on equation 36 in FAO (1990), ANNEX V.
+        0 => ra = 208/wind
+        1 => ra is calculated based on equation 36 in FAO (1990), ANNEX V.
     a_s: float, optional
         Fraction of one-sided leaf area covered by stomata (1 if stomata are 1
         on one side only, 2 if they are on both sides)
@@ -326,59 +301,76 @@ def pm(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None, rhmax=None,
         0 => LAI_eff = 0.5 * LAI
         1 => LAI_eff = lai / (0.3 * lai + 1.2)
         2 => LAI_eff = 0.5 * LAI; (LAI>4=4)
-        3 => see [zhang_2008]_.
-    srs: float, optional
+        3 => see :cite:t:`zhang_comparison_2008`.
+    srs: float/pandas.Series/xarray.DataArray, optional
         Relative sensitivity of rl to Δ[CO2]
-    co2: float
+    co2: float/pandas.Series/xarray.DataArray, optional
         CO2 concentration [ppm]
+    albedo: float, optional
+        surface albedo [-]
+    kab: float, optional
+        coefficient derived from as1, bs1 for estimating clear-sky radiation
+        [degrees].
+    as1: float, optional
+        regression constant,  expressing the fraction of extraterrestrial
+        reaching the earth on overcast days (n = 0) [-]
+    bs1: float, optional
+        empirical coefficient for extraterrestrial radiation [-]
+    clip_zero: bool, optional
+        if True, replace all negative values with 0.
 
     Returns
     -------
-    pandas.Series containing the calculated evaporation
+    pandas.Series/xarray.DataArray containing the calculated
+            Potential evapotranspiration [mm d-1].
 
     Examples
     --------
-    >>> et_pm = pm(tmean, wind, rn=rn, rh=rh)
+    >>> tet_pm = pm(tmean, wind, rn=rn, rh=rh)
 
     Notes
     -----
-    Following [monteith_1965]_, [allen_1998]_, [zhang_2008]_,
-        [schymanski_2016]_ and [yang_2019]_.
 
-    .. math:: PE = \\frac{\\Delta (R_{n}-G)+ \\rho_a c_p K_{min}
+    Following :cite:t:`monteith_evaporation_1965`, :cite:t:`allen_crop_1998`,
+    :cite:t:`zhang_comparison_2008`, :cite:t:`schymanski_leaf-scale_2017` and
+    :cite:t:`yang_hydrologic_2019`.
+
+    .. math:: PET = \\frac{\\Delta (R_{n}-G)+ \\rho_a c_p K_{min}
         \\frac{e_s-e_a}{r_a}}{\\lambda(\\Delta +\\gamma(1+\\frac{r_s}{r_a}))}
 
-    References
-    ----------
-    .. [monteith_1965] Monteith, J. L. (1965). Evaporation and environment.
-       In Symposia of the society for experimental biology (Vol. 19, pp.
-       205-234). Cambridge University Press (CUP) Cambridge.
-    .. [schymanski_2016] Schymanski, S. J., & Or, D. (2017). Leaf-scale
-       experiments reveal an important omission in the Penman–Monteith
-       equation. Hydrology and Earth System Sciences, 21(2), 685-706.
+    , where
+
+    .. math:: r_s = f_{co2} * r_l / LAI_{eff}
+
+    .. math:: f_{co2} = (1+S_{r_s}*(CO_2-300))
+
+    ra_method == 0:
+
+    .. math:: r_a = \\frac{208}{u_2}
+
+    ra_method == 1:
+
+    .. math:: r_a = log(\\frac{(zw - d)}{zom}) *
+        \\frac{log(\\frac{(zh - d)}{zoh})}{(0.41^2)u_2}
+
     """
-    if pressure is None:
-        pressure = calc_press(elevation)
+    pressure = calc_press(elevation, pressure)
     gamma = calc_psy(pressure)
     dlt = calc_vpc(tmean)
     lambd = calc_lambda(tmean)
 
-    ea = calc_ea(tmean=tmean, tmax=tmax, tmin=tmin, rhmax=rhmax, rhmin=rhmin,
-                 rh=rh)
+    ea = calc_ea(tmean=tmean, tmax=tmax, tmin=tmin, rhmax=rhmax,
+                 rhmin=rhmin, rh=rh, ea=ea)
     es = calc_es(tmean=tmean, tmax=tmax, tmin=tmin)
 
     res_a = calc_res_aero(wind, ra_method=ra_method, croph=croph)
     res_s = calc_res_surf(lai=lai, r_s=r_s, r_l=r_l, lai_eff=lai_eff, srs=srs,
-                          co2=co2)
+                          co2=co2, croph=croph)
     gamma1 = gamma * a_sh / a_s * (1 + res_s / res_a)
 
-    if rn is None:
-        rns = calc_rad_short(rs=rs, n=n, nn=nn)  # [MJ/m2/d]
-        rnl = calc_rad_long(rs=rs, tmean=tmean, tmax=tmax, tmin=tmin,
-                            rhmax=rhmax, rhmin=rhmin, rh=rh,
-                            elevation=elevation, lat=lat, rso=rso, a=a, b=b,
-                            ea=ea)  # [MJ/m2/d]
-        rn = rns - rnl
+    rn = calc_rad_net(tmean, rn, rs, check_lat(lat), n, nn, tmax, tmin, rhmax,
+                      rhmin, rh, elevation, rso, a, b, ea, albedo, as1, bs1,
+                      kab)
 
     kmin = 86400  # unit conversion s d-1
     rho_a = calc_rho(pressure, tmean, ea)
@@ -386,56 +378,75 @@ def pm(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None, rhmax=None,
     den = lambd * (dlt + gamma1)
     num1 = dlt * (rn - g) / den
     num2 = rho_a * CP * kmin * (es - ea) * a_sh / res_a / den
-    return num1 + num2
+    pet = num1 + num2
+    pet = clip_zeros(pet, clip_zero)
+    return pet.rename("Penman_Monteith")
 
 
 def pm_fao56(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
              rhmax=None, rhmin=None, rh=None, pressure=None, elevation=None,
-             lat=None, n=None, nn=None, rso=None, a=1.35, b=-0.35):
-    """Evaporation calculated according to [allen_1998]_.
+             lat=None, n=None, nn=None, rso=None, a=1.35, b=-0.35, ea=None,
+             albedo=0.23, kab=None, as1=0.25, bs1=0.5, clip_zero=True):
+    """Potential evapotranspiration calculated according to
+    :cite:t:`allen_crop_1998`.
 
     Parameters
     ----------
-    tmean: pandas.Series
+    tmean: pandas.Series/xarray.DataArray
         average day temperature [°C]
-    wind: pandas.Series
+    wind: float/pandas.Series/xarray.DataArray
         mean day wind speed [m/s]
-    rs: pandas.Series, optional
+    rs: float/pandas.Series/xarray.DataArray, optional
         incoming solar radiation [MJ m-2 d-1]
-    rn: pandas.Series, optional
+    rn: float/pandas.Series/xarray.DataArray, optional
         net radiation [MJ m-2 d-1]
-    g: pandas.Series/int, optional
+    g: float/pandas.Series/xarray.DataArray, optional
         soil heat flux [MJ m-2 d-1]
-    tmax: pandas.Series, optional
+    tmax: float/pandas.Series/xarray.DataArray, optional
         maximum day temperature [°C]
-    tmin: pandas.Series, optional
+    tmin: float/pandas.Series/xarray.DataArray, optional
         minimum day temperature [°C]
-    rhmax: pandas.Series, optional
+    rhmax: float/pandas.Series/xarray.DataArray, optional
         maximum daily relative humidity [%]
-    rhmin: pandas.Series, optional
+    rhmin: float/pandas.Series/xarray.DataArray, optional
         mainimum daily relative humidity [%]
-    rh: pandas.Series, optional
+    rh: float/pandas.Series/xarray.DataArray optional
         mean daily relative humidity [%]
-    pressure: float, optional
+    pressure: float/pandas.Series/xarray.DataArray, optional
         atmospheric pressure [kPa]
-    elevation: float, optional
+    elevation: float/xarray.DataArray, optional
         the site elevation [m]
-    lat: float, optional
+    lat: float/xarray.DataArray, optional
         the site latitude [rad]
-    n: pandas.Series/float, optional
+    n: float/pandas.Series/xarray.DataArray, optional
         actual duration of sunshine [hour]
-    nn: pandas.Series/float, optional
+    nn: float/pandas.Series/xarray.DataArray, optional
         maximum possible duration of sunshine or daylight hours [hour]
-    rso: pandas.Series/float, optional
+    rso: float/pandas.Series/xarray.DataArray, optional
         clear-sky solar radiation [MJ m-2 day-1]
     a: float, optional
         empirical coefficient for Net Long-Wave radiation [-]
     b: float, optional
         empirical coefficient for Net Long-Wave radiation [-]
+    ea: float/pandas.Series/xarray.DataArray, optional
+        actual vapor pressure [kPa]
+    albedo: float, optional
+        surface albedo [-]
+    kab: float, optional
+        coefficient derived from as1, bs1 for estimating clear-sky radiation
+        [degrees].
+    as1: float, optional
+        regression constant,  expressing the fraction of extraterrestrial
+        reaching the earth on overcast days (n = 0) [-]
+    bs1: float, optional
+        empirical coefficient for extraterrestrial radiation [-]
+    clip_zero: bool, optional
+        if True, replace all negative values with 0.
 
     Returns
     -------
-        pandas.Series containing the calculated evaporation
+    pandas.Series/xarray.DataArray containing the calculated
+            Potential evapotranspiration [mm d-1].
 
     Examples
     --------
@@ -443,76 +454,73 @@ def pm_fao56(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
 
     Notes
     -----
-    .. math:: PE = \\frac{0.408 \\Delta (R_{n}-G)+\\gamma \\frac{900}{T+273}
+    .. math:: PET = \\frac{0.408 \\Delta (R_{n}-G)+\\gamma \\frac{900}{T+273}
         (e_s-e_a) u_2}{\\Delta+\\gamma(1+0.34 u_2)}
 
     """
     if tmean is None:
         tmean = (tmax + tmin) / 2
-    if pressure is None:
-        pressure = calc_press(elevation)
+    pressure = calc_press(elevation, pressure)
     gamma = calc_psy(pressure)
     dlt = calc_vpc(tmean)
 
     gamma1 = (gamma * (1 + 0.34 * wind))
 
-    ea = calc_ea(tmean=tmean, tmax=tmax, tmin=tmin, rhmax=rhmax, rhmin=rhmin,
-                 rh=rh)
+    ea = calc_ea(tmean=tmean, tmax=tmax, tmin=tmin, rhmax=rhmax,
+                 rhmin=rhmin, rh=rh, ea=ea)
     es = calc_es(tmean=tmean, tmax=tmax, tmin=tmin)
 
-    if rn is None:
-        rns = calc_rad_short(rs=rs, n=n, nn=nn)  # [MJ/m2/d]
-        rnl = calc_rad_long(rs=rs, tmean=tmean, tmax=tmax, tmin=tmin,
-                            rhmax=rhmax, rhmin=rhmin, rh=rh,
-                            elevation=elevation, lat=lat, rso=rso, a=a, b=b,
-                            ea=ea)  # [MJ/m2/d]
-        rn = rns - rnl
+    rn = calc_rad_net(tmean, rn, rs, check_lat(lat), n, nn, tmax, tmin, rhmax,
+                      rhmin, rh, elevation, rso, a, b, ea, albedo, as1, bs1,
+                      kab)
 
     den = dlt + gamma1
     num1 = (0.408 * dlt * (rn - g)) / den
     num2 = (gamma * (es - ea) * 900 * wind / (tmean + 273)) / den
-    return num1 + num2
+    pet = num1 + num2
+    pet = clip_zeros(pet, clip_zero)
+    return pet.rename("PM_FAO_56")
 
 
-def priestley_taylor(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
+def priestley_taylor(tmean, rs=None, rn=None, g=0, tmax=None, tmin=None,
                      rhmax=None, rhmin=None, rh=None, pressure=None,
                      elevation=None, lat=None, n=None, nn=None, rso=None,
-                     a=1.35, b=-0.35, alpha=1.26):
-    """Evaporation calculated according to [priestley_and_taylor_1965]_.
+                     a=1.35, b=-0.35, alpha=1.26, albedo=0.23, kab=None,
+                     as1=0.25, bs1=0.5, clip_zero=True):
+    """Potential evapotranspiration calculated according to
+    :cite:t:`priestley_assessment_1972`.
 
     Parameters
     ----------
-    tmean: pandas.Series
+    tmean: pandas.Series/xarray.DataArray
         average day temperature [°C]
-    wind: pandas.Series
-        mean day wind speed [m/s]
-    rs: pandas.Series, optional
+    rs: float/pandas.Series/xarray.DataArray, optional
         incoming solar radiation [MJ m-2 d-1]
-    rn: pandas.Series, optional
+    rn: float/pandas.Series/xarray.DataArray, optional
         net radiation [MJ m-2 d-1]
-    g: pandas.Series/int, optional
+    g: float/pandas.Series/xarray.DataArray, optional
         soil heat flux [MJ m-2 d-1]
-    tmax: pandas.Series, optional
+    tmax: float/pandas.Series/xarray.DataArray, optional
         maximum day temperature [°C]
-    tmin: pandas.Series, optional
+    tmin: float/pandas.Series/xarray.DataArray, optional
         minimum day temperature [°C]
-    rhmax: pandas.Series, optional
+    rhmax: float/pandas.Series/xarray.DataArray, optional
         maximum daily relative humidity [%]
-    rhmin: pandas.Series, optional
+    rhmin: float/pandas.Series/xarray.DataArray, optional
         mainimum daily relative humidity [%]
-    rh: pandas.Series, optional
+    rh: float/pandas.Series/xarray.DataArray, optional
         mean daily relative humidity [%]
-    pressure: float, optional
+    pressure: float/pandas.Series/xarray.DataArray, optional
         atmospheric pressure [kPa]
-    elevation: float, optional
+    elevation: float/xarray.DataArray, optional
         the site elevation [m]
-    lat: float, optional
+    lat: float/xarray.DataArray, optional
         the site latitude [rad]
-    n: pandas.Series/float, optional
+    n: float/pandas.Series/xarray.DataArray, optional
         actual duration of sunshine [hour]
-    nn: pandas.Series/float, optional
+    nn: float/pandas.Series/xarray.DataArray, optional
         maximum possible duration of sunshine or daylight hours [hour]
-    rso: pandas.Series/float, optional
+    rso: float/pandas.Series/xarray.DataArray, optional
         clear-sky solar radiation [MJ m-2 day-1]
     a: float, optional
         empirical coefficient for Net Long-Wave radiation [-]
@@ -520,77 +528,83 @@ def priestley_taylor(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
         empirical coefficient for Net Long-Wave radiation [-]
     alpha: float, optional
         calibration coeffiecient [-]
+    albedo: float, optional
+        surface albedo [-]
+    kab: float, optional
+        coefficient derived from as1, bs1 for estimating clear-sky radiation
+        [degrees].
+    as1: float, optional
+        regression constant,  expressing the fraction of extraterrestrial
+        reaching the earth on overcast days (n = 0) [-]
+    bs1: float, optional
+        empirical coefficient for extraterrestrial radiation [-]
+    clip_zero: bool, optional
+        if True, replace all negative values with 0.
 
     Returns
     -------
-        pandas.Series containing the calculated evaporation
-
+    pandas.Series/xarray.DataArray containing the calculated
+            Potential evapotranspiration [mm d-1].
     Examples
     --------
-    >>> pt = priestley_taylor(tmean, wind, rn=rn, rh=rh)
+    >>> pt = priestley_taylor(tmean, rn=rn, rh=rh)
 
     Notes
     -----
 
-    .. math:: PE = \\frac{\\alpha_{PT} \\Delta (R_n-G)}
+    .. math:: PET = \\frac{\\alpha_{PT} \\Delta (R_n-G)}
         {\\lambda(\\Delta +\\gamma)}
 
-    References
-    ----------
-    .. [priestley_and_taylor_1965] Priestley, C. H. B., & TAYLOR, R. J. (1972).
-       On the assessment of surface heat flux and evaporation using large-scale
-       parameters. Monthly weather review, 100(2), 81-92.
-
     """
-    if pressure is None:
-        pressure = calc_press(elevation)
+    pressure = calc_press(elevation, pressure)
     gamma = calc_psy(pressure)
     dlt = calc_vpc(tmean)
     lambd = calc_lambda(tmean)
 
-    if rn is None:
-        rns = calc_rad_short(rs=rs, n=n, nn=nn)  # [MJ/m2/d]
-        rnl = calc_rad_long(rs=rs, tmean=tmean, tmax=tmax, tmin=tmin,
-                            rhmax=rhmax, rhmin=rhmin, rh=rh,
-                            elevation=elevation, lat=lat, rso=rso, a=a, b=b)
-        rn = rns - rnl
+    rn = calc_rad_net(tmean, rn, rs, check_lat(lat), n, nn, tmax, tmin, rhmax,
+                      rhmin, rh, elevation, rso, a, b, None, albedo, as1, bs1,
+                      kab)
 
-    return (alpha * dlt * (rn - g)) / (lambd * (dlt + gamma))
+    pet = (alpha * dlt * (rn - g)) / (lambd * (dlt + gamma))
+    pet = clip_zeros(pet, clip_zero)
+    return pet.rename("Priestley_Taylor")
 
 
 def kimberly_penman(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
                     rhmax=None, rhmin=None, rh=None, pressure=None,
                     elevation=None, lat=None, n=None, nn=None, rso=None,
-                    a=1.35, b=-0.35):
-    """Evaporation calculated according to [wright_1982]_.
+                    a=1.35, b=-0.35, ea=None, albedo=0.23, kab=None, as1=0.25,
+                    bs1=0.5, clip_zero=True):
+    """Potential evapotranspiration calculated according to
+    :cite:t:`wright_new_1982`.
 
     Parameters
     ----------
-    tmean: pandas.Series
+    tmean: pandas.Series/xarray.DataArray
         average day temperature [°C]
-    wind: pandas.Series
+    wind: pandas.Series/xarray.DataArray
         mean day wind speed [m/s]
-    rs: pandas.Series, optional
+    rs: pandas.Series/xarray.DataArray, optional
         incoming solar radiation [MJ m-2 d-1]
-    rn: pandas.Series, optional
+    rn: pandas.Series/xarray.DataArray, optional
         net radiation [MJ m-2 d-1]
-    g: pandas.Series/int, optional
+    g: pandas.Series/int/xarray.DataArray, optional
         soil heat flux [MJ m-2 d-1]
-    tmax: pandas.Series, optional
+    tmax: pandas.Series/xarray.DataArray, optional
         maximum day temperature [°C]
-    tmin: pandas.Series, optional
+    tmin: pandas.Series/xarray.DataArray, optional
         minimum day temperature [°C]
-    rhmax: pandas.Series, optional
+    rhmax: pandas.Series/xarray.DataArray, optional
         maximum daily relative humidity [%]
-    rhmin: pandas.Series, optional
+    rhmin: pandas.Series/xarray.DataArray, optional
         mainimum daily relative humidity [%]
-    rh: pandas.Series, optional
+    rh: pandas.Series/xarray.DataArray, optional
         mean daily relative humidity [%]
-    pressure: float, optional
+    pressure: float/xarray.DataArray, optional
         atmospheric pressure [kPa]
-    elevation: float, optional
+    elevation: float/xarray.DataArray, optional
         the site elevation [m]
-    lat: float, optional
+    lat: float/xarray.DataArray, optional
         the site latitude [rad]
     n: pandas.Series/float, optional
         actual duration of sunshine [hour]
@@ -602,43 +616,48 @@ def kimberly_penman(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
         empirical coefficient for Net Long-Wave radiation [-]
     b: float, optional
         empirical coefficient for Net Long-Wave radiation [-]
+    ea: float/pandas.Series/xarray.DataArray, optional
+        actual vapor pressure [kPa]
+    albedo: float, optional
+        surface albedo [-]
+    kab: float, optional
+        coefficient derived from as1, bs1 for estimating clear-sky radiation
+        [degrees].
+    as1: float, optional
+        regression constant,  expressing the fraction of extraterrestrial
+        reaching the earth on overcast days (n = 0) [-]
+    bs1: float, optional
+        empirical coefficient for extraterrestrial radiation [-]
+    clip_zero: bool, optional
+        if True, replace all negative values with 0.
 
     Returns
     -------
-    pandas.Series containing the calculated evaporation
+    pandas.Series/xarray.DataArray containing the calculated
+            Potential evapotranspiration [mm d-1].
 
     Notes
     -----
-    Following [oudin_2005]_.
+    Following :cite:t:`oudin_which_2005`.
 
-    .. math:: PE = \\frac{\\Delta (R_n-G)+ \\gamma (e_s-e_a) w}
+    .. math:: PET = \\frac{\\Delta (R_n-G)+ \\gamma (e_s-e_a) w}
         {\\lambda(\\Delta +\\gamma)}
     .. math:: w =  u_2 * (0.4 + 0.14 * exp(-(\\frac{J_D-173}{58})^2)) +
             (0.605 + 0.345 * exp(-(\\frac{J_D-243}{80})^2))
 
-    References
-    ----------
-    .. [wright_1982] Wright, J. L. (1982). New evapotranspiration crop
-       coefficients. Proceedings of the American Society of Civil Engineers,
-       Journal of the Irrigation and Drainage Division, 108(IR2), 57-74.
     """
-    if pressure is None:
-        pressure = calc_press(elevation)
+    pressure = calc_press(elevation, pressure)
     gamma = calc_psy(pressure)
     dlt = calc_vpc(tmean)
     lambd = calc_lambda(tmean)
 
-    ea = calc_ea(tmean=tmean, tmax=tmax, tmin=tmin, rhmax=rhmax, rhmin=rhmin,
-                 rh=rh)
+    ea = calc_ea(tmean=tmean, tmax=tmax, tmin=tmin, rhmax=rhmax,
+                 rhmin=rhmin, rh=rh, ea=ea)
     es = calc_es(tmean=tmean, tmax=tmax, tmin=tmin)
 
-    if rn is None:
-        rns = calc_rad_short(rs=rs, n=n, nn=nn)  # [MJ/m2/d]
-        rnl = calc_rad_long(rs=rs, tmean=tmean, tmax=tmax, tmin=tmin,
-                            rhmax=rhmax, rhmin=rhmin, rh=rh,
-                            elevation=elevation, lat=lat, rso=rso, a=a, b=b,
-                            ea=ea)  # [MJ/m2/d]
-        rn = rns - rnl
+    rn = calc_rad_net(tmean, rn, rs, check_lat(lat), n, nn, tmax, tmin, rhmax,
+                      rhmin, rh, elevation, rso, a, b, ea, albedo, as1, bs1,
+                      kab)
 
     j = day_of_year(tmean.index)
     w = wind * (0.4 + 0.14 * exp(-((j - 173) / 58) ** 2) + (
@@ -647,15 +666,19 @@ def kimberly_penman(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
     den = lambd * (dlt + gamma)
     num1 = dlt * (rn - g) / den
     num2 = gamma * (es - ea) * w / den
-    return num1 + num2
+    pet = num1 + num2
+    pet = clip_zeros(pet, clip_zero)
+    return pet.rename("Kimberly_Penman")
 
 
 def thom_oliver(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
                 rhmax=None, rhmin=None, rh=None, pressure=None, elevation=None,
                 lat=None, n=None, nn=None, rso=None, aw=2.6, bw=0.536, a=1.35,
-                b=-0.35, lai=None, croph=None, r_l=100, r_s=70, ra_method=1,
-                lai_eff=1, srs=0.0009, co2=300):
-    """Evaporation calculated according to [thom_1977]_.
+                b=-0.35, lai=None, croph=0.12, r_l=100, r_s=None, ra_method=0,
+                lai_eff=0, srs=0.0009, co2=300, ea=None, albedo=0.23, kab=None,
+                as1=0.25, bs1=0.5, clip_zero=True):
+    """Potential evapotranspiration calculated according to
+    :cite:t:`thom_penmans_1977`.
 
     Parameters
     ----------
@@ -714,56 +737,129 @@ def thom_oliver(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
         0 => LAI_eff = 0.5 * LAI
         1 => LAI_eff = lai / (0.3 * lai + 1.2)
         2 => LAI_eff = 0.5 * LAI; (LAI>4=4)
-        3 => see [zhang_2008]_.
+        3 => see :cite:t:`zhang_comparison_2008`.
     srs: float, optional
         Relative sensitivity of rl to Δ[CO2]
     co2: float
         CO2 concentration [ppm]
+    ea: float/pandas.Series/xarray.DataArray, optional
+        actual vapor pressure [kPa]
+    albedo: float, optional
+        surface albedo [-]
+    kab: float, optional
+        coefficient derived from as1, bs1 for estimating clear-sky radiation
+        [degrees].
+    as1: float, optional
+        regression constant,  expressing the fraction of extraterrestrial
+        reaching the earth on overcast days (n = 0) [-]
+    bs1: float, optional
+        empirical coefficient for extraterrestrial radiation [-]
+    clip_zero: bool, optional
+        if True, replace all negative values with 0.
 
     Returns
     -------
-        pandas.Series containing the calculated evaporation
+    pandas.Series/xarray.DataArray containing the calculated
+            Potential evapotranspiration [mm d-1].
 
     Notes
     -----
-    Following [oudin_2005]_.
+    Following :cite:t:`oudin_which_2005`.
 
-    .. math:: PE = \\frac{\\Delta (R_{n}-G)+ 2.5 \\gamma (e_s-e_a) w}
-        {\\lambda(\\Delta +\\gamma(1+\\frac{r_s}{r_a}))}$
-        $w=2.6(1+0.53u_2)
+    .. math:: PET = \\frac{\\Delta (R_{n}-G)+ 2.5 \\gamma (e_s-e_a) w}
+        {\\lambda(\\Delta +\\gamma(1+\\frac{r_s}{r_a}))}
 
-    References
-    ----------
-    .. [thom_1977] Thom, A. S., & Oliver, H. R. (1977). On Penman's equation
-       for estimating regional evaporation. Quarterly Journal of the Royal
-       Meteorological Society, 103(436), 345-357.
+    .. math:: w=2.6(1+0.53u_2)
+
     """
-    if pressure is None:
-        pressure = calc_press(elevation)
+    pressure = calc_press(elevation, pressure)
     gamma = calc_psy(pressure)
     dlt = calc_vpc(tmean)
     lambd = calc_lambda(tmean)
 
-    ea = calc_ea(tmean=tmean, tmax=tmax, tmin=tmin, rhmax=rhmax, rhmin=rhmin,
-                 rh=rh)
+    ea = calc_ea(tmean=tmean, tmax=tmax, tmin=tmin, rhmax=rhmax,
+                 rhmin=rhmin, rh=rh, ea=ea)
     es = calc_es(tmean=tmean, tmax=tmax, tmin=tmin)
 
     res_a = calc_res_aero(wind, ra_method=ra_method, croph=croph)
     res_s = calc_res_surf(lai=lai, r_s=r_s, r_l=r_l, lai_eff=lai_eff, srs=srs,
-                          co2=co2)
+                          co2=co2, croph=croph)
     gamma1 = gamma * (1 + res_s / res_a)
 
-    if rn is None:
-        rns = calc_rad_short(rs=rs, n=n, nn=nn)  # [MJ/m2/d]
-        rnl = calc_rad_long(rs=rs, tmean=tmean, tmax=tmax, tmin=tmin,
-                            rhmax=rhmax, rhmin=rhmin, rh=rh,
-                            elevation=elevation, lat=lat, rso=rso, a=a, b=b,
-                            ea=ea)  # [MJ/m2/d]
-        rn = rns - rnl
+    rn = calc_rad_net(tmean, rn, rs, check_lat(lat), n, nn, tmax, tmin, rhmax,
+                      rhmin, rh, elevation, rso, a, b, ea, albedo, as1, bs1,
+                      kab)
 
     w = aw * (1 + bw * wind)
 
     den = lambd * (dlt + gamma1)
     num1 = dlt * (rn - g) / den
     num2 = 2.5 * gamma * (es - ea) * w / den
-    return num1 + num2
+    pet = num1 + num2
+    pet = clip_zeros(pet, clip_zero)
+    return pet.rename("Thom_Oliver")
+
+
+def calculate_all(tmean, wind, rs, elevation, lat, tmax, tmin, rh):
+    """Potential evapotranspiration estimated based on all available methods
+    in pyet with time series data.
+
+     Parameters
+     ----------
+     tmean: pandas.Series/xarray.DataArray
+         average day temperature [°C]
+     wind: float/pandas.Series/xarray.DataArray
+         mean day wind speed [m/s]
+     rs: float/pandas.Series/xarray.DataArray
+         incoming solar radiation [MJ m-2 d-1]
+     elevation: float/xarray.DataArray
+         the site elevation [m]
+     lat: float/xarray.DataArray
+         the site latitude [rad]
+     tmax: float/pandas.Series/xarray.DataArray
+         maximum day temperature [°C]
+     tmin: float/pandas.Series/xarray.DataArray
+         minimum day temperature [°C]
+     rh: float/pandas.Series/xarray.DataArray
+         mean daily relative humidity [%]
+
+     Returns
+     -------
+     pandas.DataFrame containing the calculated Potential evapotranspiration
+
+     Examples
+     --------
+     >>> pe_all = calculate_all(tmean, wind, rs, elevation, lat, tmax=tmax,
+                                tmin=tmin, rh=rh)
+     """
+    pe_df = pandas.DataFrame()
+    pe_df["Penman"] = penman(tmean, wind, rs=rs, elevation=elevation,
+                             lat=lat, tmax=tmax, tmin=tmin, rh=rh)
+    pe_df["FAO-56"] = pm_fao56(tmean, wind, rs=rs, elevation=elevation,
+                               lat=lat, tmax=tmax, tmin=tmin, rh=rh)
+    pe_df["Priestley-Taylor"] = priestley_taylor(tmean, rs=rs,
+                                                 elevation=elevation, lat=lat,
+                                                 tmax=tmax, tmin=tmin, rh=rh)
+    pe_df["Kimberly-Penman"] = kimberly_penman(tmean, wind, rs=rs,
+                                               elevation=elevation,
+                                               lat=lat, tmax=tmax, tmin=tmin,
+                                               rh=rh)
+    pe_df["Thom-Oliver"] = thom_oliver(tmean, wind, rs=rs,
+                                       elevation=elevation,
+                                       lat=lat, tmax=tmax, tmin=tmin, rh=rh)
+
+    pe_df["Blaney-Criddle"] = blaney_criddle(tmean, lat)
+    pe_df["Hamon"] = hamon(tmean, lat=lat, method=1)
+    pe_df["Romanenko"] = romanenko(tmean, rh=rh)
+    pe_df["Linacre"] = linacre(tmean, elevation, lat, tmax=tmax, tmin=tmin)
+    pe_df["Haude"] = haude(tmax, rh)
+
+    pe_df["Turc"] = turc(tmean, rs, rh)
+    pe_df["Jensen-Haise"] = jensen_haise(tmean, rs=rs)
+    pe_df["Mcguinness-Bordne"] = mcguinness_bordne(tmean, lat=lat)
+    pe_df["Hargreaves"] = hargreaves(tmean, tmax, tmin, lat)
+    pe_df["FAO-24"] = fao_24(tmean, wind, rs=rs, rh=rh, elevation=elevation)
+    pe_df["Abtew"] = abtew(tmean, rs)
+    pe_df["Makkink"] = makkink(tmean, rs, elevation=elevation)
+    pe_df["Oudin"] = oudin(tmean, lat=lat)
+    return pe_df
