@@ -89,22 +89,22 @@ def jensen_haise(tmean, rs=None, cr=0.025, tx=-3, lat=None, method=0,
 
     Notes
     -----
-    Method = 0: Based on :cite:t:`oudin_which_2005`.
-
-    .. math:: PET = \\frac{R_a(T_{mean}+5)}{68\\lambda}
-
-    Method = 1: Based on :cite:t:`jensen_evaporation_2016`.
+    Method = 0: Based on :cite:t:`jensen_evaporation_2016`.
 
     .. math:: PET = \\frac{C_r(T_{mean}-T_x)R_s}{\\lambda}
 
+    Method = 1: Based on :cite:t:`oudin_which_2005`.
+
+    .. math:: PET = \\frac{R_a(T_{mean}+5)}{68\\lambda}
+
     """
     lambd = calc_lambda(tmean)
-    if method == 2:
+    if method == 0:
+        pet = rs / lambd * cr * (tmean - tx)
+    elif method == 1:
         index = get_index(tmean)
         ra = extraterrestrial_r(index, check_lat(lat))
         pet = ra * (tmean + 5) / 68 / lambd
-    elif method == 1:
-        pet = rs / lambd * cr * (tmean - tx)
     pet = clip_zeros(pet, clip_zero)
     return pet.rename("Jensen_Haise")
 
