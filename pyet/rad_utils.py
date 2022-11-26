@@ -10,7 +10,7 @@ from xarray import DataArray
 
 from .meteo_utils import calc_ea, extraterrestrial_r, daylight_hours
 
-from .utils import get_index
+from .utils import get_index, check_rad
 
 # Stefan Boltzmann constant - hourly [MJm-2K-4h-1]
 STEFAN_BOLTZMANN_HOUR = 2.042 * 10 ** -10
@@ -80,6 +80,7 @@ def calc_rad_net(tmean, rn=None, rs=None, lat=None, n=None, nn=None, tmax=None,
 
     """
     if rn is not None:
+        rn = check_rad(rn)
         return rn
     else:
         if rs is None:
@@ -91,6 +92,7 @@ def calc_rad_net(tmean, rn=None, rs=None, lat=None, n=None, nn=None, tmax=None,
                             elevation=elevation, lat=lat, rso=rso, a=a, b=b,
                             ea=ea, kab=kab)  # [MJ/m2/d]
         rn = rns - rnl
+        rn = check_rad(rn)
         return rn
 
 

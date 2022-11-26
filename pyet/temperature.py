@@ -2,11 +2,12 @@
 
 """
 
-from numpy import exp
+from numpy import exp, sum, pi
+from pandas import date_range
 
 from .meteo_utils import daylight_hours, calc_ea, calc_es, calc_e0
 
-from pyet.utils import get_index, check_lat, clip_zeros
+from pyet.utils import get_index, check_lat, clip_zeros, check_rh
 
 
 def blaney_criddle(tmean, lat, a=-1.55, b=0.96, k=0.65, wind=None, rhmin=None,
@@ -82,18 +83,23 @@ def blaney_criddle(tmean, lat, a=-1.55, b=0.96, k=0.65, wind=None, rhmin=None,
     if nn is None:
         nn = daylight_hours(index, check_lat(lat))
     if py is None:
-        py = nn / (365 * 12) * 100
+        nn_sum = sum(daylight_hours(date_range("2000-1-1", "2000-12-31"), lat))
+        py = nn / nn_sum * 100
     if method == 0:
         pet = a + b * (py * (0.457 * tmean + 8.128))
-    if method == 1:
+    elif method == 1:
         pet = k * py * (0.46 * tmean + 8.13)
     elif method == 2:
+        nn_sum = sum(daylight_hours(date_range("2000-1-1", "2000-12-31"), lat))
+        py = n / nn_sum * 100
         k1 = (0.0043 * rhmin - n / nn - 1.41)
         e0, e1, e2, e3, e4, e5 = (0.81917, -0.0040922, 1.0705, 0.065649,
                                   -0.0059684, -0.0005967)
         bvar = e0 + e1 * rhmin + e2 * n / nn + e3 * wind + e4 * rhmin * n / \
                nn + e5 * rhmin * wind
         pet = k1 + bvar * py * (0.46 * tmean + 8.13)
+    else:
+        raise Exception("method can be either 0, 1 or 2.")
     pet = clip_zeros(pet, clip_zero)
     return pet.rename("Blaney_Criddle")
 
@@ -131,7 +137,7 @@ def haude(tmean, rh, k=1, clip_zero=True):
 
     """
     e0 = calc_e0(tmean)
-    ea = rh * e0 / 100
+    ea = check_rh(rh) * e0 / 100
     # Haude coefficients from :cite:t:`schiff_berechnung_1975`
     fk = [0.27, 0.27, 0.28, 0.39, 0.39, 0.37, 0.35, 0.33, 0.31, 0.29, 0.27,
           0.27]
@@ -142,7 +148,8 @@ def haude(tmean, rh, k=1, clip_zero=True):
     return pet.rename("Haude")
 
 
-def hamon(tmean, lat, k=1, c=13.97, cc=218.527, method=0, clip_zero=True):
+def hamon(tmean, lat, k=1, c=13.97, cc=218.527, n=None, tmax=None, tmin=None,
+          method=0, clip_zero=True):
     """Potential evapotranspiration calculated according to
     :cite:t:`hamon_estimating_1963`.
 
@@ -158,10 +165,18 @@ def hamon(tmean, lat, k=1, c=13.97, cc=218.527, method=0, clip_zero=True):
         c is a constant for calculation in mm per day if method = 1.
     cc: float, optional
         calibration coefficient if method = 2 [-].
+    n: float/pandas.Series/xarray.DataArray, optional
+        actual duration of sunshine [hour]
+    tmax: float/pandas.Series/xarray.DataArray
+        maximum day temperature [°C]
+    tmin: float/pandas.Series/xarray.DataArray
+        minimum day temperature [°C]
+
     method: float, optional
         0 => Hamon after :cite:t:`oudin_which_2005`
         1 => Hamon after equation 7 in :cite:t:`ansorge_performance_2019`
         2 => Hamon after equation 12 in :cite:t:`ansorge_performance_2019`.
+        3 => Hamon after equation 12 in :cite:t:`rosenberry_comparison_2004`.
     clip_zero: bool, optional
         if True, replace all negative values with 0.
 
@@ -193,24 +208,36 @@ def hamon(tmean, lat, k=1, c=13.97, cc=218.527, method=0, clip_zero=True):
     .. math:: PET = cc\\frac{DL}{12} \\frac{1}{T_{mean} + 273.3}
         exp(\\frac{17.27T_{mean}}{T_{mean} + 273.3})
 
+    Method = 3; Based on cite:t:`rosenberry_comparison_2004`.
+
+    .. math:: PET = 14 * (n / 12) ** 2 * (216.7 * e_s * 10 /
+        (T_{mean} + 273.3)) / 100
+
     """
     index = get_index(tmean)
     # Use transpose to work with lat either as int or xarray.DataArray
     dl = daylight_hours(index, check_lat(lat))
     if method == 0:
         pet = k * (dl / 12) ** 2 * exp(tmean / 16)
-    if method == 1:
+    elif method == 1:
         # saturated water content after Xu and Singh (2001)
         pt = 4.95 * exp(0.062 * tmean) / 100
         pet = c * (dl / 12) ** 2 * pt
     elif method == 2:
         pet = cc * (dl / 12) * 1 / (tmean + 273.3) * exp(
             (17.26939 * tmean) / (tmean + 273.3))
+    elif method == 3:
+        es = calc_es(tmean, tmax, tmin)
+        pet = k * 14 * (n / 12) ** 2 * (
+                    216.7 * es * 10 / (tmean + 273.3)) / 100
+    else:
+        raise Exception("method can be either 0, 1, 2 or 3.")
     pet = clip_zeros(pet, clip_zero)
     return pet.rename("Hamon")
 
 
-def romanenko(tmean, rh, k=4.5, clip_zero=True):
+def romanenko(tmean, rh, k=4.5, rhmax=None, rhmin=None, tmax=None, tmin=None,
+              clip_zero=True):
     """Potential evapotranspiration calculated according to
     :cite:t:`romanenko_computation_1961`.
 
@@ -222,6 +249,14 @@ def romanenko(tmean, rh, k=4.5, clip_zero=True):
         mean daily relative humidity [%]
     k: float, optional
         calibration coefficient [-]
+    tmax: float/pandas.Series/xarray.DataArray
+        maximum day temperature [°C]
+    tmin: float/pandas.Series/xarray.DataArray
+        minimum day temperature [°C]
+    rhmax: pandas.Series, optional
+        maximum daily relative humidity [%]
+    rhmin: pandas.Series, optional
+        mainimum daily relative humidity [%]
     clip_zero: bool, optional
         if True, replace all negative values with 0.
 
@@ -241,8 +276,9 @@ def romanenko(tmean, rh, k=4.5, clip_zero=True):
     .. math:: PET=k(1 + (\\frac{T_{mean}}{25})^2 (1 - \\frac{e_a}{e_s})
 
     """
-    ea = calc_ea(tmean=tmean, rh=rh)
-    es = calc_es(tmean=tmean)
+    ea = calc_ea(tmean=tmean, tmax=tmax, tmin=tmin, rhmax=check_rh(rhmax),
+                 rhmin=check_rh(rhmin), rh=check_rh(rh))
+    es = calc_es(tmean=tmean, tmax=tmax, tmin=tmin)
     pet = k * (1 + tmean / 25) ** 2 * (1 - ea / es)
     pet = clip_zeros(pet, clip_zero)
     return pet.rename("Romanenko")
@@ -286,10 +322,11 @@ def linacre(tmean, elevation, lat, tdew=None, tmax=None, tmin=None,
     .. math:: PET = \\frac{\\frac{500 T_m}{(100-lat)}+15 (T_a-T_d)}{80-T_a}
 
     """
+    lat_deg = lat / pi * 180
     if tdew is None:
         tdew = 0.52 * tmin + 0.6 * tmax - 0.009 * tmax ** 2 - 2
     tm = tmean + 0.006 * elevation
-    pet = (500 * tm / (100 - check_lat(lat)) + 15 * (tmean - tdew)) / (
+    pet = (500 * tm / (100 - lat_deg) + 15 * (tmean - tdew)) / (
             80 - tmean)
     pet = clip_zeros(pet, clip_zero)
     return pet.rename("Linacre")

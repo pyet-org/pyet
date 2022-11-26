@@ -35,10 +35,10 @@ def scatter_1(ax, x, y, label="treatment", xlabel="obs", ylabel="sim",
     ax.text(0.02, 0.9, f"{label}", color="k", zorder=10,
             transform=ax.transAxes)
     ax.text(0.6, 0.04, "$Bias$ = " + str(
-        round(bias(np.asarray(compare["y"]), np.asarray(compare["x"])), 2)) + \
+        round(bias(np.asarray(compare["y"]), np.asarray(compare["x"])), 2)) +
             "\n" + "$R^2$ = " + str(
         round(rsquared(np.asarray(compare["y"]), np.asarray(compare["x"])),
-              2)) + \
+              2)) +
             "\n" + "KGE = " + str(
         round(kge(np.asarray(compare["y"]), np.asarray(compare["x"])), 2)),
             color="k", zorder=10, transform=ax.transAxes)

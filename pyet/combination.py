@@ -19,9 +19,9 @@ STEFAN_BOLTZMANN_DAY = 4.903 * 10 ** -9
 
 def penman(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
            rhmax=None, rhmin=None, rh=None, pressure=None, elevation=None,
-           lat=None, n=None, nn=None, rso=None, aw=2.6, bw=0.536, a=1.35,
+           lat=None, n=None, nn=None, rso=None, aw=1, bw=0.537, a=1.35,
            b=-0.35, ea=None, albedo=0.23, kab=None, as1=0.25, bs1=0.5,
-           clip_zero=True):
+           ku=6.43, clip_zero=True):
     """Potential evapotranspiration calculated according to
     :cite:t:`penman_natural_1948`.
 
@@ -79,6 +79,8 @@ def penman(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
         reaching the earth on overcast days (n = 0) [-]
     bs1: float, optional
         empirical coefficient for extraterrestrial radiation [-]
+    ku: float, optional
+        unit conversion factor [MJm−2 t−1 kPa−1]
     clip_zero: bool, optional
         if True, replace all negative values with 0.
 
@@ -105,15 +107,15 @@ def penman(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
     dlt = calc_vpc(tmean)
     lambd = calc_lambda(tmean)
 
-    ea = calc_ea(tmean=tmean, tmax=tmax, tmin=tmin, rhmax=rhmax,
-                 rhmin=rhmin, rh=rh, ea=ea)
+    ea = calc_ea(tmean=tmean, tmax=tmax, tmin=tmin, rhmax=check_rh(rhmax),
+                 rhmin=check_rh(rhmin), rh=check_rh(rh), ea=ea)
     es = calc_es(tmean=tmean, tmax=tmax, tmin=tmin)
 
     rn = calc_rad_net(tmean, rn, rs, check_lat(lat), n, nn, tmax, tmin, rhmax,
                       rhmin, rh, elevation, rso, a, b, ea, albedo, as1, bs1,
                       kab)
 
-    fu = aw * (1 + bw * wind)
+    fu = ku * (aw + bw * wind)
 
     den = lambd * (dlt + gamma)
     num1 = dlt * (rn - g) / den
@@ -214,8 +216,8 @@ def pm_asce(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
     pressure = calc_press(elevation, pressure)
     gamma = calc_psy(pressure)
     dlt = calc_vpc(tmean)
-    ea = calc_ea(tmean=tmean, tmax=tmax, tmin=tmin, rhmax=rhmax,
-                 rhmin=rhmin, rh=rh, ea=ea)
+    ea = calc_ea(tmean=tmean, tmax=tmax, tmin=tmin, rhmax=check_rh(rhmax),
+                 rhmin=check_rh(rhmin), rh=check_rh(rh), ea=ea)
     es = calc_es(tmean=tmean, tmax=tmax, tmin=tmin)
     rn = calc_rad_net(tmean, rn, rs, check_lat(lat), n, nn, tmax, tmin, rhmax,
                       rhmin, rh, elevation, rso, a, b, ea, albedo, as1, bs1,
@@ -359,8 +361,8 @@ def pm(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None, rhmax=None,
     dlt = calc_vpc(tmean)
     lambd = calc_lambda(tmean)
 
-    ea = calc_ea(tmean=tmean, tmax=tmax, tmin=tmin, rhmax=rhmax,
-                 rhmin=rhmin, rh=rh, ea=ea)
+    ea = calc_ea(tmean=tmean, tmax=tmax, tmin=tmin, rhmax=check_rh(rhmax),
+                 rhmin=check_rh(rhmin), rh=check_rh(rh), ea=ea)
     es = calc_es(tmean=tmean, tmax=tmax, tmin=tmin)
 
     res_a = calc_res_aero(wind, ra_method=ra_method, croph=croph)
@@ -466,8 +468,8 @@ def pm_fao56(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
 
     gamma1 = (gamma * (1 + 0.34 * wind))
 
-    ea = calc_ea(tmean=tmean, tmax=tmax, tmin=tmin, rhmax=rhmax,
-                 rhmin=rhmin, rh=rh, ea=ea)
+    ea = calc_ea(tmean=tmean, tmax=tmax, tmin=tmin, rhmax=check_rh(rhmax),
+                 rhmin=check_rh(rhmin), rh=check_rh(rh), ea=ea)
     es = calc_es(tmean=tmean, tmax=tmax, tmin=tmin)
 
     rn = calc_rad_net(tmean, rn, rs, check_lat(lat), n, nn, tmax, tmin, rhmax,
@@ -561,9 +563,9 @@ def priestley_taylor(tmean, rs=None, rn=None, g=0, tmax=None, tmin=None,
     dlt = calc_vpc(tmean)
     lambd = calc_lambda(tmean)
 
-    rn = calc_rad_net(tmean, rn, rs, check_lat(lat), n, nn, tmax, tmin, rhmax,
-                      rhmin, rh, elevation, rso, a, b, None, albedo, as1, bs1,
-                      kab)
+    rn = calc_rad_net(tmean, rn, rs, check_lat(lat), n, nn, tmax, tmin,
+                      check_rh(rhmax), check_rh(rhmin), check_rh(rh),
+                      elevation, rso, a, b, None, albedo, as1, bs1, kab)
 
     pet = (alpha * dlt * (rn - g)) / (lambd * (dlt + gamma))
     pet = clip_zeros(pet, clip_zero)
@@ -651,8 +653,8 @@ def kimberly_penman(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
     dlt = calc_vpc(tmean)
     lambd = calc_lambda(tmean)
 
-    ea = calc_ea(tmean=tmean, tmax=tmax, tmin=tmin, rhmax=rhmax,
-                 rhmin=rhmin, rh=rh, ea=ea)
+    ea = calc_ea(tmean=tmean, tmax=tmax, tmin=tmin, rhmax=check_rh(rhmax),
+                 rhmin=check_rh(rhmin), rh=check_rh(rh), ea=ea)
     es = calc_es(tmean=tmean, tmax=tmax, tmin=tmin)
 
     rn = calc_rad_net(tmean, rn, rs, check_lat(lat), n, nn, tmax, tmin, rhmax,
@@ -777,8 +779,8 @@ def thom_oliver(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
     dlt = calc_vpc(tmean)
     lambd = calc_lambda(tmean)
 
-    ea = calc_ea(tmean=tmean, tmax=tmax, tmin=tmin, rhmax=rhmax,
-                 rhmin=rhmin, rh=rh, ea=ea)
+    ea = calc_ea(tmean=tmean, tmax=tmax, tmin=tmin, rhmax=check_rh(rhmax),
+                 rhmin=check_rh(rhmin), rh=check_rh(rh), ea=ea)
     es = calc_es(tmean=tmean, tmax=tmax, tmin=tmin)
 
     res_a = calc_res_aero(wind, ra_method=ra_method, croph=croph)
@@ -800,7 +802,8 @@ def thom_oliver(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
     return pet.rename("Thom_Oliver")
 
 
-def calculate_all(tmean, wind, rs, elevation, lat, tmax, tmin, rh):
+def calculate_all(tmean, wind, rs, elevation, lat, tmax, tmin, rh=None,
+                  rhmax=None, rhmin=None):
     """Potential evapotranspiration estimated based on all available methods
     in pyet with time series data.
 
@@ -822,6 +825,10 @@ def calculate_all(tmean, wind, rs, elevation, lat, tmax, tmin, rh):
          minimum day temperature [°C]
      rh: float/pandas.Series/xarray.DataArray
          mean daily relative humidity [%]
+    rhmax: pandas.Series, optional
+        maximum daily relative humidity [%]
+    rhmin: pandas.Series, optional
+        mainimum daily relative humidity [%]
 
      Returns
      -------
@@ -834,23 +841,28 @@ def calculate_all(tmean, wind, rs, elevation, lat, tmax, tmin, rh):
      """
     pe_df = pandas.DataFrame()
     pe_df["Penman"] = penman(tmean, wind, rs=rs, elevation=elevation,
-                             lat=lat, tmax=tmax, tmin=tmin, rh=rh)
+                             lat=lat, tmax=tmax, tmin=tmin, rh=rh, rhmax=rhmax,
+                             rhmin=rhmin)
     pe_df["FAO-56"] = pm_fao56(tmean, wind, rs=rs, elevation=elevation,
-                               lat=lat, tmax=tmax, tmin=tmin, rh=rh)
+                               lat=lat, tmax=tmax, tmin=tmin, rh=rh,
+                               rhmax=rhmax, rhmin=rhmin)
     pe_df["Priestley-Taylor"] = priestley_taylor(tmean, rs=rs,
                                                  elevation=elevation, lat=lat,
-                                                 tmax=tmax, tmin=tmin, rh=rh)
+                                                 tmax=tmax, tmin=tmin, rh=rh,
+                                                 rhmax=rhmax, rhmin=rhmin)
     pe_df["Kimberly-Penman"] = kimberly_penman(tmean, wind, rs=rs,
                                                elevation=elevation,
                                                lat=lat, tmax=tmax, tmin=tmin,
-                                               rh=rh)
+                                               rh=rh, rhmax=rhmax, rhmin=rhmin)
     pe_df["Thom-Oliver"] = thom_oliver(tmean, wind, rs=rs,
-                                       elevation=elevation,
-                                       lat=lat, tmax=tmax, tmin=tmin, rh=rh)
+                                       elevation=elevation, lat=lat, tmax=tmax,
+                                       tmin=tmin, rh=rh, rhmax=rhmax,
+                                       rhmin=rhmin)
 
     pe_df["Blaney-Criddle"] = blaney_criddle(tmean, lat)
     pe_df["Hamon"] = hamon(tmean, lat=lat, method=1)
-    pe_df["Romanenko"] = romanenko(tmean, rh=rh)
+    pe_df["Romanenko"] = romanenko(tmean, rh=rh, tmax=tmax, tmin=tmin,
+                                   rhmax=rhmax, rhmin=rhmin)
     pe_df["Linacre"] = linacre(tmean, elevation, lat, tmax=tmax, tmin=tmin)
     pe_df["Haude"] = haude(tmax, rh)
 
