@@ -1,7 +1,7 @@
 {
-  "description": "",
+  "description": "PyEt is an open source python package for calculating reference and potential Evapotranspiration for 1D (pandas.Series) and 3D (xarray.DataArrray) data.",
   "license": "MIT",
-  "title": "PyEt: A Python package for estimating evaporation",
+  "title": "PyEt: A Python package for estimating potential evapotranspiration",
   "upload_type": "software",
   "creators": [
     {
