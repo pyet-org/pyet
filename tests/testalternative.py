@@ -77,7 +77,7 @@ class Testalternative(unittest.TestCase):
         tmean = pd.Series([17.3], index=pd.DatetimeIndex(["1980-07-20"]))
         lat = 50 * np.pi / 180
         bc = et.blaney_criddle(tmean, lat, method=0)
-        self.assertAlmostEqual(float(bc), 3.9, 2)
+        self.assertAlmostEqual(float(bc), 3.9, 1)
 
     def test_haude(self):
         # Based on example 5.2, P95 Schrodter 1985

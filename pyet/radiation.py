@@ -8,7 +8,7 @@ from .combination import calc_lambda
 
 from .meteo_utils import extraterrestrial_r, calc_press, calc_psy, calc_vpc
 
-from pyet.utils import get_index, clip_zeros, check_lat
+from pyet.utils import *
 
 
 def turc(tmean, rs, rh, k=0.31, clip_zero=True):
@@ -49,8 +49,8 @@ def turc(tmean, rs, rh, k=0.31, clip_zero=True):
 
     """
     c = tmean / tmean
-    c.where(rh > 50, 1 + (50 - rh) / 70)
-    pet = k * c * tmean / (tmean + 15) * (rs + 2.094)
+    c.where(check_rh(rh) > 50, 1 + (50 - rh) / 70)
+    pet = k * c * tmean / (tmean + 15) * (check_rad(rs) + 2.094)
     pet = clip_zeros(pet, clip_zero)
     return pet.rename("Turc")
 
@@ -100,11 +100,13 @@ def jensen_haise(tmean, rs=None, cr=0.025, tx=-3, lat=None, method=0,
     """
     lambd = calc_lambda(tmean)
     if method == 0:
-        pet = rs / lambd * cr * (tmean - tx)
+        pet = check_rad(rs) / lambd * cr * (tmean - tx)
     elif method == 1:
         index = get_index(tmean)
         ra = extraterrestrial_r(index, check_lat(lat))
         pet = ra * (tmean + 5) / 68 / lambd
+    else:
+        raise Exception("method can be either 0 or 1.")
     pet = clip_zeros(pet, clip_zero)
     return pet.rename("Jensen_Haise")
 
@@ -206,6 +208,8 @@ def hargreaves(tmean, tmax, tmin, lat, k=0.0135, method=0, clip_zero=True):
             tmax - tmin) * ra / lambd
     elif method == 1:
         pet = k * chs * sqrt(tmax - tmin) * ra / lambd * (tmean + 17.8)
+    else:
+        raise Exception("method can be either 0 or 1.")
     pet = clip_zeros(pet, clip_zero)
     return pet.rename("Hargreaves")
 
@@ -254,9 +258,10 @@ def fao_24(tmean, wind, rs, rh, pressure=None, elevation=None, albedo=0.23,
     dlt = calc_vpc(tmean)
     lambd = calc_lambda(tmean)
 
-    w = 1.066 - 0.13 * rh / 100 + 0.045 * wind - 0.02 * rh / 100 * wind - \
+    w = 1.066 - 0.13 * check_rh(
+        rh) / 100 + 0.045 * wind - 0.02 * rh / 100 * wind - \
         0.315 * (rh / 100) ** 2 - 0.0011 * wind
-    pe = -0.3 + dlt / (dlt + gamma) * rs * (1 - albedo) * w / lambd
+    pe = -0.3 + dlt / (dlt + gamma) * check_rad(rs) * (1 - albedo) * w / lambd
     pe = clip_zeros(pe, clip_zero)
     return pe.rename("FAO_24")
 
@@ -293,7 +298,7 @@ def abtew(tmean, rs, k=0.53, clip_zero=True):
 
     """
     lambd = calc_lambda(tmean)
-    pe = k * rs / lambd
+    pe = k * check_rad(rs) / lambd
     pe = clip_zeros(pe, clip_zero)
     return pe.rename("Abtew")
 
@@ -336,7 +341,7 @@ def makkink(tmean, rs, pressure=None, elevation=None, k=0.65, clip_zero=True):
     gamma = calc_psy(pressure)
     dlt = calc_vpc(tmean)
     lambd = calc_lambda(tmean)
-    pet = k * dlt / (dlt + gamma) * rs / lambd
+    pet = k * dlt / (dlt + gamma) * check_rad(rs) / lambd
     pet = clip_zeros(pet, clip_zero)
     return pet.rename("Makkink")
 
