@@ -79,8 +79,6 @@ def penman(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
         reaching the earth on overcast days (n = 0) [-]
     bs1: float, optional
         empirical coefficient for extraterrestrial radiation [-]
-    ku: float, optional
-        unit conversion factor [MJm−2 t−1 kPa−1]
     clip_zero: bool, optional
         if True, replace all negative values with 0.
 
@@ -98,8 +96,8 @@ def penman(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
     Following :cite:t:`penman_natural_1948` and
     :cite:t:`valiantzas_simplified_2006`.
 
-    .. math:: PET = \\frac{\\Delta (R_n-G) + \\gamma 2.6 (1 + 0.536 u_2)
-        (e_s-e_a)}{\\lambda (\\Delta +\\gamma)}
+    .. math:: PET = \\frac{\\frac{\\Delta (R_n-G)}{\\lambda} +
+        \\gamma (a_w + b_w u_2) (e_s-e_a)}{(\\Delta +\\gamma)}
 
     """
     pressure = calc_press(elevation, pressure)
@@ -115,10 +113,10 @@ def penman(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
                       rhmin, rh, elevation, rso, a, b, ea, albedo, as1, bs1,
                       kab)
 
-    fu = ku * (aw + bw * wind)
+    fu = (aw + bw * wind)
 
-    den = lambd * (dlt + gamma)
-    num1 = dlt * (rn - g) / den
+    den = (dlt + gamma)
+    num1 = dlt * (rn - g) / den / lambd
     num2 = gamma * (es - ea) * fu / den
     pet = num1 + num2
     pet = clip_zeros(pet, clip_zero)
