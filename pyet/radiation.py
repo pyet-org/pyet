@@ -2,7 +2,7 @@
 
 """
 
-from numpy import sqrt
+from numpy import sqrt, log
 
 from .combination import calc_lambda
 
@@ -344,6 +344,57 @@ def makkink(tmean, rs, pressure=None, elevation=None, k=0.65, clip_zero=True):
     pet = k * dlt / (dlt + gamma) * check_rad(rs) / lambd
     pet = clip_zeros(pet, clip_zero)
     return pet.rename("Makkink")
+
+
+def makkink_knmi(tmean, rs, clip_zero=True):
+    """Potential evapotranspiration calculated according to The Royal Netherlands
+    Meteorological Institute (KNMI)
+
+    Parameters
+    ----------
+    tmean : float/pandas.Series/xarray.DataArray
+        average day temperature [°C]
+    K : float/pandas.Series/xarray.DataArray
+        incoming solar radiation [MJ m-2 d-1]
+
+    Returns
+    -------
+    float/pandas.Series/xarray.DataArray containing the calculated
+            Potential evapotranspiration [mm d-1].
+
+    Examples
+    --------
+    >>> pet_mak = makkink_knmi(tmean, rs)
+
+    Notes
+    ----
+
+    This method is only applicable to the Netherlands (~sea level). Calculating
+    the Makkink evaporation with :cite:t:`makkink_testing_1957` formula is more
+    suitable for general purposes.
+
+    """
+
+    pet = (
+        650
+        * (
+            1
+            - (0.646 + 0.0006 * tmean)
+            / (
+                7.5
+                * log(10)
+                * 6.107
+                * 10 ** (7.5 * (1 - 1 / (1 + tmean / 237.3)))
+                / (237.3 * (1 + tmean / 237.3) * (1 + tmean / 237.3))
+                + 0.646
+                + 0.0006 * tmean
+            )
+        )
+        / (2501 - 2.38 * tmean)
+        * rs
+    )
+    pet = clip_zeros(pet, clip_zero)
+    return pet.rename("Makkink_KNMI").round(1)
 
 
 def oudin(tmean, lat, k1=100, k2=5, clip_zero=True):
