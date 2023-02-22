@@ -2,6 +2,7 @@
 
 """
 
+import logging
 from numpy import exp, sum, pi
 from pandas import date_range
 
@@ -229,7 +230,7 @@ def hamon(tmean, lat, k=1, c=13.97, cc=218.527, n=None, tmax=None, tmin=None,
     elif method == 3:
         es = calc_es(tmean, tmax, tmin)
         pet = k * 14 * (n / 12) ** 2 * (
-                    216.7 * es * 10 / (tmean + 273.3)) / 100
+                216.7 * es * 10 / (tmean + 273.3)) / 100
     else:
         raise Exception("method can be either 0, 1, 2 or 3.")
     pet = clip_zeros(pet, clip_zero)
@@ -291,24 +292,24 @@ def linacre(tmean, elevation, lat, tdew=None, tmax=None, tmin=None,
 
     Parameters
     ----------
-    tmean: float/pandas.Series/xarray.DataArray
+    tmean: pandas.Series or array_like
         average day temperature [°C]
-    elevation: float/xarray.DataArray
+    elevation: array_like
         the site elevation [m]
-    lat: float/xarray.DataArray, optional
+    lat: array_like, optional
         the site latitude [°]
-    tdew: float/pandas.Series/xarray.DataArray, optional
+    tdew: pandas.Series or array_like, optional
         mean dew-point temperature [°C]
-    tmax: float/pandas.Series/xarray.DataArray, optional
+    tmax: pandas.Series or array_like, optional
         maximum day temperature [°C]
-    tmin: float/pandas.Series/xarray.DataArray, optional
+    tmin: pandas.Series or array_like, optional
         minimum day temperature [°C]
     clip_zero: bool, optional
         if True, replace all negative values with 0.
 
     Returns
     -------
-    float/pandas.Series/xarray.DataArray containing the calculated
+    pandas.Series or array_like containing the calculated
             Potential evapotranspiration [mm d-1].
 
     Examples

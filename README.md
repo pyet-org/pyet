@@ -110,16 +110,19 @@ To install in developer mode, use the following syntax:
 
 If you use *pyet* in one of your studies, please cite the *pyet* EGU abstract:
 
-*   Vremec, M. and Collenteur, R.: *pyet* - a Python package to estimate potential and reference evapotranspiration, EGU
-  General Assembly 2021, online, 19–30 Apr 2021, EGU21-15008, https://doi.org/10.5194/egusphere-egu21-15008, 2021.
+* Vremec, M., Collenteur, R. A., and Birk, S.: Technical note: Improved handling of potential evapotranspiration in 
+hydrological studies with PyEt, Hydrol. Earth Syst. Sci. Discuss. [preprint], https://doi.org/10.5194/hess-2022-417, 
+in review, 2023.
 
 ```Reference
-@inproceedings{vremec2021pyet,
-  title={PyEt-a Python package to estimate potential and reference evapotranspiration},
-  author={Vremec, Matev{\v{z}} and Collenteur, Raoul},
-  booktitle={EGU General Assembly Conference Abstracts},
-  pages={EGU21--15008},
-  year={2021},
-  doi={https://doi.org/10.5194/egusphere-egu21-15008}
+@Article{hess-2022-417,
+  AUTHOR = {Vremec, M. and Collenteur, R. A. and Birk, S.},
+  TITLE = {Technical note: Improved handling of potential evapotranspiration in hydrological studies with \textit{PyEt}},
+  JOURNAL = {Hydrology and Earth System Sciences Discussions},
+  VOLUME = {2023},
+  YEAR = {2023},
+  PAGES = {1--23},
+  URL = {https://hess.copernicus.org/preprints/hess-2022-417/},
+  DOI = {10.5194/hess-2022-417}
 }
 ```

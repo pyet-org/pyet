@@ -3,9 +3,7 @@
 """
 
 from numpy import tan, cos, pi, sin, arccos, mod, exp, log, nanmax, isnan, \
-    where
-
-from pandas import to_numeric, Series
+    where, maximum, minimum
 
 from xarray import DataArray
 
@@ -18,14 +16,14 @@ def calc_psy(pressure, tmean=None):
 
     Parameters
     ----------
-    pressure: float/pandas.Series/xarray.DataArray
+    pressure: array_like
         atmospheric pressure [kPa].
-    tmean: float/pandas.Series/xarray.DataArray
+    tmean: array_like
         average day temperature [°C].
 
     Returns
     -------
-        float/pandas.Series/xarray.DataArray containing the Psychrometric
+        array_like containing the Psychrometric
         constant [kPa °C-1].
 
     Examples
@@ -52,12 +50,12 @@ def calc_vpc(tmean):
 
     Parameters
     ----------
-    tmean: float/pandas.Series/xarray.DataArray
+    tmean: array_like
         average day temperature [°C]
 
     Returns
     -------
-        float/pandas.Series/xarray.DataArray containing the calculated
+        array_like containing the calculated
         Saturation vapour pressure [kPa °C-1].
 
     Examples
@@ -78,12 +76,12 @@ def calc_lambda(tmean):
 
     Parameters
     ----------
-    tmean: float/pandas.Series/xarray.DataArray
+    tmean: array_like
         average day temperature [°C]
 
     Returns
     -------
-    float/pandas.Series/xarray.DataArray containing the calculated Latent Heat
+    array_like containing the calculated Latent Heat
         of Vaporization [MJ kg-1].
 
     Examples
@@ -103,13 +101,13 @@ def calc_press(elevation, pressure=None):
 
     Parameters
     ----------
-    elevation: float/xarray.DataArray
+    elevation: array_like
         the site elevation [m]
-    pressure: float/xarray.DataArray, optional
+    pressure: array_like, optional
         atmospheric pressure [kPa].
     Returns
     -------
-    float/xarray.DataArray containing the calculated atmospheric
+    array_like containing the calculated atmospheric
         pressure [kPa].
 
     Examples
@@ -133,11 +131,11 @@ def calc_rho(pressure, tmean, ea):
 
     Parameters
     ----------
-    pressure: float/pandas.Series/xarray.DataArray
+    pressure: array_like
         atmospheric pressure [kPa]
-    tmean: float/pandas.Series/xarray.DataArray
+    tmean: array_like
         average day temperature [°C]
-    ea: float/pandas.Series/xarray.DataArray
+    ea: array_like
         actual vapour pressure [kPa]
 
     Returns
@@ -166,12 +164,12 @@ def calc_e0(tmean):
 
     Parameters
     ----------
-    tmean: float/pandas.Series/xarray.DataArray
+    tmean: array_like
         average day temperature [°C]
 
     Returns
     -------
-    pandas.Series containing the calculated saturation vapor pressure at the
+    array_like containing the calculated saturation vapor pressure at the
         air temperature tmean [kPa].
 
     Examples
@@ -191,11 +189,11 @@ def calc_es(tmean=None, tmax=None, tmin=None):
 
     Parameters
     ----------
-    tmean: float/pandas.Series/xarray.DataArray, optional
+    tmean: array_like, optional
         average day temperature [°C]
-    tmax: float/pandas.Series/xarray.DataArray, optional
+    tmax: array_like, optional
         maximum day temperature [°C]
-    tmin: float/pandas.Series/xarray.DataArray, optional
+    tmin: array_like, optional
         minimum day temperature [°C]
 
     Returns
@@ -226,19 +224,19 @@ def calc_ea(tmean=None, tmax=None, tmin=None, rhmax=None, rhmin=None, rh=None,
 
     Parameters
     ----------
-    tmean: float/pandas.Series/xarray.DataArray, optional
+    tmean: array_like, optional
         average day temperature [°C]
-    tmax: float/pandas.Series/xarray.DataArray, optional
+    tmax: array_like, optional
         maximum day temperature [°C]
-    tmin: float/pandas.Series/xarray.DataArray, optional
+    tmin: array_like, optional
         minimum day temperature [°C]
-    rhmax: float/pandas.Series/xarray.DataArray, optional
+    rhmax: array_like, optional
         maximum daily relative humidity [%]
-    rhmin: float/pandas.Series/xarray.DataArray, optional
+    rhmin: array_like, optional
         mainimum daily relative humidity [%]
-    rh: float/pandas.Series/xarray.DataArray, optional
+    rh: array_like, optional
         mean daily relative humidity [%]
-    ea: pandas.Series/float, optional
+    ea: array_like, optional
         actual vapor pressure [kPa]
 
     Returns
@@ -278,10 +276,58 @@ def day_of_year(tindex):
 
     Returns
     -------
-    pandas.Series with ints specifying day of year.
+    array_like with ints specifying day of year.
 
     """
-    return Series(to_numeric(tindex.strftime('%j')), tindex, dtype=int)
+    return tindex.dayofyear
+
+
+def solar_declination(j):
+    """Solar declination from day of year [rad].
+
+    Parameters
+    ----------
+    j: array_like
+        day of the year (1-365)
+    Returns
+    -------
+    array_like of solar declination [rad].
+
+    Notes
+    -------
+    Based on equations 24 in :cite:t:`allen_crop_1998`.
+
+    """
+    return 0.409 * sin(2. * pi / 365. * j - 1.39)
+
+
+def sunset_angle(sol_dec, lat, tindex):
+    """Sunset hour angle from latitude and solar declination - daily [rad].
+
+    Parameters
+    ----------
+    sol_dec: array_like
+        solar declination [rad]
+    lat: array_like
+        the site latitude [rad]
+    tindex: pandas.DatetimeIndex
+
+    Returns
+    -------
+    array_like containing the calculated sunset hour angle - daily [rad]
+
+    Notes
+    -----
+    Based on equations 25 in :cite:t:`allen_crop_1998`.
+
+    """
+    if isinstance(lat, DataArray):
+        lat = lat.expand_dims(dim={"time": tindex}, axis=0)
+        cos_sa = -tan(sol_dec.values) * tan(lat).T
+        return arccos(minimum(maximum(cos_sa, -1.0), 1.0)).T
+    else:
+        cos_sa = -tan(sol_dec) * tan(lat)
+        return arccos(minimum(maximum(cos_sa, -1.0), 1.0))
 
 
 def daylight_hours(tindex, lat):
@@ -290,7 +336,7 @@ def daylight_hours(tindex, lat):
     Parameters
     ----------
     tindex: pandas.DatetimeIndex
-    lat: float/xarray.DataArray
+    lat: array_like
         the site latitude [rad]
 
     Returns
@@ -305,7 +351,7 @@ def daylight_hours(tindex, lat):
     """
     j = day_of_year(tindex)
     sol_dec = solar_declination(j)
-    sangle = sunset_angle(sol_dec, lat)
+    sangle = sunset_angle(sol_dec, lat, tindex)
     # Account for subpolar belt which returns NaN values
     dl = 24 / pi * sangle
     if isinstance(lat, DataArray):
@@ -313,33 +359,6 @@ def daylight_hours(tindex, lat):
     dl = where((sol_dec > 0) & (isnan(dl)), nanmax(dl), dl)
     dl = where((sol_dec < 0) & (isnan(dl)), 0, dl)
     return dl
-
-
-def sunset_angle(sol_dec, lat):
-    """Sunset hour angle from latitude and solar declination - daily [rad].
-
-    Parameters
-    ----------
-    sol_dec: float/pandas.Series/xarray.DataArray
-        solar declination [rad]
-    lat: float/xarray.DataArray
-        the site latitude [rad]
-
-    Returns
-    -------
-    pandas.Series/xarray.DataArray containing the calculated sunset hour
-    angle - daily [rad]
-
-    Notes
-    -----
-    Based on equations 25 in :cite:t:`allen_crop_1998`.
-
-    """
-    if isinstance(lat, DataArray):
-        lat = lat.expand_dims(dim={"time": sol_dec.index}, axis=0)
-        return arccos(-tan(sol_dec.values) * tan(lat).T).T
-    else:
-        return arccos(-tan(sol_dec) * tan(lat))
 
 
 def _wrap(x, x_min, x_max):
@@ -362,31 +381,12 @@ def _wrap(x, x_min, x_max):
     return mod((x - x_min), (x_max - x_min)) + x_min
 
 
-def solar_declination(j):
-    """Solar declination from day of year [rad].
-
-    Parameters
-    ----------
-    j: pandas.Series
-        day of the year (1-365)
-    Returns
-    -------
-    pandas.Series of solar declination [rad].
-
-    Notes
-    -------
-    Based on equations 24 in :cite:t:`allen_crop_1998`.
-
-    """
-    return 0.409 * sin(2. * pi / 365. * j - 1.39)
-
-
 def relative_distance(j):
     """Inverse relative distance between earth and sun from day of the year.
 
     Parameters
     ----------
-    j: pandas.Series
+    j: array_like
         day of the year (1-365)
 
     Returns
@@ -407,12 +407,12 @@ def extraterrestrial_r(tindex, lat):
     Parameters
     ----------
     tindex: pandas.DatetimeIndex
-    lat: float/xarray.DataArray
+    lat: array_like
         the site latitude [rad]
 
     Returns
     -------
-    pandas.Series/xarray.DataArray containing the calculated extraterrestrial
+    array_like containing the calculated extraterrestrial
         radiation [MJ m-2 d-1]
 
     Notes
@@ -424,9 +424,9 @@ def extraterrestrial_r(tindex, lat):
     dr = relative_distance(j)
     sol_dec = solar_declination(j)
 
-    omega = sunset_angle(sol_dec, lat).values
+    omega = sunset_angle(sol_dec, lat, tindex).values
     if isinstance(lat, DataArray):
-        lat = lat.expand_dims(dim={"time": sol_dec.index}, axis=0)
+        lat = lat.expand_dims(dim={"time": tindex}, axis=0)
         xx = (sin(sol_dec.values) * sin(lat.T))
         yy = (cos(sol_dec.values) * cos(lat.T))
         return (118.08 / 3.141592654 * dr.values * (
