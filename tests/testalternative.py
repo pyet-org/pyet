@@ -33,7 +33,7 @@ class Testalternative(unittest.TestCase):
         # Based on knmi station 260 (de Bilt)
         tmean = pd.Series([0.9], index=pd.DatetimeIndex(["1980-01-01"]))
         rs = pd.Series([2.53], index=pd.DatetimeIndex(["1980-01-01"]))
-        mak = et.makkink_knmi(tmean, rs)
+        mak = et.makkink_knmi(tmean, rs).round(1)
         self.assertAlmostEqual(float(mak), 0.3, 2)
 
     def test_blaney_criddle(self):

@@ -368,11 +368,10 @@ def makkink_knmi(tmean, rs, clip_zero=True):
 
     Notes
     ----
-
-    This method is only applicable to the Netherlands (~sea level). Calculating
-    the Makkink evaporation with :cite:t:`makkink_testing_1957` formula is more
-    suitable for general purposes.
-
+    This method is only applicable to the Netherlands (~sea level) due to some
+    emperical values. Calculating the Makkink evaporation with the original
+    formula is more suitable for general purposes. To obtain the same value as
+    EV24 round the value up to one decimal.
     """
 
     pet = (
@@ -394,7 +393,7 @@ def makkink_knmi(tmean, rs, clip_zero=True):
         * rs
     )
     pet = clip_zeros(pet, clip_zero)
-    return pet.rename("Makkink_KNMI").round(1)
+    return pet.rename("Makkink_KNMI")
 
 
 def oudin(tmean, lat, k1=100, k2=5, clip_zero=True):
