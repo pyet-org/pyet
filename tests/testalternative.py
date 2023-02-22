@@ -29,6 +29,13 @@ class Testalternative(unittest.TestCase):
                           k=0.61) * lambda_corr) + n
         self.assertAlmostEqual(float(mak), 2.3928, 2)
 
+    def test_makkink_knmi(self):
+        # Based on knmi station 260 (de Bilt)
+        tmean = pd.Series([0.9], index=pd.DatetimeIndex(["1980-01-01"]))
+        rs = pd.Series([2.53], index=pd.DatetimeIndex(["1980-01-01"]))
+        mak = et.makkink_knmi(tmean, rs)
+        self.assertAlmostEqual(float(mak), 0.3, 2)
+
     def test_blaney_criddle(self):
         # Based on example S19.93, McMahon_etal_2013
         tmean = pd.Series([11.5], index=pd.DatetimeIndex(["1980-07-20"]))

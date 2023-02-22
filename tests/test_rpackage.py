@@ -90,6 +90,11 @@ class Testr(unittest.TestCase):
         r_makkink = [3.5, 3.4, 3.5, 3.4, 3.6, 3.8, 3.6, 3.7, 3.7, 3.3]
         self.assertEqual(r_makkink, pyet_makk, 1)
 
+    def test_makkink_knmi(self):
+        pyet_makk_knmi = et.makkink_knmi(Testr.tmean, rs=Testr.rs).tolist()
+        r_makkink = [3.8, 3.8, 3.9, 3.8, 4.0, 4.3, 4.0, 4.1, 4.1, 3.7]
+        self.assertEqual(r_makkink, pyet_makk_knmi, 1)
+        
     def test_pt(self):
         pyet_pt = (et.priestley_taylor(Testr.tmean, rs=Testr.rs, lat=Testr.lat,
                                        elevation=Testr.elevation,
