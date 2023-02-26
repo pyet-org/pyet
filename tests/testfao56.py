@@ -76,7 +76,7 @@ class TestFAO56(unittest.TestCase):
     def test_day_of_year(self):
         # Based on Example 8, p. 47 FAO.
         doy = et.day_of_year(pd.DatetimeIndex(["2015-09-03"]))
-        self.assertAlmostEqual(doy.values, 246, 1)
+        self.assertAlmostEqual(doy, 246, 1)
         # Based on ASCD Table C-3
         dindex = pd.date_range("2020-07-01", "2020-07-10")
         doy1 = et.day_of_year(dindex).tolist()
@@ -86,7 +86,8 @@ class TestFAO56(unittest.TestCase):
 
     def test_extraterrestrial_r(self):
         # Based on Example 8, p. 47 FAO.
-        extrar = et.extraterrestrial_r(pd.DatetimeIndex(["2015-09-03"]), -0.35)
+        extrar = et.extraterrestrial_r(pd.DatetimeIndex(["2015-09-03"]), -0.35,
+                                       (1,))
         self.assertAlmostEqual(float(extrar), 32.2, 1)
 
     def test_daylight_hours(self):

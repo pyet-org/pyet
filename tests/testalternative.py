@@ -53,7 +53,7 @@ class Testalternative(unittest.TestCase):
         tmean = pd.Series([11.5], index=pd.DatetimeIndex(["1980-07-20"]))
         rhmean = pd.Series([48], index=pd.DatetimeIndex(["1980-07-20"]))
         rs = pd.Series([17.194], index=pd.DatetimeIndex(["1980-07-20"]))
-        turc = et.turc(tmean, rs, rhmean, k=0.32)
+        turc = et.turc(tmean, rs, rhmean)
         self.assertAlmostEqual(float(turc), 2.6727, 1)
 
     def test_hargreaves_samani(self):

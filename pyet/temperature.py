@@ -2,13 +2,13 @@
 
 """
 
-import logging
-from numpy import exp, sum, pi
+from numpy import exp, pi, asarray, newaxis
 from pandas import date_range
 
 from .meteo_utils import daylight_hours, calc_ea, calc_es, calc_e0
 
-from pyet.utils import get_index, check_lat, clip_zeros, check_rh
+from pyet.utils import get_index, check_lat, clip_zeros, check_rh, pet_out, \
+    vectorize
 
 
 def blaney_criddle(tmean, lat, a=-1.55, b=0.96, k=0.65, wind=None, rhmin=None,
@@ -80,29 +80,33 @@ def blaney_criddle(tmean, lat, a=-1.55, b=0.96, k=0.65, wind=None, rhmin=None,
         e_4 = -0.0059684, e_5 = -0.0005967.
 
     """
+    vtmean, vwind, vrhmin, vn, vnn, vpy = vectorize(tmean, wind, rhmin, n, nn,
+                                                    py)
     index = get_index(tmean)
-    if nn is None:
-        nn = daylight_hours(index, check_lat(lat))
-    if py is None:
-        nn_sum = sum(daylight_hours(date_range("2000-1-1", "2000-12-31"), lat))
-        py = nn / nn_sum * 100
+    if vnn is None:
+        vnn = daylight_hours(index, lat)
+    if vpy is None:
+        vnn_sum = sum(
+            daylight_hours(date_range("2000-1-1", "2000-12-31"), lat))
+        vpy = vnn / vnn_sum * 100
     if method == 0:
-        pet = a + b * (py * (0.457 * tmean + 8.128))
+        pet = a + b * (vpy * (0.457 * vtmean + 8.128))
     elif method == 1:
-        pet = k * py * (0.46 * tmean + 8.13)
+        pet = k * vpy * (0.46 * vtmean + 8.13)
     elif method == 2:
-        nn_sum = sum(daylight_hours(date_range("2000-1-1", "2000-12-31"), lat))
-        py = n / nn_sum * 100
-        k1 = (0.0043 * rhmin - n / nn - 1.41)
+        vnn_sum = sum(
+            daylight_hours(date_range("2000-1-1", "2000-12-31"), lat))
+        vpy = vn / vnn_sum * 100
+        k1 = (0.0043 * vrhmin - vn / vnn - 1.41)
         e0, e1, e2, e3, e4, e5 = (0.81917, -0.0040922, 1.0705, 0.065649,
                                   -0.0059684, -0.0005967)
-        bvar = e0 + e1 * rhmin + e2 * n / nn + e3 * wind + e4 * rhmin * n / \
-               nn + e5 * rhmin * wind
-        pet = k1 + bvar * py * (0.46 * tmean + 8.13)
+        bvar = e0 + e1 * vrhmin + e2 * vn / vnn + e3 * vwind + e4 * \
+               vrhmin * n / vnn + e5 * vrhmin * vwind
+        pet = k1 + bvar * vpy * (0.46 * vtmean + 8.13)
     else:
-        raise Exception("method can be either 0, 1 or 2.")
+        raise Exception("Method can be either 0, 1 or 2.")
     pet = clip_zeros(pet, clip_zero)
-    return pet.rename("Blaney_Criddle")
+    return pet_out(tmean, pet, "Blaney_Criddle")
 
 
 def haude(tmean, rh, k=1, clip_zero=True):
@@ -137,16 +141,21 @@ def haude(tmean, rh, k=1, clip_zero=True):
     .. math:: PET = k * f * (e_s-e_a)
 
     """
-    e0 = calc_e0(tmean)
-    ea = check_rh(rh) * e0 / 100
+    vtmean, vrh = vectorize(tmean, rh)
+    e0 = calc_e0(vtmean)
+    ea = check_rh(vrh) * e0 / 100
     # Haude coefficients from :cite:t:`schiff_berechnung_1975`
     fk = [0.27, 0.27, 0.28, 0.39, 0.39, 0.37, 0.35, 0.33, 0.31, 0.29, 0.27,
           0.27]
     index = get_index(tmean)
-    f = ([fk[x - 1] for x in index.month] * (tmean / tmean).T).T
+    fk1 = asarray([fk[x - 1] for x in index.month])
+    if len(vtmean.shape) > 1:
+        f = fk1[:, newaxis, newaxis] * (vtmean / vtmean)
+    else:
+        f = fk1
     pet = k * f * (e0 - ea) * 10  # kPa to hPa
     pet = clip_zeros(pet, clip_zero)
-    return pet.rename("Haude")
+    return pet_out(tmean, pet, "Haude")
 
 
 def hamon(tmean, lat, k=1, c=13.97, cc=218.527, n=None, tmax=None, tmin=None,
@@ -215,26 +224,29 @@ def hamon(tmean, lat, k=1, c=13.97, cc=218.527, n=None, tmax=None, tmin=None,
         (T_{mean} + 273.3)) / 100
 
     """
+    vtmean, vn, vtmax, vtmin = vectorize(tmean, n, tmax, tmin)
     index = get_index(tmean)
     # Use transpose to work with lat either as int or xarray.DataArray
-    dl = daylight_hours(index, check_lat(lat))
+    dl = daylight_hours(index, lat)
+    if len(dl.shape) < len(tmean.shape):
+        dl = vtmean / vtmean * dl[:, newaxis, newaxis]
     if method == 0:
-        pet = k * (dl / 12) ** 2 * exp(tmean / 16)
+        pet = k * (dl / 12) ** 2 * exp(vtmean / 16)
     elif method == 1:
         # saturated water content after Xu and Singh (2001)
-        pt = 4.95 * exp(0.062 * tmean) / 100
+        pt = 4.95 * exp(0.062 * vtmean) / 100
         pet = c * (dl / 12) ** 2 * pt
     elif method == 2:
-        pet = cc * (dl / 12) * 1 / (tmean + 273.3) * exp(
-            (17.26939 * tmean) / (tmean + 273.3))
+        pet = cc * (dl / 12) * 1 / (vtmean + 273.3) * exp(
+            (17.26939 * vtmean) / (vtmean + 273.3))
     elif method == 3:
-        es = calc_es(tmean, tmax, tmin)
-        pet = k * 14 * (n / 12) ** 2 * (
-                216.7 * es * 10 / (tmean + 273.3)) / 100
+        es = calc_es(vtmean, vtmax, vtmin)
+        pet = k * 14 * (vn / 12) ** 2 * (
+                216.7 * es * 10 / (vtmean + 273.3)) / 100
     else:
         raise Exception("method can be either 0, 1, 2 or 3.")
     pet = clip_zeros(pet, clip_zero)
-    return pet.rename("Hamon")
+    return pet_out(tmean, pet, "Hamon")
 
 
 def romanenko(tmean, rh, k=4.5, rhmax=None, rhmin=None, tmax=None, tmin=None,
@@ -277,12 +289,14 @@ def romanenko(tmean, rh, k=4.5, rhmax=None, rhmin=None, tmax=None, tmin=None,
     .. math:: PET=k(1 + (\\frac{T_{mean}}{25})^2 (1 - \\frac{e_a}{e_s})
 
     """
-    ea = calc_ea(tmean=tmean, tmax=tmax, tmin=tmin, rhmax=check_rh(rhmax),
-                 rhmin=check_rh(rhmin), rh=check_rh(rh))
-    es = calc_es(tmean=tmean, tmax=tmax, tmin=tmin)
-    pet = k * (1 + tmean / 25) ** 2 * (1 - ea / es)
+    vtmean, vrh, vrhmax, vrhmin, vtmax, vtmin = vectorize(tmean, rh, rhmax,
+                                                          rhmin, tmax, tmin)
+    ea = calc_ea(tmean=vtmean, tmax=vtmax, tmin=vtmin, rhmax=check_rh(vrhmax),
+                 rhmin=check_rh(vrhmin), rh=check_rh(vrh))
+    es = calc_es(tmean=vtmean, tmax=vtmax, tmin=vtmin)
+    pet = k * (1 + vtmean / 25) ** 2 * (1 - ea / es)
     pet = clip_zeros(pet, clip_zero)
-    return pet.rename("Romanenko")
+    return pet_out(tmean, pet, "Romanenko")
 
 
 def linacre(tmean, elevation, lat, tdew=None, tmax=None, tmin=None,
@@ -323,11 +337,17 @@ def linacre(tmean, elevation, lat, tdew=None, tmax=None, tmin=None,
     .. math:: PET = \\frac{\\frac{500 T_m}{(100-lat)}+15 (T_a-T_d)}{80-T_a}
 
     """
-    lat_deg = lat / pi * 180
+    if tdew is None and tmax is None and tmin is None:
+        raise Exception("Please provide either Tdew or Tmax and Tmin!")
+    vtmean, velevation, vtmax, vtmin = vectorize(tmean, elevation, tmax, tmin)
+    vlat = check_lat(lat)
+    lat_deg = vlat / pi * 180
     if tdew is None:
-        tdew = 0.52 * tmin + 0.6 * tmax - 0.009 * tmax ** 2 - 2
-    tm = tmean + 0.006 * elevation
-    pet = (500 * tm / (100 - lat_deg) + 15 * (tmean - tdew)) / (
-            80 - tmean)
+        vtmax, vtmin = tmax.values, tmin.values
+        tdew = 0.52 * vtmin + 0.6 * vtmax - 0.009 * vtmax ** 2 - 2
+
+    tm = vtmean + 0.006 * velevation
+    pet = (500 * tm / (100 - lat_deg) + 15 * (vtmean - tdew)) / (
+            80 - vtmean)
     pet = clip_zeros(pet, clip_zero)
-    return pet.rename("Linacre")
+    return pet_out(tmean, pet, "Linacre")

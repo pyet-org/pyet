@@ -2,15 +2,11 @@
 
 """
 
-from numpy import sqrt, clip
-
-from pandas import DatetimeIndex
-
-from xarray import DataArray
+from numpy import sqrt, clip, newaxis
 
 from .meteo_utils import calc_ea, extraterrestrial_r, daylight_hours
 
-from .utils import get_index, check_rad
+from .utils import get_index, check_rad, vectorize
 
 # Stefan Boltzmann constant - hourly [MJm-2K-4h-1]
 STEFAN_BOLTZMANN_HOUR = 2.042 * 10 ** -10
@@ -151,9 +147,14 @@ def calc_rad_long(rs, tmean=None, tmax=None, tmin=None, rhmax=None, rhmin=None,
 
     if rso is None:
         tindex = get_index(rs)
-        ra = extraterrestrial_r(tindex, lat)
+        ra = extraterrestrial_r(tindex, lat, rs.shape)
         rso = calc_rso(ra=ra, elevation=elevation, kab=kab)
-    solar_rat = clip(rs / rso, 0.3, 1)
+    vrs, = vectorize(rs)
+    if len(vrs.shape) == 3 and len(rso.shape) == 1:
+        rso = vrs / vrs * rso[:, newaxis, newaxis]
+    # Add a small constant to rso where it is zero to avoid division with zero
+    rso[rso == 0] = 0.001
+    solar_rat = clip(vrs / rso, 0.3, 1)
     if tmax is not None:
         tmp1 = STEFAN_BOLTZMANN_DAY * ((tmax + 273.16) ** 4 +
                                        (tmin + 273.16) ** 4) / 2
@@ -198,8 +199,9 @@ def calc_rad_short(rs=None, lat=None, albedo=0.23, n=None, nn=None, as1=0.25,
     Based on equation 38 in :cite:t:`allen_crop_1998`.
 
     """
-    if rs is not None:
-        return (1 - albedo) * rs
+    vrs, = vectorize(rs)
+    if vrs is not None:
+        return (1 - albedo) * vrs
     else:
         return (1 - albedo) * calc_rad_sol_in(n, lat, as1=as1, bs1=bs1, nn=nn)
 
@@ -209,7 +211,7 @@ def calc_rad_sol_in(n, lat, as1=0.25, bs1=0.5, nn=None):
 
     Parameters
     ----------
-    n: pandas.Series/xarray.DataArray
+    n: pandas.Series or xarray.DataArray
         actual duration of sunshine [hour]
     lat: float, optional
         the site latitude [rad]
@@ -231,7 +233,7 @@ def calc_rad_sol_in(n, lat, as1=0.25, bs1=0.5, nn=None):
 
     """
     tindex = get_index(n)
-    ra = extraterrestrial_r(tindex, lat)
+    ra = extraterrestrial_r(tindex, lat, n.shape)
     if nn is None:
         nn = daylight_hours(tindex, lat)
     return (as1 + bs1 * n / nn) * ra
@@ -262,10 +264,10 @@ def calc_rso(ra, elevation, kab=None):
     Based on equation 37 in :cite:t:`allen_crop_1998`.
 
     """
-    if isinstance(elevation, DataArray):
-        elevation = elevation.expand_dims(dim={"time": DatetimeIndex(ra.time)},
-                                          axis=0)
     if kab is None:
-        return (0.75 + (2 * 10 ** -5) * elevation) * ra
+        if len(ra.shape) == 1:
+            return (0.75 + (2 * 10 ** -5) * elevation) * ra
+        else:
+            return (0.75 + (2 * 10 ** -5) * elevation[newaxis, :, :]) * ra
     else:
         return kab * ra

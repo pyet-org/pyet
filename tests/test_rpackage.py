@@ -43,8 +43,8 @@ class Testr(unittest.TestCase):
         pyet_penman = (et.penman(Testr.tmean, wind_penman, rs=Testr.rs,
                                  elevation=Testr.elevation, lat=Testr.lat,
                                  tmax=Testr.tmax, tmin=Testr.tmin, rh=Testr.rh,
-                                 rhmax=Testr.rhmax, rhmin=Testr.rhmin, aw=2.626,
-                                 bw=1.381,
+                                 rhmax=Testr.rhmax, rhmin=Testr.rhmin,
+                                 aw=2.626, bw=1.381,
                                  albedo=0.08) * Testr.lambda_corr).round(
             1).tolist()
         r_penman = [6.8, 6.7, 6.7, 6.9, 7.6, 10.1, 7.9, 9.2, 9.4, 7.3]
@@ -91,10 +91,11 @@ class Testr(unittest.TestCase):
         self.assertEqual(r_makkink, pyet_makk, 1)
 
     def test_makkink_knmi(self):
-        pyet_makk_knmi = et.makkink_knmi(Testr.tmean, rs=Testr.rs).round(1).tolist()
+        pyet_makk_knmi = et.makkink_knmi(Testr.tmean, rs=Testr.rs).round(
+            1).tolist()
         r_makkink = [3.8, 3.8, 3.9, 3.8, 4.0, 4.3, 4.0, 4.1, 4.1, 3.7]
         self.assertEqual(r_makkink, pyet_makk_knmi, 1)
-        
+
     def test_pt(self):
         pyet_pt = (et.priestley_taylor(Testr.tmean, rs=Testr.rs, lat=Testr.lat,
                                        elevation=Testr.elevation,
@@ -170,5 +171,8 @@ class Testr(unittest.TestCase):
     def test_turc(self):
         pyet_turc = (
             et.turc(Testr.tmean, Testr.rs, Testr.rh)).round(1).tolist()
-        r_turc = [4.2, 4., 4.2, 4., 4.3, 4.6, 4.4, 4.4, 4.5, 4.]
+        # There is a mistake in the R-Package
+        # The R-Package does not consider RH < 50
+        # if pyet.turc also does nonsider this, the result is the same
+        r_turc = [4.2, 4., 4.2, 4., 4.3, 6.1, 5.4, 5.5, 6.2, 4.1]
         self.assertEqual(r_turc, pyet_turc, 1)

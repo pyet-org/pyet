@@ -2,7 +2,7 @@
 
 """
 
-from numpy import sqrt, log
+from numpy import sqrt, log, ones
 
 from .combination import calc_lambda
 
@@ -17,11 +17,11 @@ def turc(tmean, rs, rh, k=0.31, clip_zero=True):
 
     Parameters
     ----------
-    tmean: float/pandas.Series/xarray.DataArray
+    tmean: pandas.Series or xarray.DataArray
         average day temperature [°C]
-    rs: float/pandas.Series/xarray.DataArray
+    rs: pandas.Series or xarray.DataArray
         incoming solar radiation [MJ m-2 d-1]
-    rh: float/pandas.Series/xarray.DataArray
+    rh: pandas.Series or xarray.DataArray
         mean daily relative humidity [%]
     k: float, optional
         calibration coefficient [-]
@@ -30,12 +30,12 @@ def turc(tmean, rs, rh, k=0.31, clip_zero=True):
 
     Returns
     -------
-    float/pandas.Series/xarray.DataArray containing the calculated
+    pandas.Series or xarray.DataArray containing the calculated
             Potential evapotranspiration [mm d-1].
 
     Examples
     --------
-    >>> iet_turc = turc(tmean, rs, rh)
+    >>> pet_turc = turc(tmean, rs, rh)
 
     Notes
     -----
@@ -48,11 +48,16 @@ def turc(tmean, rs, rh, k=0.31, clip_zero=True):
         (\\frac{R_s}{4.184}+50)4.184; for RH<50
 
     """
-    c = tmean / tmean
-    c.where(check_rh(rh) > 50, 1 + (50 - rh) / 70)
-    pet = k * c * tmean / (tmean + 15) * (check_rad(rs) + 2.094)
+    vtmean, vrs, vrh = vectorize(tmean, rs, rh)
+    c = ones(vtmean.shape)
+    mask = check_rh(vrh) < 50
+    c[mask] = (1 + (50 - vrh[mask]) / 70)
+    vtmean[vtmean == 15] = 14.99
+    epsilon = 1e-8  # small constant to avoid division by zero
+    pet = k * c * vtmean / (vtmean + 15 + epsilon) * (check_rad(vrs) + 2.094)
+    pet[vtmean < 0] = 0
     pet = clip_zeros(pet, clip_zero)
-    return pet.rename("Turc")
+    return pet_out(tmean, pet, "Turc")
 
 
 def jensen_haise(tmean, rs=None, cr=0.025, tx=-3, lat=None, method=0,
@@ -62,9 +67,9 @@ def jensen_haise(tmean, rs=None, cr=0.025, tx=-3, lat=None, method=0,
 
     Parameters
     ----------
-    tmean: andas.Series/xarray.DataArray
+    tmean: pandas.Series orxarray.DataArray
         average day temperature [°C]
-    rs: float/pandas.Series/xarray.DataArray, optional
+    rs: pandas.Series or xarray.DataArray, optional
         incoming solar radiation [MJ m-2 d-1]
     cr: float, optional
         temperature coefficient [-]
@@ -80,7 +85,7 @@ def jensen_haise(tmean, rs=None, cr=0.025, tx=-3, lat=None, method=0,
 
     Returns
     -------
-    float/pandas.Series/xarray.DataArray containing the calculated
+    pandas.Series or xarray.DataArray containing the calculated
             Potential evapotranspiration [mm d-1].
 
     Examples
@@ -98,17 +103,22 @@ def jensen_haise(tmean, rs=None, cr=0.025, tx=-3, lat=None, method=0,
     .. math:: PET = \\frac{R_a(T_{mean}+5)}{68\\lambda}
 
     """
-    lambd = calc_lambda(tmean)
+    vtmean, vrs = vectorize(tmean, rs)
+    lambd = calc_lambda(vtmean)
     if method == 0:
-        pet = check_rad(rs) / lambd * cr * (tmean - tx)
+        if vrs is None:
+            raise Exception("If you choose method == 0, provide rs!")
+        pet = check_rad(vrs) / lambd * cr * (vtmean - tx)
     elif method == 1:
+        if lat is None:
+            raise Exception("If you choose method == 1, provide lat!")
         index = get_index(tmean)
-        ra = extraterrestrial_r(index, check_lat(lat))
-        pet = ra * (tmean + 5) / 68 / lambd
+        ra = extraterrestrial_r(index, lat, vtmean.shape)
+        pet = ra * (vtmean + 5) / 68 / lambd
     else:
-        raise Exception("method can be either 0 or 1.")
+        raise Exception("Method can be either 0 or 1.")
     pet = clip_zeros(pet, clip_zero)
-    return pet.rename("Jensen_Haise")
+    return pet_out(tmean, pet, "Jensen_Haise")
 
 
 def mcguinness_bordne(tmean, lat, k=0.0147, clip_zero=True):
@@ -117,7 +127,7 @@ def mcguinness_bordne(tmean, lat, k=0.0147, clip_zero=True):
 
     Parameters
     ----------
-    tmean: pandas.Series/xarray.DataArray
+    tmean: pandas.Series or xarray.DataArray
         average day temperature [°C]
     lat: float/xarray.DataArray, optional
         the site latitude [rad]
@@ -128,7 +138,7 @@ def mcguinness_bordne(tmean, lat, k=0.0147, clip_zero=True):
 
     Returns
     -------
-    float/pandas.Series/xarray.DataArray containing the calculated
+    pandas.Series or xarray.DataArray containing the calculated
             Potential evapotranspiration [mm d-1].
 
     Examples
@@ -142,12 +152,13 @@ def mcguinness_bordne(tmean, lat, k=0.0147, clip_zero=True):
     .. math:: PET = k\\frac{R_a (T_{mean} + 5)}{\\lambda}
 
     """
-    lambd = calc_lambda(tmean)
+    vtmean, = vectorize(tmean)
+    lambd = calc_lambda(vtmean)
     index = get_index(tmean)
-    ra = extraterrestrial_r(index, check_lat(lat))
-    pet = k * ra * (tmean + 5) / lambd
+    ra = extraterrestrial_r(index, lat, vtmean.shape)
+    pet = k * ra * (vtmean + 5) / lambd
     pet = clip_zeros(pet, clip_zero)
-    return pet.rename("Mcguinness_Bordne")
+    return pet_out(tmean, pet, "Mcguinness_Bordne")
 
 
 def hargreaves(tmean, tmax, tmin, lat, k=0.0135, method=0, clip_zero=True):
@@ -156,11 +167,11 @@ def hargreaves(tmean, tmax, tmin, lat, k=0.0135, method=0, clip_zero=True):
 
     Parameters
     ----------
-    tmean: pandas.Series/xarray.DataArray
+    tmean: pandas.Series or xarray.DataArray
         average day temperature [°C]
-    tmax: float/pandas.Series/xarray.DataArray
+    tmax: pandas.Series or xarray.DataArray
         maximum day temperature [°C]
-    tmin: float/pandas.Series/xarray.DataArray
+    tmin: pandas.Series or xarray.DataArray
         minimum day temperature [°C]
     lat: float/xarray.DataArray
         the site latitude [rad]
@@ -174,7 +185,7 @@ def hargreaves(tmean, tmax, tmin, lat, k=0.0135, method=0, clip_zero=True):
 
     Returns
     -------
-    float/pandas.Series/xarray.DataArray containing the calculated
+    pandas.Series or xarray.DataArray containing the calculated
             Potential evapotranspiration [mm d-1].
 
     Examples
@@ -198,20 +209,21 @@ def hargreaves(tmean, tmax, tmin, lat, k=0.0135, method=0, clip_zero=True):
     .. math:: chs=0.00185*(T_{max}-T_{min})^2-0.0433*(T_{max}-T_{min})+0.4023
 
     """
-    lambd = calc_lambda(tmean)
+    vtmean, vtmax, vtmin = vectorize(tmean, tmax, tmin)
+    lambd = calc_lambda(vtmean)
     index = get_index(tmean)
 
-    ra = extraterrestrial_r(index, check_lat(lat))
-    chs = 0.00185 * (tmax - tmin) ** 2 - 0.0433 * (tmax - tmin) + 0.4023
+    ra = extraterrestrial_r(index, lat, vtmean.shape)
+    chs = 0.00185 * (vtmax - vtmin) ** 2 - 0.0433 * (vtmax - vtmin) + 0.4023
     if method == 0:
-        pet = k / 0.0135 * 0.0023 * (tmean + 17.8) * sqrt(
-            tmax - tmin) * ra / lambd
+        pet = k / 0.0135 * 0.0023 * (vtmean + 17.8) * sqrt(
+            vtmax - vtmin) * ra / lambd
     elif method == 1:
-        pet = k * chs * sqrt(tmax - tmin) * ra / lambd * (tmean + 17.8)
+        pet = k * chs * sqrt(vtmax - vtmin) * ra / lambd * (vtmean + 17.8)
     else:
-        raise Exception("method can be either 0 or 1.")
+        raise Exception("Method can be either 0 or 1.")
     pet = clip_zeros(pet, clip_zero)
-    return pet.rename("Hargreaves")
+    return pet_out(tmean, pet, "Hargreaves")
 
 
 def fao_24(tmean, wind, rs, rh, pressure=None, elevation=None, albedo=0.23,
@@ -221,15 +233,15 @@ def fao_24(tmean, wind, rs, rh, pressure=None, elevation=None, albedo=0.23,
 
     Parameters
     ----------
-    tmean: float/pandas.Series/xarray.DataArray
+    tmean: pandas.Series or xarray.DataArray
         average day temperature [°C]
-    wind: float/pandas.Series/xarray.DataArray
+    wind: pandas.Series xarray.DataArray
         mean day wind speed [m/s]
-    rs: float/pandas.Series/xarray.DataArray
+    rs: pandas.Series xarray.DataArray
         incoming solar radiation [MJ m-2 d-1]
-    rh: float/pandas.Series/xarray.DataArray
+    rh: pandas.Series or xarray.DataArray
         mean daily relative humidity [%]
-    pressure: float/pandas.Series/xarray.DataArray, optional
+    pressure: pandas.Series or xarray.DataArray, optional
         atmospheric pressure [kPa]
     elevation: float/xarray.DataArray, optional
         the site elevation [m]
@@ -240,7 +252,7 @@ def fao_24(tmean, wind, rs, rh, pressure=None, elevation=None, albedo=0.23,
 
     Returns
     -------
-    float/pandas.Series/xarray.DataArray containing the calculated
+    pandas.Series or xarray.DataArray containing the calculated
             Potential evapotranspiration [mm d-1].
 
     Examples
@@ -253,17 +265,21 @@ def fao_24(tmean, wind, rs, rh, pressure=None, elevation=None, albedo=0.23,
         *u_2-3.15*(\\frac{rh}{100})^2-0.0011*u_2
 
     """
-    pressure = calc_press(elevation, pressure)
-    gamma = calc_psy(pressure)
-    dlt = calc_vpc(tmean)
-    lambd = calc_lambda(tmean)
+    vtmean, vwind, vrs, vrh, vpressure, velevation = vectorize(tmean, wind, rs,
+                                                               rh, pressure,
+                                                               elevation)
+    vpressure = calc_press(velevation, vpressure)
+    gamma = calc_psy(vpressure)
+    dlt = calc_vpc(vtmean)
+    lambd = calc_lambda(vtmean)
 
     w = 1.066 - 0.13 * check_rh(
-        rh) / 100 + 0.045 * wind - 0.02 * rh / 100 * wind - \
-        0.315 * (rh / 100) ** 2 - 0.0011 * wind
-    pe = -0.3 + dlt / (dlt + gamma) * check_rad(rs) * (1 - albedo) * w / lambd
-    pe = clip_zeros(pe, clip_zero)
-    return pe.rename("FAO_24")
+        vrh) / 100 + 0.045 * vwind - 0.02 * vrh / 100 * vwind - \
+        0.315 * (vrh / 100) ** 2 - 0.0011 * vwind
+    pet = -0.3 + dlt / (dlt + gamma) * check_rad(vrs) * (
+            1 - albedo) * w / lambd
+    pet = clip_zeros(pet, clip_zero)
+    return pet_out(tmean, pet, "FAO_24")
 
 
 def abtew(tmean, rs, k=0.53, clip_zero=True):
@@ -272,9 +288,9 @@ def abtew(tmean, rs, k=0.53, clip_zero=True):
 
     Parameters
     ----------
-    tmean: float/pandas.Series/xarray.DataArray
+    tmean: pandas.Series or xarray.DataArray
         average day temperature [°C]
-    rs: float/pandas.Series/xarray.DataArray
+    rs: pandas.Series or xarray.DataArray
         incoming solar radiation [MJ m-2 d-1]
     k: float, optional
         calibration coefficient [-]
@@ -283,7 +299,7 @@ def abtew(tmean, rs, k=0.53, clip_zero=True):
 
     Returns
     -------
-    float/pandas.Series/xarray.DataArray containing the calculated
+    pandas.Series or xarray.DataArray containing the calculated
             Potential evapotranspiration [mm d-1].
 
     Examples
@@ -297,10 +313,11 @@ def abtew(tmean, rs, k=0.53, clip_zero=True):
     .. math:: PE = \\frac{k R_s}{\\lambda}
 
     """
-    lambd = calc_lambda(tmean)
-    pe = k * check_rad(rs) / lambd
-    pe = clip_zeros(pe, clip_zero)
-    return pe.rename("Abtew")
+    vtmean, vrs = vectorize(tmean, rs)
+    lambd = calc_lambda(vtmean)
+    pet = k * check_rad(vrs) / lambd
+    pet = clip_zeros(pet, clip_zero)
+    return pet_out(tmean, pet, "Abtew")
 
 
 def makkink(tmean, rs, pressure=None, elevation=None, k=0.65, clip_zero=True):
@@ -309,11 +326,11 @@ def makkink(tmean, rs, pressure=None, elevation=None, k=0.65, clip_zero=True):
 
     Parameters
     ----------
-    tmean: float/pandas.Series/xarray.DataArray
+    tmean: pandas.Series or xarray.DataArray
         average day temperature [°C]
-    rs: float/pandas.Series/xarray.DataArray
+    rs: pandas.Series or xarray.DataArray
         incoming solar radiation [MJ m-2 d-1]
-    pressure: float/pandas.Series/xarray.DataArray, optional
+    pressure: pandas.Series or xarray.DataArray, optional
         atmospheric pressure [kPa]
     elevation: float/xarray.DataArray, optional
         the site elevation [m]
@@ -324,7 +341,7 @@ def makkink(tmean, rs, pressure=None, elevation=None, k=0.65, clip_zero=True):
 
     Returns
     -------
-    float/pandas.Series/xarray.DataArray containing the calculated
+    pandas.Series or xarray.DataArray containing the calculated
             Potential evapotranspiration [mm d-1].
 
     Examples
@@ -337,29 +354,33 @@ def makkink(tmean, rs, pressure=None, elevation=None, k=0.65, clip_zero=True):
     .. math:: PET = \\frac{0.65 \\Delta (R_s)}{\\lambda(\\Delta +\\gamma)}
 
     """
-    pressure = calc_press(elevation, pressure)
-    gamma = calc_psy(pressure)
-    dlt = calc_vpc(tmean)
-    lambd = calc_lambda(tmean)
-    pet = k * dlt / (dlt + gamma) * check_rad(rs) / lambd
+    vtmean, vrs, vpressure, velevation = vectorize(tmean, rs, pressure,
+                                                   elevation)
+    vpressure = calc_press(velevation, vpressure)
+    gamma = calc_psy(vpressure)
+    dlt = calc_vpc(vtmean)
+    lambd = calc_lambda(vtmean)
+    pet = k * dlt / (dlt + gamma) * check_rad(vrs) / lambd
     pet = clip_zeros(pet, clip_zero)
-    return pet.rename("Makkink")
+    return pet_out(tmean, pet, "Makkink")
 
 
 def makkink_knmi(tmean, rs, clip_zero=True):
-    """Potential evapotranspiration calculated according to The Royal Netherlands
-    Meteorological Institute (KNMI)
+    """Potential evapotranspiration calculated according to The Royal
+    Netherlands Meteorological Institute (KNMI)
 
     Parameters
     ----------
-    tmean : float/pandas.Series/xarray.DataArray
+    tmean : pandas.Series or xarray.DataArray
         average day temperature [°C]
-    K : float/pandas.Series/xarray.DataArray
+    rs : pandas.Series or xarray.DataArray
         incoming solar radiation [MJ m-2 d-1]
+    clip_zero: bool, optional
+        if True, replace all negative values with 0.
 
     Returns
     -------
-    float/pandas.Series/xarray.DataArray containing the calculated
+    pandas.Series or xarray.DataArray containing the calculated
             Potential evapotranspiration [mm d-1].
 
     Examples
@@ -373,27 +394,28 @@ def makkink_knmi(tmean, rs, clip_zero=True):
     formula is more suitable for general purposes. To obtain the same value as
     EV24 round the value up to one decimal.
     """
-
+    vtmean, vrs = vectorize(tmean, rs)
     pet = (
-        650
-        * (
-            1
-            - (0.646 + 0.0006 * tmean)
-            / (
-                7.5
-                * log(10)
-                * 6.107
-                * 10 ** (7.5 * (1 - 1 / (1 + tmean / 237.3)))
-                / (237.3 * (1 + tmean / 237.3) * (1 + tmean / 237.3))
-                + 0.646
-                + 0.0006 * tmean
+            650
+            * (
+                    1
+                    - (0.646 + 0.0006 * vtmean)
+                    / (
+                            7.5
+                            * log(10)
+                            * 6.107
+                            * 10 ** (7.5 * (1 - 1 / (1 + vtmean / 237.3)))
+                            / (237.3 * (1 + vtmean / 237.3) * (
+                            1 + vtmean / 237.3))
+                            + 0.646
+                            + 0.0006 * vtmean
+                    )
             )
-        )
-        / (2501 - 2.38 * tmean)
-        * rs
+            / (2501 - 2.38 * vtmean)
+            * vrs
     )
     pet = clip_zeros(pet, clip_zero)
-    return pet.rename("Makkink_KNMI")
+    return pet_out(tmean, pet, "Makkink_KNMI")
 
 
 def oudin(tmean, lat, k1=100, k2=5, clip_zero=True):
@@ -402,9 +424,9 @@ def oudin(tmean, lat, k1=100, k2=5, clip_zero=True):
 
     Parameters
     ----------
-    tmean: pandas.Series/xarray.DataArray
+    tmean: pandas.Series or xarray.DataArray
         average day temperature [°C]
-    lat: float/xarray.DataArray
+    lat: float or xarray.DataArray
         the site latitude [rad]
     k1: float, optional
         calibration coefficient [-]
@@ -415,7 +437,7 @@ def oudin(tmean, lat, k1=100, k2=5, clip_zero=True):
 
     Returns
     -------
-    float/pandas.Series/xarray.DataArray containing the calculated
+    pandas.Series or xarray.DataArray containing the calculated
             Potential evapotranspiration [mm d-1].
     clip_zero: bool, optional
         if True, replace all negative values with 0.
@@ -432,10 +454,11 @@ def oudin(tmean, lat, k1=100, k2=5, clip_zero=True):
         else: PET = 0
 
     """
-    lambd = calc_lambda(tmean)
+    vtmean, = vectorize(tmean)
+    lambd = calc_lambda(vtmean)
     index = get_index(tmean)
-    ra = extraterrestrial_r(index, check_lat(lat))
-    pet = ra * (tmean + k2) / lambd / k1
-    pet = pet.where(((tmean + k2) > 0) | (pet.isnull()), 0)
+    ra = extraterrestrial_r(index, lat, vtmean.shape)
+    pet = ra * (vtmean + k2) / lambd / k1
+    pet[(tmean + k2) < 0] = 0
     pet = clip_zeros(pet, clip_zero)
-    return pet.rename("Oudin")
+    return pet_out(tmean, pet, "Oudin")

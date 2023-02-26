@@ -1,5 +1,6 @@
 import numpy
-import pandas
+from pandas import Series, DatetimeIndex
+from xarray import DataArray
 
 
 def show_versions():
@@ -36,7 +37,7 @@ def deg_to_rad(lat):
 def check_rad(rad):
     """Method to check if radiation was provided in MJ/m2d."""
     if rad is not None:
-        if numpy.max(rad) < 100:
+        if numpy.nanmax(rad) < 100:
             return rad
         else:
             raise Exception(
@@ -48,7 +49,7 @@ def check_rad(rad):
 def check_rh(rh):
     """Method to check if relative humidity is provided in percentage."""
     if rh is not None:
-        if numpy.max(rh) > 1.0:
+        if numpy.nanmax(rh) > 1.0:
             return rh
         else:
             raise Exception(
@@ -59,17 +60,21 @@ def check_rh(rh):
         pass
 
 
-def check_lat(lat):
+def check_lat(lat, shape=None):
     """Method to check if latitude was (most likely) given in radians."""
-    if lat is None:
-        pass
+    if not isinstance(lat, (float, int, DataArray)):
+        raise TypeError("lat must be a float, int or DataArray")
+    if isinstance(lat, (float, int)) and (shape is None or len(shape) == 1):
+        lat1 = lat
     else:
-        if -1.6 < numpy.mean(lat) < 1.6:
-            return lat
-        else:
-            raise Exception(
-                "Latitude must be provided in radians! Use pyet.deg_to_rad()"
-                "to convert from degrees to radians.")
+        if isinstance(lat, (float, int)) and (len(shape) > 1):
+            raise ValueError(f"lat must be a shaped as 2D DataArray")
+        lat1 = lat.values
+    if not (-1.6 < numpy.mean(lat1) < 1.6):
+        raise Exception(
+            "Latitude must be provided in radians! Use pyet.deg_to_rad()"
+            "to convert from degrees to radians.")
+    return lat1
 
 
 def clip_zeros(s, clip_zero):
@@ -78,9 +83,21 @@ def clip_zeros(s, clip_zero):
 
     """
     if clip_zero:
-        return s.where((s > 0) | (s.isnull()), 0)
+        s[s < 0] = 0
+        return s
     else:
         return s
+
+
+def pet_out(tmean, pet, name):
+    """Method to create pandas.Series or xarray.DataArray from numpy.ndarray
+    """
+    if isinstance(tmean, Series):
+        return Series(data=pet, index=tmean.index, name=name)
+    elif isinstance(tmean, DataArray):
+        return DataArray(pet, coords=tmean.coords, dims=tmean.dims, name=name)
+    else:
+        print("Input is neither pandas.Series not xarray.DataArray!")
 
 
 def get_index(df):
@@ -88,7 +105,27 @@ def get_index(df):
 
     """
     try:
-        index = pandas.DatetimeIndex(df.index)
+        index = DatetimeIndex(df.index)
     except AttributeError:
-        index = pandas.DatetimeIndex(df.time)
+        index = DatetimeIndex(df.time)
     return index
+
+
+def vectorize(*arrays):
+    """Vectorize pandas.Series or xarray.DataArray inputs."""
+    vec_arrays = []
+    for arr in arrays:
+        if arr is None:
+            vec_arr = None
+        elif isinstance(arr, (int, float)):
+            vec_arr = arr
+        elif isinstance(arr, Series):
+            vec_arr = arr.copy().values
+        elif isinstance(arr, DataArray):
+            vec_arr = arr.copy().values
+        else:
+            raise TypeError(
+                f"Input must be a pandas.Series or xarray.DataArray, "
+                f"but got {type(arr)}")
+        vec_arrays.append(vec_arr)
+    return vec_arrays
