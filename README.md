@@ -3,7 +3,7 @@
 # pyet: Estimation of Potential Evapotranspiration
 
 <a href="https://github.com/pyet-org/pyet/actions/workflows/ci.yml"><img src="https://github.com/pyet-org/pyet/actions/workflows/ci.yml/badge.svg?branch=master"><a>
-<a href="thttps://pypi.org/project/pyet/><img src=https://img.shields.io/pypi/v/pyet.svg><a>
+<a href="https://pypi.org/project/pyet/"><img src=https://img.shields.io/pypi/v/pyet.svg><a>
 <a href="https://mit-license.org/"><img src=https://img.shields.io/pypi/l/pyet.svg><a>
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/e49f23e356f441688422ec32cfcf6aaa)](https://www.codacy.com/gh/phydrus/pyet/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=phydrus/pyet&amp;utm_campaign=Badge_Grade)
 [![Codacy Badge](https://app.codacy.com/project/badge/Coverage/e49f23e356f441688422ec32cfcf6aaa)](https://www.codacy.com/gh/phydrus/pyet/dashboard?utm_source=github.com&utm_medium=referral&utm_content=phydrus/pyet&utm_campaign=Badge_Coverage)
