@@ -3,31 +3,41 @@ requires = ["setuptools", "wheel"]
 
 [project]
 name = "pyet"
+dynamic = ["version"]
 description = "pyet - Estimation of Potential Evaporation"
 readme = "README.md"
 authors = [
     {name = "Matevz Vremec", email = "matevz.vremec@uni-graz.at"},
     {name = "Raoul Collenteur", email = "raoul.collenteur@uni-graz.at"}
 ]
-license = "MIT License"
-homepage = "https://github.com/phydrus/pyet"
-repository = "https://github.com/phydrus/pyet"
-documentation = "https://github.com/phydrus/pyet/discussions"
+license = { file = "LICENSE" }
+requires-python = ">=3.8"
+dependencies = [
+    "numpy >= 1.16",
+    "xarray >= 0.18.0",
+    "pandas >= 1.2",
+]
+classifiers = [
+    'Development Status :: 5 - Production/Stable',
+    'Intended Audience :: Science/Research',
+    'Intended Audience :: Other Audience',
+    'License :: OSI Approved :: MIT License',
+    'Programming Language :: Python :: 3 :: Only',
+    'Programming Language :: Python :: 3.8',
+    'Programming Language :: Python :: 3.9',
+    'Programming Language :: Python :: 3.10',
+    'Programming Language :: Python :: 3.11',
+    'Programming Language :: Python :: 3.12',
+    'Topic :: Scientific/Engineering :: Hydrology',
+]
 
 [project.urls]
 Source = "https://github.com/phydrus/pyet"
 Tracker = "https://github.com/phydrus/pyet/issues"
 Help = "https://github.com/phydrus/pyet/discussions"
-
-[[project.classifiers]]
-Development Status = "4 - Beta"
-Intended Audience = "Science/Research"
-License = "OSI Approved :: GNU Lesser General Public License v3 (LGPLv3)"
-Programming Language = "Python :: 3.8"
-Programming Language = "Python :: 3.9"
-Programming Language = "Python :: 3.10"
-Programming Language = "Python :: 3.11"
-Topic = "Scientific/Engineering :: Hydrology"
+homepage = "https://github.com/phydrus/pyet"
+repository = "https://github.com/phydrus/pyet"
+documentation = "https://github.com/phydrus/pyet/discussions"
 
 [tool.setuptools.dynamic]
 version = { attr = "pyet.version.__version__" }
@@ -38,14 +48,8 @@ line-length = 88
 [tool.isort]
 profile = "black"
 
-[project.scripts]
-test = "tests"
-
-requires-python = ">= 3.8"
-[project.dependencies]
-numpy = ">=1.16"
-xarray = ">=0.18.0"
-pandas = ">=1.2"
+[tool.pytest.ini_options]
+testpaths = ["tests"]
 
 [project.optional-dependencies]
 rtd = [
