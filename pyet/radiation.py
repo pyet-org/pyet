@@ -48,20 +48,14 @@ def turc(tmean, rs, rh, k=0.31, clip_zero=True):
         (\\frac{R_s}{4.184}+50)4.184; for RH<50
 
     """
-    vtmean, vrs, vrh = vectorize(tmean, rs, rh)
-    c = ones(vtmean.shape)
-    mask = check_rh(vrh) < 50
-    c[mask] = (1 + (50 - vrh[mask]) / 70)
-    vtmean[vtmean == 15] = 14.99
-    epsilon = 1e-8  # small constant to avoid division by zero
-    pet = k * c * vtmean / (vtmean + 15 + epsilon) * (check_rad(vrs) + 2.094)
-    pet[vtmean < 0] = 0
+    c = tmean / tmean
+    c = c.where(check_rh(rh) >= 50, 1 + (50 - rh) / 70)
+    pet = k * c * tmean / (tmean + 15) * (check_rad(rs) + 2.094)
     pet = clip_zeros(pet, clip_zero)
     return pet_out(tmean, pet, "Turc")
 
 
-def jensen_haise(tmean, rs=None, cr=0.025, tx=-3, lat=None, method=0,
-                 clip_zero=True):
+def jensen_haise(tmean, rs=None, cr=0.025, tx=-3, lat=None, method=0, clip_zero=True):
     """Potential evapotranspiration calculated accordinf to
     :cite:t:`jensen_estimating_1963`.
 
@@ -103,18 +97,17 @@ def jensen_haise(tmean, rs=None, cr=0.025, tx=-3, lat=None, method=0,
     .. math:: PET = \\frac{R_a(T_{mean}+5)}{68\\lambda}
 
     """
-    vtmean, vrs = vectorize(tmean, rs)
-    lambd = calc_lambda(vtmean)
+    lambd = calc_lambda(tmean)
     if method == 0:
-        if vrs is None:
+        if rs is None:
             raise Exception("If you choose method == 0, provide rs!")
-        pet = check_rad(vrs) / lambd * cr * (vtmean - tx)
+        pet = check_rad(rs) / lambd * cr * (tmean - tx)
     elif method == 1:
         if lat is None:
             raise Exception("If you choose method == 1, provide lat!")
         index = get_index(tmean)
-        ra = extraterrestrial_r(index, lat, vtmean.shape)
-        pet = ra * (vtmean + 5) / 68 / lambd
+        ra = extraterrestrial_r(index, lat, tmean)
+        pet = ra * (tmean + 5) / 68 / lambd
     else:
         raise Exception("Method can be either 0 or 1.")
     pet = clip_zeros(pet, clip_zero)
@@ -152,11 +145,12 @@ def mcguinness_bordne(tmean, lat, k=0.0147, clip_zero=True):
     .. math:: PET = k\\frac{R_a (T_{mean} + 5)}{\\lambda}
 
     """
-    vtmean, = vectorize(tmean)
-    lambd = calc_lambda(vtmean)
+    lambd = calc_lambda(tmean)
     index = get_index(tmean)
-    ra = extraterrestrial_r(index, lat, vtmean.shape)
-    pet = k * ra * (vtmean + 5) / lambd
+    ra = extraterrestrial_r(index, lat)
+    if isinstance(tmean, DataArray) and isinstance(ra, Series):
+        ra = ra.values[:, None, None]
+    pet = k * ra * (tmean + 5) / lambd
     pet = clip_zeros(pet, clip_zero)
     return pet_out(tmean, pet, "Mcguinness_Bordne")
 
@@ -209,25 +203,27 @@ def hargreaves(tmean, tmax, tmin, lat, k=0.0135, method=0, clip_zero=True):
     .. math:: chs=0.00185*(T_{max}-T_{min})^2-0.0433*(T_{max}-T_{min})+0.4023
 
     """
-    vtmean, vtmax, vtmin = vectorize(tmean, tmax, tmin)
-    lambd = calc_lambda(vtmean)
+    lambd = calc_lambda(tmean)
     index = get_index(tmean)
-
-    ra = extraterrestrial_r(index, lat, vtmean.shape)
-    chs = 0.00185 * (vtmax - vtmin) ** 2 - 0.0433 * (vtmax - vtmin) + 0.4023
+    ra = extraterrestrial_r(index, lat)
+    if isinstance(tmean, DataArray) and isinstance(ra, Series):
+        ra = ra.values[:, None, None]
+    else:
+        ra = ra.values
+    chs = 0.00185 * (tmax - tmin) ** 2 - 0.0433 * (tmax - tmin) + 0.4023
     if method == 0:
-        pet = k / 0.0135 * 0.0023 * (vtmean + 17.8) * sqrt(
-            vtmax - vtmin) * ra / lambd
+        pet = k / 0.0135 * 0.0023 * (tmean + 17.8) * sqrt(tmax - tmin) * ra / lambd
     elif method == 1:
-        pet = k * chs * sqrt(vtmax - vtmin) * ra / lambd * (vtmean + 17.8)
+        pet = k * chs * sqrt(tmax - tmin) * ra / lambd * (tmean + 17.8)
     else:
         raise Exception("Method can be either 0 or 1.")
     pet = clip_zeros(pet, clip_zero)
     return pet_out(tmean, pet, "Hargreaves")
 
 
-def fao_24(tmean, wind, rs, rh, pressure=None, elevation=None, albedo=0.23,
-           clip_zero=True):
+def fao_24(
+    tmean, wind, rs, rh, pressure=None, elevation=None, albedo=0.23, clip_zero=True
+):
     """Potential evapotranspiration calculated according to
     :cite:t:`jensen_evapotranspiration_1990`.
 
@@ -265,19 +261,20 @@ def fao_24(tmean, wind, rs, rh, pressure=None, elevation=None, albedo=0.23,
         *u_2-3.15*(\\frac{rh}{100})^2-0.0011*u_2
 
     """
-    vtmean, vwind, vrs, vrh, vpressure, velevation = vectorize(tmean, wind, rs,
-                                                               rh, pressure,
-                                                               elevation)
-    vpressure = calc_press(velevation, vpressure)
-    gamma = calc_psy(vpressure)
-    dlt = calc_vpc(vtmean)
-    lambd = calc_lambda(vtmean)
+    pressure = calc_press(elevation, pressure)
+    gamma = calc_psy(pressure)
+    dlt = calc_vpc(tmean)
+    lambd = calc_lambda(tmean)
 
-    w = 1.066 - 0.13 * check_rh(
-        vrh) / 100 + 0.045 * vwind - 0.02 * vrh / 100 * vwind - \
-        0.315 * (vrh / 100) ** 2 - 0.0011 * vwind
-    pet = -0.3 + dlt / (dlt + gamma) * check_rad(vrs) * (
-            1 - albedo) * w / lambd
+    w = (
+        1.066
+        - 0.13 * check_rh(rh) / 100
+        + 0.045 * wind
+        - 0.02 * rh / 100 * wind
+        - 0.315 * (rh / 100) ** 2
+        - 0.0011 * wind
+    )
+    pet = -0.3 + dlt / (dlt + gamma) * check_rad(rs) * (1 - albedo) * w / lambd
     pet = clip_zeros(pet, clip_zero)
     return pet_out(tmean, pet, "FAO_24")
 
@@ -313,9 +310,8 @@ def abtew(tmean, rs, k=0.53, clip_zero=True):
     .. math:: PE = \\frac{k R_s}{\\lambda}
 
     """
-    vtmean, vrs = vectorize(tmean, rs)
-    lambd = calc_lambda(vtmean)
-    pet = k * check_rad(vrs) / lambd
+    lambd = calc_lambda(tmean)
+    pet = k * check_rad(rs) / lambd
     pet = clip_zeros(pet, clip_zero)
     return pet_out(tmean, pet, "Abtew")
 
@@ -354,13 +350,11 @@ def makkink(tmean, rs, pressure=None, elevation=None, k=0.65, clip_zero=True):
     .. math:: PET = \\frac{0.65 \\Delta (R_s)}{\\lambda(\\Delta +\\gamma)}
 
     """
-    vtmean, vrs, vpressure, velevation = vectorize(tmean, rs, pressure,
-                                                   elevation)
-    vpressure = calc_press(velevation, vpressure)
-    gamma = calc_psy(vpressure)
-    dlt = calc_vpc(vtmean)
-    lambd = calc_lambda(vtmean)
-    pet = k * dlt / (dlt + gamma) * check_rad(vrs) / lambd
+    pressure = calc_press(elevation, pressure)
+    gamma = calc_psy(pressure)
+    dlt = calc_vpc(tmean)
+    lambd = calc_lambda(tmean)
+    pet = k * dlt / (dlt + gamma) * check_rad(rs) / lambd
     pet = clip_zeros(pet, clip_zero)
     return pet_out(tmean, pet, "Makkink")
 
@@ -394,25 +388,23 @@ def makkink_knmi(tmean, rs, clip_zero=True):
     formula is more suitable for general purposes. To obtain the same value as
     EV24 round the value up to one decimal.
     """
-    vtmean, vrs = vectorize(tmean, rs)
     pet = (
-            650
-            * (
-                    1
-                    - (0.646 + 0.0006 * vtmean)
-                    / (
-                            7.5
-                            * log(10)
-                            * 6.107
-                            * 10 ** (7.5 * (1 - 1 / (1 + vtmean / 237.3)))
-                            / (237.3 * (1 + vtmean / 237.3) * (
-                            1 + vtmean / 237.3))
-                            + 0.646
-                            + 0.0006 * vtmean
-                    )
+        650
+        * (
+            1
+            - (0.646 + 0.0006 * tmean)
+            / (
+                7.5
+                * log(10)
+                * 6.107
+                * 10 ** (7.5 * (1 - 1 / (1 + tmean / 237.3)))
+                / (237.3 * (1 + tmean / 237.3) * (1 + tmean / 237.3))
+                + 0.646
+                + 0.0006 * tmean
             )
-            / (2501 - 2.38 * vtmean)
-            * vrs
+        )
+        / (2501 - 2.38 * tmean)
+        * rs
     )
     pet = clip_zeros(pet, clip_zero)
     return pet_out(tmean, pet, "Makkink_KNMI")
@@ -454,11 +446,10 @@ def oudin(tmean, lat, k1=100, k2=5, clip_zero=True):
         else: PET = 0
 
     """
-    vtmean, = vectorize(tmean)
-    lambd = calc_lambda(vtmean)
+    lambd = calc_lambda(tmean)
     index = get_index(tmean)
-    ra = extraterrestrial_r(index, lat, vtmean.shape)
-    pet = ra * (vtmean + k2) / lambd / k1
+    ra = extraterrestrial_r(index, lat)
+    pet = ra * (tmean + k2) / lambd / k1
     pet[(tmean + k2) < 0] = 0
     pet = clip_zeros(pet, clip_zero)
     return pet_out(tmean, pet, "Oudin")

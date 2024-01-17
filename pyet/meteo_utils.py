@@ -2,13 +2,31 @@
 
 """
 
-from numpy import tan, cos, pi, sin, arccos, mod, exp, log, maximum, minimum, \
-    ndarray, asarray, newaxis
-
+from numpy import (
+    tan,
+    cos,
+    pi,
+    sin,
+    arccos,
+    mod,
+    exp,
+    log,
+    maximum,
+    minimum,
+    ndarray,
+    asarray,
+    newaxis,
+    clip,
+    isnan,
+    nanmax,
+    where,
+)
+from pandas import Series, to_numeric
+from xarray import DataArray
 from .utils import check_lat
 
 # Specific heat of air [MJ kg-1 °C-1]
-CP = 1.013 * 10 ** -3
+CP = 1.013 * 10**-3
 
 
 def calc_psy(pressure, tmean=None):
@@ -220,8 +238,7 @@ def calc_es(tmean=None, tmax=None, tmin=None):
         return calc_e0(tmean)
 
 
-def calc_ea(tmean=None, tmax=None, tmin=None, rhmax=None, rhmin=None, rh=None,
-            ea=None):
+def calc_ea(tmean=None, tmax=None, tmin=None, rhmax=None, rhmin=None, rh=None, ea=None):
     """Actual vapor pressure [kPa].
 
     Parameters
@@ -281,7 +298,7 @@ def day_of_year(tindex):
     array_like with ints specifying day of year.
 
     """
-    return asarray(tindex.dayofyear)
+    return Series(to_numeric(tindex.strftime("%j")), tindex, dtype=int)
 
 
 def solar_declination(j):
@@ -300,7 +317,7 @@ def solar_declination(j):
     Based on equations 24 in :cite:t:`allen_crop_1998`.
 
     """
-    return asarray(0.409 * sin(2. * pi / 365. * j - 1.39))
+    return 0.409 * sin(2.0 * pi / 365.0 * j - 1.39)
 
 
 def sunset_angle(sol_dec, lat):
@@ -322,13 +339,11 @@ def sunset_angle(sol_dec, lat):
     Based on equations 25 in :cite:t:`allen_crop_1998`.
 
     """
-    lat1 = check_lat(lat)
-    if isinstance(lat1, ndarray):
-        cos_sa = -tan(sol_dec)[:, newaxis, newaxis] * tan(lat1)[newaxis, :, :]
-        return arccos(minimum(maximum(cos_sa, -1.0), 1.0))
+    if isinstance(lat, DataArray):
+        lat = lat.expand_dims(dim={"time": sol_dec.index}, axis=0)
+        return arccos(-tan(sol_dec.values) * tan(lat).T).T
     else:
-        cos_sa = -tan(sol_dec) * tan(lat1)
-        return arccos(minimum(maximum(cos_sa, -1.0), 1.0))
+        return arccos(-tan(sol_dec) * tan(lat))
 
 
 def daylight_hours(tindex, lat):
@@ -355,6 +370,10 @@ def daylight_hours(tindex, lat):
     sangle = sunset_angle(sol_dec, lat)
     # Account for subpolar belt which returns NaN values
     dl = 24 / pi * sangle
+    if isinstance(lat, DataArray):
+        sol_dec = ((dl / dl).T * sol_dec.values).T
+    dl = where((sol_dec > 0) & (isnan(dl)), nanmax(dl), dl)
+    dl = where((sol_dec < 0) & (isnan(dl)), 0, dl)
     return dl
 
 
@@ -395,19 +414,18 @@ def relative_distance(j):
     Based on equations 23 in :cite:t:`allen_crop_1998`.
 
     """
-    return asarray(1 + 0.033 * cos(2. * pi / 365. * j))
+    return 1 + 0.033 * cos(2.0 * pi / 365.0 * j)
 
 
-def extraterrestrial_r(tindex, lat, shape):
-    """Extraterrestrial daily radiation [MJ m-2 d-1].
+def extraterrestrial_r(tindex, lat):
+    """
+    Extraterrestrial daily radiation [MJ m-2 d-1].
 
     Parameters
     ----------
     tindex: pandas.DatetimeIndex
     lat: array_like
         the site latitude [rad]
-    shape: tuple
-        shape of returned numpy.ndarray [-]
 
     Returns
     -------
@@ -424,20 +442,20 @@ def extraterrestrial_r(tindex, lat, shape):
     sol_dec = solar_declination(j)
 
     omega = sunset_angle(sol_dec, lat)
-    lat1 = check_lat(lat, shape)
-    if len(shape) > 1:
-        xx = sin(sol_dec)[:, newaxis, newaxis] * sin(lat1)[newaxis, :, :]
-        yy = cos(sol_dec)[:, newaxis, newaxis] * cos(lat1)[newaxis, :, :]
-        return (118.08 / 3.141592654 * dr[:, newaxis, newaxis] * (
-                omega * xx + yy * sin(omega)))
+    if isinstance(lat, DataArray):
+        lat = lat.expand_dims(dim={"time": sol_dec.index}, axis=0)
+        xx = sin(sol_dec.values) * sin(lat.T)
+        yy = cos(sol_dec.values) * cos(lat.T)
+        return (118.08 / 3.141592654 * dr.values * (omega.T * xx + yy * sin(omega.T))).T
     else:
-        xx = sin(sol_dec) * sin(lat1)
-        yy = cos(sol_dec) * cos(lat1)
+        xx = sin(sol_dec) * sin(lat)
+        yy = cos(sol_dec) * cos(lat)
         return 118.08 / 3.141592654 * dr * (omega * xx + yy * sin(omega))
 
 
-def calc_res_surf(lai=None, r_s=None, srs=0.002, co2=300, r_l=100, lai_eff=0,
-                  croph=0.12):
+def calc_res_surf(
+    lai=None, r_s=None, srs=0.002, co2=300, r_l=100, lai_eff=0, croph=0.12
+):
     """Surface resistance [s m-1].
 
     Parameters
@@ -469,7 +487,7 @@ def calc_res_surf(lai=None, r_s=None, srs=0.002, co2=300, r_l=100, lai_eff=0,
     if r_s:
         return r_s
     else:
-        fco2 = (1 + srs * (co2 - 300))
+        fco2 = 1 + srs * (co2 - 300)
         if lai is None:
             return fco2 * r_l / (0.5 * croph * 24)  # after FAO-56
         else:
@@ -532,11 +550,10 @@ def calc_res_aero(wind, croph=0.12, zw=2, zh=2, ra_method=0):
 
     """
     if ra_method == 0:
-        wind[wind == 0] = 0.0001
+        wind = wind.where(wind != 0, 0.0001)
         return 208 / wind
     else:
         d = 0.667 * croph
         zom = 0.123 * croph
         zoh = 0.0123 * croph
-        return (log((zw - d) / zom)) * (log((zh - d) / zoh) /
-                                        (0.41 ** 2) / wind)
+        return (log((zw - d) / zom)) * (log((zh - d) / zoh) / (0.41**2) / wind)

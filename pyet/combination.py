@@ -10,18 +10,41 @@ from .radiation import *
 from .utils import *
 
 # Specific heat of air [MJ kg-1 °C-1]
-CP = 1.013 * 10 ** -3
+CP = 1.013 * 10**-3
 # Stefan Boltzmann constant - hourly [MJm-2K-4h-1]
-STEFAN_BOLTZMANN_HOUR = 2.042 * 10 ** -10
+STEFAN_BOLTZMANN_HOUR = 2.042 * 10**-10
 # Stefan Boltzmann constant - daily [MJm-2K-4d-1]
-STEFAN_BOLTZMANN_DAY = 4.903 * 10 ** -9
+STEFAN_BOLTZMANN_DAY = 4.903 * 10**-9
 
 
-def penman(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
-           rhmax=None, rhmin=None, rh=None, pressure=None, elevation=None,
-           lat=None, n=None, nn=None, rso=None, aw=1, bw=0.537, a=1.35,
-           b=-0.35, ea=None, albedo=0.23, kab=None, as1=0.25, bs1=0.5,
-           clip_zero=True):
+def penman(
+    tmean,
+    wind,
+    rs=None,
+    rn=None,
+    g=0,
+    tmax=None,
+    tmin=None,
+    rhmax=None,
+    rhmin=None,
+    rh=None,
+    pressure=None,
+    elevation=None,
+    lat=None,
+    n=None,
+    nn=None,
+    rso=None,
+    aw=1,
+    bw=0.537,
+    a=1.35,
+    b=-0.35,
+    ea=None,
+    albedo=0.23,
+    kab=None,
+    as1=0.25,
+    bs1=0.5,
+    clip_zero=True,
+):
     """Potential evapotranspiration calculated according to
     :cite:t:`penman_natural_1948`.
 
@@ -100,38 +123,70 @@ def penman(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
         \\gamma (a_w + b_w u_2) (e_s-e_a)}{(\\Delta +\\gamma)}
 
     """
-    vtmean, vwind, vrs, vrn, vtmax, vtmin, vrhmax, vrhmin, vrh, vpressure, \
-    velevation, vn, vnn, vrso, vea = vectorize(tmean, wind, rs, rn, tmax,
-                                               tmin, rhmax, rhmin, rh,
-                                               pressure, elevation, n, nn,
-                                               rso, ea)
-    vpressure, gamma, dlt, lambd, vea, es = lambda_gamma_dlt_ea_es(velevation,
-                                                                   vpressure,
-                                                                   vtmean,
-                                                                   vtmax,
-                                                                   vtmin,
-                                                                   vrhmax,
-                                                                   vrhmin, vrh,
-                                                                   vea)
-    vrn = calc_rad_net(tmean, vrn, rs, lat, vn, vnn, vtmax, vtmin, vrhmax,
-                       vrhmin, vrh, velevation, vrso, a, b, vea, albedo, as1,
-                       bs1, kab)
+    pressure, gamma, dlt, lambd, ea, es = lambda_gamma_dlt_ea_es(
+        elevation, pressure, tmean, tmax, tmin, rhmax, rhmin, rh, ea
+    )
+    rn = calc_rad_net(
+        tmean,
+        rn,
+        rs,
+        lat,
+        n,
+        nn,
+        tmax,
+        tmin,
+        rhmax,
+        rhmin,
+        rh,
+        elevation,
+        rso,
+        a,
+        b,
+        ea,
+        albedo,
+        as1,
+        bs1,
+        kab,
+    )
+    fu = aw + bw * wind
 
-    fu = (aw + bw * vwind)
-
-    den = (dlt + gamma)
-    num1 = dlt * (vrn - g) / den / lambd
-    num2 = gamma * (es - vea) * fu / den
+    den = dlt + gamma
+    num1 = dlt * (rn - g) / den / lambd
+    num2 = gamma * (es - ea) * fu / den
     pet = num1 + num2
     pet = clip_zeros(pet, clip_zero)
     return pet_out(tmean, pet, "Penman")
 
 
-def pm_asce(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
-            rhmax=None, rhmin=None, rh=None, pressure=None, elevation=None,
-            lat=None, n=None, nn=None, rso=None, a=1.35, b=-0.35, cn=900,
-            cd=0.34, ea=None, albedo=0.23, kab=None, as1=0.25, bs1=0.5,
-            clip_zero=True, etype="os"):
+def pm_asce(
+    tmean,
+    wind,
+    rs=None,
+    rn=None,
+    g=0,
+    tmax=None,
+    tmin=None,
+    rhmax=None,
+    rhmin=None,
+    rh=None,
+    pressure=None,
+    elevation=None,
+    lat=None,
+    n=None,
+    nn=None,
+    rso=None,
+    a=1.35,
+    b=-0.35,
+    cn=900,
+    cd=0.34,
+    ea=None,
+    albedo=0.23,
+    kab=None,
+    as1=0.25,
+    bs1=0.5,
+    clip_zero=True,
+    etype="os",
+):
     """Potential evapotranspiration calculated according to
     :cite:t:`monteith_evaporation_1965`.
 
@@ -215,39 +270,79 @@ def pm_asce(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
         \\frac{e_s-e_a}{r_a}}{\\lambda(\\Delta +\\gamma(1+\\frac{r_s}{r_a}))}
 
     """
-    vtmean, vwind, vrs, vrn, vtmax, vtmin, vrhmax, vrhmin, vrh, vpressure, \
-    velevation, vn, vnn, vrso, vea = vectorize(tmean, wind, rs, rn, tmax,
-                                               tmin, rhmax, rhmin, rh,
-                                               pressure, elevation, n, nn,
-                                               rso, ea)
-    vpressure, gamma, dlt, lambd, vea, es = lambda_gamma_dlt_ea_es(velevation,
-                                                                   vpressure,
-                                                                   vtmean,
-                                                                   vtmax,
-                                                                   vtmin,
-                                                                   vrhmax,
-                                                                   vrhmin, vrh,
-                                                                   vea)
-    vrn = calc_rad_net(tmean, vrn, rs, lat, vn, vnn, vtmax, vtmin, vrhmax,
-                       vrhmin, vrh, velevation, vrso, a, b, vea, albedo, as1,
-                       bs1, kab)
+    pressure, gamma, dlt, lambd, ea, es = lambda_gamma_dlt_ea_es(
+        elevation, pressure, tmean, tmax, tmin, rhmax, rhmin, rh, ea
+    )
+    rn = calc_rad_net(
+        tmean,
+        rn,
+        rs,
+        lat,
+        n,
+        nn,
+        tmax,
+        tmin,
+        rhmax,
+        rhmin,
+        rh,
+        elevation,
+        rso,
+        a,
+        b,
+        ea,
+        albedo,
+        as1,
+        bs1,
+        kab,
+    )
     if etype == "rs":
         cn = 1600
         cd = 0.38
 
-    den = dlt + gamma * (1 + cd * vwind)
-    num1 = (0.408 * dlt * (vrn - g)) / den
-    num2 = gamma * cn / (vtmean + 273) * vwind * (es - vea) / den
+    den = dlt + gamma * (1 + cd * wind)
+    num1 = (0.408 * dlt * (rn - g)) / den
+    num2 = gamma * cn / (tmean + 273) * wind * (es - ea) / den
     pet = num1 + num2
     pet = clip_zeros(pet, clip_zero)
     return pet_out(tmean, pet, "PM_ASCE")
 
 
-def pm(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None, rhmax=None,
-       rhmin=None, rh=None, pressure=None, elevation=None, lat=None, n=None,
-       nn=None, rso=None, ea=None, a=1.35, b=-0.35, lai=None, croph=0.12,
-       r_l=100, r_s=None, ra_method=0, a_sh=1, a_s=1, lai_eff=0, srs=0.0009,
-       co2=300, albedo=0.23, kab=None, as1=0.25, bs1=0.5, clip_zero=True):
+def pm(
+    tmean,
+    wind,
+    rs=None,
+    rn=None,
+    g=0,
+    tmax=None,
+    tmin=None,
+    rhmax=None,
+    rhmin=None,
+    rh=None,
+    pressure=None,
+    elevation=None,
+    lat=None,
+    n=None,
+    nn=None,
+    rso=None,
+    ea=None,
+    a=1.35,
+    b=-0.35,
+    lai=None,
+    croph=0.12,
+    r_l=100,
+    r_s=None,
+    ra_method=0,
+    a_sh=1,
+    a_s=1,
+    lai_eff=0,
+    srs=0.0009,
+    co2=300,
+    albedo=0.23,
+    kab=None,
+    as1=0.25,
+    bs1=0.5,
+    clip_zero=True,
+):
     """Potential evapotranspiration calculated according to
     :cite:t:`monteith_evaporation_1965`.
 
@@ -364,44 +459,76 @@ def pm(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None, rhmax=None,
         \\frac{log(\\frac{(zh - d)}{zoh})}{(0.41^2)u_2}
 
     """
-    vtmean, vwind, vrs, vrn, vtmax, vtmin, vrhmax, vrhmin, vrh, vpressure, \
-    velevation, vn, vnn, vrso, vea = vectorize(tmean, wind, rs, rn, tmax,
-                                               tmin, rhmax, rhmin, rh,
-                                               pressure, elevation, n, nn,
-                                               rso, ea)
-    vpressure, gamma, dlt, lambd, vea, es = lambda_gamma_dlt_ea_es(velevation,
-                                                                   vpressure,
-                                                                   vtmean,
-                                                                   vtmax,
-                                                                   vtmin,
-                                                                   vrhmax,
-                                                                   vrhmin, vrh,
-                                                                   vea)
+    pressure, gamma, dlt, lambd, ea, es = lambda_gamma_dlt_ea_es(
+        elevation, pressure, tmean, tmax, tmin, rhmax, rhmin, rh, ea
+    )
 
-    res_a = calc_res_aero(vwind, ra_method=ra_method, croph=croph)
-    res_s = calc_res_surf(lai=lai, r_s=r_s, r_l=r_l, lai_eff=lai_eff, srs=srs,
-                          co2=co2, croph=croph)
+    res_a = calc_res_aero(wind, ra_method=ra_method, croph=croph)
+    res_s = calc_res_surf(
+        lai=lai, r_s=r_s, r_l=r_l, lai_eff=lai_eff, srs=srs, co2=co2, croph=croph
+    )
     gamma1 = gamma * a_sh / a_s * (1 + res_s / res_a)
 
-    vrn = calc_rad_net(tmean, vrn, rs, lat, vn, vnn, vtmax, vtmin, vrhmax,
-                       vrhmin, vrh, velevation, vrso, a, b, vea, albedo, as1,
-                       bs1, kab)
+    rn = calc_rad_net(
+        tmean,
+        rn,
+        rs,
+        lat,
+        n,
+        nn,
+        tmax,
+        tmin,
+        rhmax,
+        rhmin,
+        rh,
+        elevation,
+        rso,
+        a,
+        b,
+        ea,
+        albedo,
+        as1,
+        bs1,
+        kab,
+    )
 
     kmin = 86400  # unit conversion s d-1
-    rho_a = calc_rho(vpressure, vtmean, vea)
+    rho_a = calc_rho(pressure, tmean, ea)
 
     den = lambd * (dlt + gamma1)
-    num1 = dlt * (vrn - g) / den
-    num2 = rho_a * CP * kmin * (es - vea) * a_sh / res_a / den
+    num1 = dlt * (rn - g) / den
+    num2 = rho_a * CP * kmin * (es - ea) * a_sh / res_a / den
     pet = num1 + num2
     pet = clip_zeros(pet, clip_zero)
     return pet_out(tmean, pet, "Penman_Monteith")
 
 
-def pm_fao56(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
-             rhmax=None, rhmin=None, rh=None, pressure=None, elevation=None,
-             lat=None, n=None, nn=None, rso=None, a=1.35, b=-0.35, ea=None,
-             albedo=0.23, kab=None, as1=0.25, bs1=0.5, clip_zero=True):
+def pm_fao56(
+    tmean,
+    wind,
+    rs=None,
+    rn=None,
+    g=0,
+    tmax=None,
+    tmin=None,
+    rhmax=None,
+    rhmin=None,
+    rh=None,
+    pressure=None,
+    elevation=None,
+    lat=None,
+    n=None,
+    nn=None,
+    rso=None,
+    a=1.35,
+    b=-0.35,
+    ea=None,
+    albedo=0.23,
+    kab=None,
+    as1=0.25,
+    bs1=0.5,
+    clip_zero=True,
+):
     """Potential evapotranspiration calculated according to
     :cite:t:`allen_crop_1998`.
 
@@ -475,37 +602,67 @@ def pm_fao56(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
     """
     if tmean is None:
         tmean = (tmax + tmin) / 2
-    vtmean, vwind, vrs, vrn, vtmax, vtmin, vrhmax, vrhmin, vrh, vpressure, \
-    velevation, vn, vnn, vrso, vea = vectorize(tmean, wind, rs, rn, tmax,
-                                               tmin, rhmax, rhmin, rh,
-                                               pressure, elevation, n, nn,
-                                               rso, ea)
-    vpressure, gamma, dlt, lambd, vea, es = lambda_gamma_dlt_ea_es(velevation,
-                                                                   vpressure,
-                                                                   vtmean,
-                                                                   vtmax,
-                                                                   vtmin,
-                                                                   vrhmax,
-                                                                   vrhmin, vrh,
-                                                                   vea)
-    gamma1 = (gamma * (1 + 0.34 * vwind))
-    vrn = calc_rad_net(tmean, vrn, rs, lat, vn, vnn, vtmax, vtmin, vrhmax,
-                       vrhmin, vrh, velevation, vrso, a, b, vea, albedo, as1,
-                       bs1, kab)
+
+    pressure, gamma, dlt, lambd, ea, es = lambda_gamma_dlt_ea_es(
+        elevation, pressure, tmean, tmax, tmin, rhmax, rhmin, rh, ea
+    )
+    gamma1 = gamma * (1 + 0.34 * wind)
+    rn = calc_rad_net(
+        tmean,
+        rn,
+        rs,
+        lat,
+        n,
+        nn,
+        tmax,
+        tmin,
+        rhmax,
+        rhmin,
+        rh,
+        elevation,
+        rso,
+        a,
+        b,
+        ea,
+        albedo,
+        as1,
+        bs1,
+        kab,
+    )
 
     den = dlt + gamma1
-    num1 = (0.408 * dlt * (vrn - g)) / den
-    num2 = (gamma * (es - vea) * 900 * vwind / (vtmean + 273)) / den
+    num1 = (0.408 * dlt * (rn - g)) / den
+    num2 = (gamma * (es - ea) * 900 * wind / (tmean + 273)) / den
     pet = num1 + num2
     pet = clip_zeros(pet, clip_zero)
-    return pet_out(tmean, pet, "PM_FAO_56")
+    return pet  # pet_out(tmean, pet, "PM_FAO_56")
 
 
-def priestley_taylor(tmean, rs=None, rn=None, g=0, tmax=None, tmin=None,
-                     rhmax=None, rhmin=None, rh=None, pressure=None,
-                     elevation=None, lat=None, n=None, nn=None, rso=None,
-                     a=1.35, b=-0.35, alpha=1.26, albedo=0.23, kab=None,
-                     as1=0.25, bs1=0.5, clip_zero=True):
+def priestley_taylor(
+    tmean,
+    rs=None,
+    rn=None,
+    g=0,
+    tmax=None,
+    tmin=None,
+    rhmax=None,
+    rhmin=None,
+    rh=None,
+    pressure=None,
+    elevation=None,
+    lat=None,
+    n=None,
+    nn=None,
+    rso=None,
+    a=1.35,
+    b=-0.35,
+    alpha=1.26,
+    albedo=0.23,
+    kab=None,
+    as1=0.25,
+    bs1=0.5,
+    clip_zero=True,
+):
     """Potential evapotranspiration calculated according to
     :cite:t:`priestley_assessment_1972`.
 
@@ -575,29 +732,65 @@ def priestley_taylor(tmean, rs=None, rn=None, g=0, tmax=None, tmin=None,
         {\\lambda(\\Delta +\\gamma)}
 
     """
-    vtmean, vrs, vrn, vtmax, vtmin, vrhmax, vrhmin, vrh, vpressure, \
-    velevation, vn, vnn, vrso = vectorize(tmean, rs, rn, tmax, tmin, rhmax,
-                                          rhmin, rh, pressure, elevation, n,
-                                          nn, rso)
-    vpressure = calc_press(velevation, vpressure)
-    gamma = calc_psy(vpressure)
-    dlt = calc_vpc(vtmean)
-    lambd = calc_lambda(vtmean)
+    pressure = calc_press(elevation, pressure)
+    gamma = calc_psy(pressure)
+    dlt = calc_vpc(tmean)
+    lambd = calc_lambda(tmean)
 
-    vrn = calc_rad_net(tmean, vrn, rs, lat, vn, vnn, vtmax, vtmin, vrhmax,
-                       vrhmin, vrh, velevation, vrso, a, b, None, albedo, as1,
-                       bs1, kab)
+    rn = calc_rad_net(
+        tmean,
+        rn,
+        rs,
+        lat,
+        n,
+        nn,
+        tmax,
+        tmin,
+        rhmax,
+        rhmin,
+        rh,
+        elevation,
+        rso,
+        a,
+        b,
+        None,
+        albedo,
+        as1,
+        bs1,
+        kab,
+    )
 
-    pet = (alpha * dlt * (vrn - g)) / (lambd * (dlt + gamma))
+    pet = (alpha * dlt * (rn - g)) / (lambd * (dlt + gamma))
     pet = clip_zeros(pet, clip_zero)
     return pet_out(tmean, pet, "Priestley_Taylor")
 
 
-def kimberly_penman(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
-                    rhmax=None, rhmin=None, rh=None, pressure=None,
-                    elevation=None, lat=None, n=None, nn=None, rso=None,
-                    a=1.35, b=-0.35, ea=None, albedo=0.23, kab=None, as1=0.25,
-                    bs1=0.5, clip_zero=True):
+def kimberly_penman(
+    tmean,
+    wind,
+    rs=None,
+    rn=None,
+    g=0,
+    tmax=None,
+    tmin=None,
+    rhmax=None,
+    rhmin=None,
+    rh=None,
+    pressure=None,
+    elevation=None,
+    lat=None,
+    n=None,
+    nn=None,
+    rso=None,
+    a=1.35,
+    b=-0.35,
+    ea=None,
+    albedo=0.23,
+    kab=None,
+    as1=0.25,
+    bs1=0.5,
+    clip_zero=True,
+):
     """Potential evapotranspiration calculated according to
     :cite:t:`wright_new_1982`.
 
@@ -669,45 +862,87 @@ def kimberly_penman(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
             (0.605 + 0.345 * exp(-(\\frac{J_D-243}{80})^2))
 
     """
-    vtmean, vwind, vrs, vrn, vtmax, vtmin, vrhmax, vrhmin, vrh, vpressure, \
-    velevation, vn, vnn, vrso, vea = vectorize(tmean, wind, rs, rn, tmax,
-                                               tmin, rhmax, rhmin, rh,
-                                               pressure, elevation, n, nn,
-                                               rso, ea)
-    vpressure, gamma, dlt, lambd, vea, es = lambda_gamma_dlt_ea_es(velevation,
-                                                                   vpressure,
-                                                                   vtmean,
-                                                                   vtmax,
-                                                                   vtmin,
-                                                                   vrhmax,
-                                                                   vrhmin, vrh,
-                                                                   vea)
+    pressure, gamma, dlt, lambd, ea, es = lambda_gamma_dlt_ea_es(
+        elevation, pressure, tmean, tmax, tmin, rhmax, rhmin, rh, ea
+    )
 
-    vrn = calc_rad_net(tmean, vrn, rs, lat, vn, vnn, vtmax, vtmin, vrhmax,
-                       vrhmin, vrh, velevation, vrso, a, b, vea, albedo, as1,
-                       bs1, kab)
+    rn = calc_rad_net(
+        tmean,
+        rn,
+        rs,
+        lat,
+        n,
+        nn,
+        tmax,
+        tmin,
+        rhmax,
+        rhmin,
+        rh,
+        elevation,
+        rso,
+        a,
+        b,
+        ea,
+        albedo,
+        as1,
+        bs1,
+        kab,
+    )
 
     tindex = get_index(tmean)
     j = day_of_year(tindex)
-    if len(vwind.shape) == 3:
+    if len(wind.shape) == 3:
         j = j[:, newaxis, newaxis]
-    w = vwind * (0.4 + 0.14 * exp(-((j - 173) / 58) ** 2) + (
-            0.605 + 0.345 * exp((j - 243) / 80) ** 2))
+    w = wind * (
+        0.4
+        + 0.14 * exp(-(((j - 173) / 58) ** 2))
+        + (0.605 + 0.345 * exp((j - 243) / 80) ** 2)
+    )
 
     den = lambd * (dlt + gamma)
-    num1 = dlt * (vrn - g) / den
-    num2 = gamma * (es - vea) * w / den
+    num1 = dlt * (rn - g) / den
+    num2 = gamma * (es - ea) * w / den
     pet = num1 + num2
     pet = clip_zeros(pet, clip_zero)
     return pet_out(tmean, pet, "Kimberly_Penman")
 
 
-def thom_oliver(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
-                rhmax=None, rhmin=None, rh=None, pressure=None, elevation=None,
-                lat=None, n=None, nn=None, rso=None, aw=2.6, bw=0.536, a=1.35,
-                b=-0.35, lai=None, croph=0.12, r_l=100, r_s=None, ra_method=0,
-                lai_eff=0, srs=0.0009, co2=300, ea=None, albedo=0.23, kab=None,
-                as1=0.25, bs1=0.5, clip_zero=True):
+def thom_oliver(
+    tmean,
+    wind,
+    rs=None,
+    rn=None,
+    g=0,
+    tmax=None,
+    tmin=None,
+    rhmax=None,
+    rhmin=None,
+    rh=None,
+    pressure=None,
+    elevation=None,
+    lat=None,
+    n=None,
+    nn=None,
+    rso=None,
+    aw=2.6,
+    bw=0.536,
+    a=1.35,
+    b=-0.35,
+    lai=None,
+    croph=0.12,
+    r_l=100,
+    r_s=None,
+    ra_method=0,
+    lai_eff=0,
+    srs=0.0009,
+    co2=300,
+    ea=None,
+    albedo=0.23,
+    kab=None,
+    as1=0.25,
+    bs1=0.5,
+    clip_zero=True,
+):
     """Potential evapotranspiration calculated according to
     :cite:t:`thom_penmans_1977`.
 
@@ -803,39 +1038,51 @@ def thom_oliver(tmean, wind, rs=None, rn=None, g=0, tmax=None, tmin=None,
     .. math:: w=2.6(1+0.53u_2)
 
     """
-    vtmean, vwind, vrs, vrn, vtmax, vtmin, vrhmax, vrhmin, vrh, vpressure, \
-    velevation, vn, vnn, vrso, vea = vectorize(tmean, wind, rs, rn, tmax,
-                                               tmin, rhmax, rhmin, rh,
-                                               pressure, elevation, n, nn,
-                                               rso, ea)
-    vpressure, gamma, dlt, lambd, ea, es = lambda_gamma_dlt_ea_es(velevation,
-                                                                  vpressure,
-                                                                  vtmean,
-                                                                  vtmax, vtmin,
-                                                                  vrhmax,
-                                                                  vrhmin, vrh,
-                                                                  vea)
-    res_a = calc_res_aero(vwind, ra_method=ra_method, croph=croph)
-    res_s = calc_res_surf(lai=lai, r_s=r_s, r_l=r_l, lai_eff=lai_eff, srs=srs,
-                          co2=co2, croph=croph)
+    pressure, gamma, dlt, lambd, ea, es = lambda_gamma_dlt_ea_es(
+        elevation, pressure, tmean, tmax, tmin, rhmax, rhmin, rh, ea
+    )
+    res_a = calc_res_aero(wind, ra_method=ra_method, croph=croph)
+    res_s = calc_res_surf(
+        lai=lai, r_s=r_s, r_l=r_l, lai_eff=lai_eff, srs=srs, co2=co2, croph=croph
+    )
     gamma1 = gamma * (1 + res_s / res_a)
 
-    vrn = calc_rad_net(tmean, vrn, rs, lat, vn, vnn, vtmax, vtmin, vrhmax,
-                       vrhmin, vrh, velevation, vrso, a, b, vea, albedo, as1,
-                       bs1, kab)
+    rn = calc_rad_net(
+        tmean,
+        rn,
+        rs,
+        lat,
+        n,
+        nn,
+        tmax,
+        tmin,
+        rhmax,
+        rhmin,
+        rh,
+        elevation,
+        rso,
+        a,
+        b,
+        ea,
+        albedo,
+        as1,
+        bs1,
+        kab,
+    )
 
-    w = aw * (1 + bw * vwind)
+    w = aw * (1 + bw * wind)
 
     den = lambd * (dlt + gamma1)
-    num1 = dlt * (vrn - g) / den
+    num1 = dlt * (rn - g) / den
     num2 = 2.5 * gamma * (es - ea) * w / den
     pet = num1 + num2
     pet = clip_zeros(pet, clip_zero)
     return pet_out(tmean, pet, "Thom_Oliver")
 
 
-def calculate_all(tmean, wind, rs, elevation, lat, tmax, tmin, rh=None,
-                  rhmax=None, rhmin=None):
+def calculate_all(
+    tmean, wind, rs, elevation, lat, tmax, tmin, rh=None, rhmax=None, rhmin=None
+):
     """Potential evapotranspiration estimated based on all available methods
     in pyet with time series data.
 
@@ -870,31 +1117,73 @@ def calculate_all(tmean, wind, rs, elevation, lat, tmax, tmin, rh=None,
      --------
      >>> pe_all = calculate_all(tmean, wind, rs, elevation, lat, tmax=tmax,
                                 tmin=tmin, rh=rh)
-     """
+    """
     pe_df = pandas.DataFrame()
-    pe_df["Penman"] = penman(tmean, wind, rs=rs, elevation=elevation,
-                             lat=lat, tmax=tmax, tmin=tmin, rh=rh, rhmax=rhmax,
-                             rhmin=rhmin)
-    pe_df["FAO-56"] = pm_fao56(tmean, wind, rs=rs, elevation=elevation,
-                               lat=lat, tmax=tmax, tmin=tmin, rh=rh,
-                               rhmax=rhmax, rhmin=rhmin)
-    pe_df["Priestley-Taylor"] = priestley_taylor(tmean, rs=rs,
-                                                 elevation=elevation, lat=lat,
-                                                 tmax=tmax, tmin=tmin, rh=rh,
-                                                 rhmax=rhmax, rhmin=rhmin)
-    pe_df["Kimberly-Penman"] = kimberly_penman(tmean, wind, rs=rs,
-                                               elevation=elevation,
-                                               lat=lat, tmax=tmax, tmin=tmin,
-                                               rh=rh, rhmax=rhmax, rhmin=rhmin)
-    pe_df["Thom-Oliver"] = thom_oliver(tmean, wind, rs=rs,
-                                       elevation=elevation, lat=lat, tmax=tmax,
-                                       tmin=tmin, rh=rh, rhmax=rhmax,
-                                       rhmin=rhmin)
+    pe_df["Penman"] = penman(
+        tmean,
+        wind,
+        rs=rs,
+        elevation=elevation,
+        lat=lat,
+        tmax=tmax,
+        tmin=tmin,
+        rh=rh,
+        rhmax=rhmax,
+        rhmin=rhmin,
+    )
+    pe_df["FAO-56"] = pm_fao56(
+        tmean,
+        wind,
+        rs=rs,
+        elevation=elevation,
+        lat=lat,
+        tmax=tmax,
+        tmin=tmin,
+        rh=rh,
+        rhmax=rhmax,
+        rhmin=rhmin,
+    )
+    pe_df["Priestley-Taylor"] = priestley_taylor(
+        tmean,
+        rs=rs,
+        elevation=elevation,
+        lat=lat,
+        tmax=tmax,
+        tmin=tmin,
+        rh=rh,
+        rhmax=rhmax,
+        rhmin=rhmin,
+    )
+    pe_df["Kimberly-Penman"] = kimberly_penman(
+        tmean,
+        wind,
+        rs=rs,
+        elevation=elevation,
+        lat=lat,
+        tmax=tmax,
+        tmin=tmin,
+        rh=rh,
+        rhmax=rhmax,
+        rhmin=rhmin,
+    )
+    pe_df["Thom-Oliver"] = thom_oliver(
+        tmean,
+        wind,
+        rs=rs,
+        elevation=elevation,
+        lat=lat,
+        tmax=tmax,
+        tmin=tmin,
+        rh=rh,
+        rhmax=rhmax,
+        rhmin=rhmin,
+    )
 
     pe_df["Blaney-Criddle"] = blaney_criddle(tmean, lat)
     pe_df["Hamon"] = hamon(tmean, lat=lat, method=1)
-    pe_df["Romanenko"] = romanenko(tmean, rh=rh, tmax=tmax, tmin=tmin,
-                                   rhmax=rhmax, rhmin=rhmin)
+    pe_df["Romanenko"] = romanenko(
+        tmean, rh=rh, tmax=tmax, tmin=tmin, rhmax=rhmax, rhmin=rhmin
+    )
     pe_df["Linacre"] = linacre(tmean, elevation, lat, tmax=tmax, tmin=tmin)
     pe_df["Haude"] = haude(tmax, rh)
 
@@ -909,15 +1198,23 @@ def calculate_all(tmean, wind, rs, elevation, lat, tmax, tmin, rh=None,
     return pe_df
 
 
-def lambda_gamma_dlt_ea_es(velevation, vpressure, vtmean, vtmax, vtmin, vrhmax,
-                           vrhmin, vrh, vea):
+def lambda_gamma_dlt_ea_es(
+    velevation, vpressure, vtmean, vtmax, vtmin, vrhmax, vrhmin, vrh, vea
+):
     """Just ot avoid duplicated rows."""
     vpressure = calc_press(velevation, vpressure)
     gamma = calc_psy(vpressure)
     dlt = calc_vpc(vtmean)
     lambd = calc_lambda(vtmean)
 
-    ea = calc_ea(tmean=vtmean, tmax=vtmax, tmin=vtmin, rhmax=check_rh(vrhmax),
-                 rhmin=check_rh(vrhmin), rh=check_rh(vrh), ea=vea)
+    ea = calc_ea(
+        tmean=vtmean,
+        tmax=vtmax,
+        tmin=vtmin,
+        rhmax=check_rh(vrhmax),
+        rhmin=check_rh(vrhmin),
+        rh=check_rh(vrh),
+        ea=vea,
+    )
     es = calc_es(tmean=vtmean, tmax=vtmax, tmin=vtmin)
     return vpressure, gamma, dlt, lambd, ea, es

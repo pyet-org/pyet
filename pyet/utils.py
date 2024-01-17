@@ -4,9 +4,7 @@ from xarray import DataArray
 
 
 def show_versions():
-    """Method to print the version of dependencies.
-
-    """
+    """Method to print the version of dependencies."""
     from pyet import __version__ as ps_version
     from pandas import __version__ as pd_version
     from numpy import __version__ as np_version
@@ -43,7 +41,8 @@ def check_rad(rad):
             raise Exception(
                 "The radiation input provided is greater than 100 MJ/m2d, "
                 "which is not realistic. Please convert the radiation input"
-                " to MJ/m2d.")
+                " to MJ/m2d."
+            )
 
 
 def check_rh(rh):
@@ -55,7 +54,8 @@ def check_rh(rh):
             raise Exception(
                 "The maximum value of relative humidity provided is smaller "
                 "than 1 [%], which is not realistic. Please convert the "
-                "relative humidity to [%].")
+                "relative humidity to [%]."
+            )
     else:
         pass
 
@@ -73,37 +73,39 @@ def check_lat(lat, shape=None):
     if not (-1.6 < numpy.mean(lat1) < 1.6):
         raise Exception(
             "Latitude must be provided in radians! Use pyet.deg_to_rad()"
-            "to convert from degrees to radians.")
+            "to convert from degrees to radians."
+        )
     return lat1
 
 
 def clip_zeros(s, clip_zero):
     """Method to replace negative values with 0 for Pandas.Series and
-        xarray.DataArray.
+    xarray.DataArray.
 
     """
     if clip_zero:
-        s[s < 0] = 0
+        s.where(s >= 0, 0)
         return s
     else:
         return s
 
 
 def pet_out(tmean, pet, name):
-    """Method to create pandas.Series or xarray.DataArray from numpy.ndarray
-    """
+    """Method to create pandas.Series or xarray.DataArray from numpy.ndarray"""
     if isinstance(tmean, Series):
-        return Series(data=pet, index=tmean.index, name=name)
+        return pet.rename(
+            name
+        )  # Series(data=pet.flatten(), index=tmean.index, name=name)
     elif isinstance(tmean, DataArray):
-        return DataArray(pet, coords=tmean.coords, dims=tmean.dims, name=name)
+        return pet.rename(
+            name
+        )  # ataArray(pet, coords=tmean.coords, dims=tmean.dims, name=name)
     else:
         print("Input is neither pandas.Series not xarray.DataArray!")
 
 
 def get_index(df):
-    """Method to return the index of the input data.
-
-    """
+    """Method to return the index of the input data."""
     try:
         index = DatetimeIndex(df.index)
     except AttributeError:
@@ -126,6 +128,7 @@ def vectorize(*arrays):
         else:
             raise TypeError(
                 f"Input must be a pandas.Series or xarray.DataArray, "
-                f"but got {type(arr)}")
+                f"but got {type(arr)}"
+            )
         vec_arrays.append(vec_arr)
     return vec_arrays

@@ -2,22 +2,45 @@
 
 """
 
-from numpy import sqrt, clip, newaxis
+from numpy import sqrt, clip, newaxis, isnan, isinf
+
+from pandas import DatetimeIndex, Series
+
+from xarray import DataArray
 
 from .meteo_utils import calc_ea, extraterrestrial_r, daylight_hours
 
 from .utils import get_index, check_rad, vectorize
+import math
 
 # Stefan Boltzmann constant - hourly [MJm-2K-4h-1]
-STEFAN_BOLTZMANN_HOUR = 2.042 * 10 ** -10
+STEFAN_BOLTZMANN_HOUR = 2.042 * 10**-10
 # Stefan Boltzmann constant - daily [MJm-2K-4d-1]
-STEFAN_BOLTZMANN_DAY = 4.903 * 10 ** -9
+STEFAN_BOLTZMANN_DAY = 4.903 * 10**-9
 
 
-def calc_rad_net(tmean, rn=None, rs=None, lat=None, n=None, nn=None, tmax=None,
-                 tmin=None, rhmax=None, rhmin=None, rh=None, elevation=None,
-                 rso=None, a=1.35, b=-0.35, ea=None, albedo=0.23, as1=0.25,
-                 bs1=0.5, kab=None):
+def calc_rad_net(
+    tmean,
+    rn=None,
+    rs=None,
+    lat=None,
+    n=None,
+    nn=None,
+    tmax=None,
+    tmin=None,
+    rhmax=None,
+    rhmin=None,
+    rh=None,
+    elevation=None,
+    rso=None,
+    a=1.35,
+    b=-0.35,
+    ea=None,
+    albedo=0.23,
+    as1=0.25,
+    bs1=0.5,
+    kab=None,
+):
     """Net radiation [MJ m-2 d-1].
 
     Parameters
@@ -81,20 +104,46 @@ def calc_rad_net(tmean, rn=None, rs=None, lat=None, n=None, nn=None, tmax=None,
     else:
         if rs is None:
             rs = calc_rad_sol_in(n, lat, as1=as1, bs1=bs1, nn=nn)
-        rns = calc_rad_short(rs=rs, lat=lat, n=n, nn=nn, albedo=albedo,
-                             as1=as1, bs1=bs1)  # [MJ/m2/d]
-        rnl = calc_rad_long(rs=rs, tmean=tmean, tmax=tmax, tmin=tmin,
-                            rhmax=rhmax, rhmin=rhmin, rh=rh,
-                            elevation=elevation, lat=lat, rso=rso, a=a, b=b,
-                            ea=ea, kab=kab)  # [MJ/m2/d]
+        rns = calc_rad_short(
+            rs=rs, lat=lat, n=n, nn=nn, albedo=albedo, as1=as1, bs1=bs1
+        )  # [MJ/m2/d]
+        rnl = calc_rad_long(
+            rs=rs,
+            tmean=tmean,
+            tmax=tmax,
+            tmin=tmin,
+            rhmax=rhmax,
+            rhmin=rhmin,
+            rh=rh,
+            elevation=elevation,
+            lat=lat,
+            rso=rso,
+            a=a,
+            b=b,
+            ea=ea,
+            kab=kab,
+        )  # [MJ/m2/d]
         rn = rns - rnl
         rn = check_rad(rn)
         return rn
 
 
-def calc_rad_long(rs, tmean=None, tmax=None, tmin=None, rhmax=None, rhmin=None,
-                  rh=None, elevation=None, lat=None, rso=None, a=1.35, b=-0.35,
-                  ea=None, kab=None):
+def calc_rad_long(
+    rs,
+    tmean=None,
+    tmax=None,
+    tmin=None,
+    rhmax=None,
+    rhmin=None,
+    rh=None,
+    elevation=None,
+    lat=None,
+    rso=None,
+    a=1.35,
+    b=-0.35,
+    ea=None,
+    kab=None,
+):
     """Net longwave radiation [MJ m-2 d-1].
 
     Parameters
@@ -142,33 +191,29 @@ def calc_rad_long(rs, tmean=None, tmax=None, tmin=None, rhmax=None, rhmin=None,
 
     """
     if ea is None:
-        ea = calc_ea(tmean=tmean, tmax=tmax, tmin=tmin, rhmax=rhmax,
-                     rhmin=rhmin, rh=rh)
+        ea = calc_ea(tmean=tmean, tmax=tmax, tmin=tmin, rhmax=rhmax, rhmin=rhmin, rh=rh)
 
     if rso is None:
         tindex = get_index(rs)
-        ra = extraterrestrial_r(tindex, lat, rs.shape)
+        ra = extraterrestrial_r(tindex, lat)
         rso = calc_rso(ra=ra, elevation=elevation, kab=kab)
-    vrs, = vectorize(rs)
-    if len(vrs.shape) == 3 and len(rso.shape) == 1:
-        rso = vrs / vrs * rso[:, newaxis, newaxis]
     # Add a small constant to rso where it is zero to avoid division with zero
-    rso[rso == 0] = 0.001
-    solar_rat = clip(vrs / rso, 0.3, 1)
+    rso = rso.where(rso != 0, 0.001)
+    if len(rs.shape) == 3 and len(rso.shape) == 1:
+        rso = rso.values[:, newaxis, newaxis]
+    solar_rat = clip(rs / rso, 0.3, 1)
     if tmax is not None:
-        tmp1 = STEFAN_BOLTZMANN_DAY * ((tmax + 273.16) ** 4 +
-                                       (tmin + 273.16) ** 4) / 2
+        tmp1 = STEFAN_BOLTZMANN_DAY * ((tmax + 273.16) ** 4 + (tmin + 273.16) ** 4) / 2
     else:
         tmp1 = STEFAN_BOLTZMANN_DAY * (tmean + 273.16) ** 4
-
     tmp2 = 0.34 - 0.14 * sqrt(ea)  # OK
     tmp3 = a * solar_rat + b  # OK
     tmp3 = clip(tmp3, 0.05, 1)
-    return tmp1 * tmp2 * tmp3
+    rnl = tmp1 * tmp2 * tmp3
+    return rnl
 
 
-def calc_rad_short(rs=None, lat=None, albedo=0.23, n=None, nn=None, as1=0.25,
-                   bs1=0.5):
+def calc_rad_short(rs=None, lat=None, albedo=0.23, n=None, nn=None, as1=0.25, bs1=0.5):
     """Net shortwave radiation [MJ m-2 d-1].
 
     Parameters
@@ -199,7 +244,7 @@ def calc_rad_short(rs=None, lat=None, albedo=0.23, n=None, nn=None, as1=0.25,
     Based on equation 38 in :cite:t:`allen_crop_1998`.
 
     """
-    vrs, = vectorize(rs)
+    (vrs,) = vectorize(rs)
     if vrs is not None:
         return (1 - albedo) * vrs
     else:
@@ -233,7 +278,7 @@ def calc_rad_sol_in(n, lat, as1=0.25, bs1=0.5, nn=None):
 
     """
     tindex = get_index(n)
-    ra = extraterrestrial_r(tindex, lat, n.shape)
+    ra = extraterrestrial_r(tindex, lat)
     if nn is None:
         nn = daylight_hours(tindex, lat)
     return (as1 + bs1 * n / nn) * ra
@@ -264,10 +309,12 @@ def calc_rso(ra, elevation, kab=None):
     Based on equation 37 in :cite:t:`allen_crop_1998`.
 
     """
+    if isinstance(elevation, DataArray):
+        tindex = get_index(ra)
+        elevation = elevation.expand_dims(dim={"time": tindex}, axis=0)
+        if isinstance(ra, Series):
+            ra = ra.values[:, newaxis, newaxis]
     if kab is None:
-        if len(ra.shape) == 1:
-            return (0.75 + (2 * 10 ** -5) * elevation) * ra
-        else:
-            return (0.75 + (2 * 10 ** -5) * elevation[newaxis, :, :]) * ra
+        return (0.75 + (2 * 10**-5) * elevation) * ra
     else:
         return kab * ra
