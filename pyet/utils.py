@@ -84,7 +84,7 @@ def clip_zeros(s, clip_zero):
 
     """
     if clip_zero:
-        s.where(s >= 0, 0)
+        s = s.where((s >= 0) | s.isnull(), 0)
         return s
     else:
         return s

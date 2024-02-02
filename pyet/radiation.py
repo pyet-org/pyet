@@ -450,6 +450,6 @@ def oudin(tmean, lat, k1=100, k2=5, clip_zero=True):
     index = get_index(tmean)
     ra = extraterrestrial_r(index, lat)
     pet = ra * (tmean + k2) / lambd / k1
-    pet[(tmean + k2) < 0] = 0
+    pet = pet.where((tmean + k2) >= 0, 0)
     pet = clip_zeros(pet, clip_zero)
     return pet_out(tmean, pet, "Oudin")

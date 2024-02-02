@@ -11,11 +11,6 @@ from numpy import (
     mod,
     exp,
     log,
-    maximum,
-    minimum,
-    ndarray,
-    asarray,
-    newaxis,
     clip,
     isnan,
     nanmax,
@@ -341,9 +336,9 @@ def sunset_angle(sol_dec, lat):
     """
     if isinstance(lat, DataArray):
         lat = lat.expand_dims(dim={"time": sol_dec.index}, axis=0)
-        return arccos(-tan(sol_dec.values) * tan(lat).T).T
+        return arccos(clip(-tan(sol_dec.values) * tan(lat).T, -1, 1)).T
     else:
-        return arccos(-tan(sol_dec) * tan(lat))
+        return arccos(clip(-tan(sol_dec) * tan(lat), -1, 1))
 
 
 def daylight_hours(tindex, lat):
