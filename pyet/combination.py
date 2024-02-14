@@ -1,10 +1,22 @@
 """The combination module contains functions of combination PE methods
 
 """
-from numpy import exp, newaxis
 import pandas
 
-from .temperature import blaney_criddle, romanenko, linacre, haude, hamon
+from numpy import exp, newaxis
+
+from .meteo_utils import (
+    calc_lambda,
+    calc_press,
+    calc_psy,
+    calc_vpc,
+    calc_ea,
+    calc_es,
+    calc_rho,
+    calc_res_surf,
+    calc_res_aero,
+    day_of_year,
+)
 from .radiation import (
     jensen_haise,
     turc,
@@ -15,25 +27,9 @@ from .radiation import (
     makkink,
     oudin,
 )
-from .meteo_utils import lambda_gamma_dlt_ea_es, pet_out
+from .temperature import blaney_criddle, romanenko, linacre, haude, hamon
 from .rad_utils import calc_rad_net
-
-from .utils import (
-    calc_press,
-    calc_psy,
-    calc_vpc,
-    calc_lambda,
-    calc_ea,
-    check_rh,
-    calc_es,
-    calc_rho,
-    calc_res_surf,
-    calc_res_aero,
-    clip_zeros,
-    calc_rad_net,
-    day_of_year,
-    get_index,
-)
+from .utils import clip_zeros, get_index, check_rh, pet_out
 
 # Specific heat of air [MJ kg-1 °C-1]
 CP = 1.013 * 10**-3
