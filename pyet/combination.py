@@ -4,8 +4,8 @@
 from numpy import exp, newaxis
 import pandas
 
-from temperature import blaney_criddle, romanenko, linacre, haude, hamon
-from radiation import (
+from .temperature import blaney_criddle, romanenko, linacre, haude, hamon
+from .radiation import (
     jensen_haise,
     turc,
     mcguinness_bordne,
