@@ -61,4 +61,5 @@ rtd = [
     "sphinx-gallery",
     "sphinx>=3.1",
     "sphinxcontrib-bibtex",
+    "matplotlib",
 ]
