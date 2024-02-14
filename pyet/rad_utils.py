@@ -2,16 +2,15 @@
 
 """
 
-from numpy import sqrt, clip, newaxis, isnan, isinf
+from numpy import sqrt, clip, newaxis
 
-from pandas import DatetimeIndex, Series
+from pandas import Series
 
 from xarray import DataArray
 
 from .meteo_utils import calc_ea, extraterrestrial_r, daylight_hours
 
 from .utils import get_index, check_rad, vectorize
-import math
 
 # Stefan Boltzmann constant - hourly [MJm-2K-4h-1]
 STEFAN_BOLTZMANN_HOUR = 2.042 * 10**-10
