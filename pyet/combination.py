@@ -143,7 +143,7 @@ def penman(
         \\gamma (a_w + b_w u_2) (e_s-e_a)}{(\\Delta +\\gamma)}
 
     """
-    pressure, gamma, dlt, lambd, ea, es = lambda_gamma_dlt_ea_es(
+    pressure, gamma, dlt, lambd, ea, es = _lambda_gamma_dlt_ea_es(
         elevation, pressure, tmean, tmax, tmin, rhmax, rhmin, rh, ea
     )
     rn = calc_rad_net(
@@ -287,7 +287,7 @@ def pm_asce(
         \\frac{e_s-e_a}{r_a}}{\\lambda(\\Delta +\\gamma(1+\\frac{r_s}{r_a}))}
 
     """
-    pressure, gamma, dlt, lambd, ea, es = lambda_gamma_dlt_ea_es(
+    pressure, gamma, dlt, lambd, ea, es = _lambda_gamma_dlt_ea_es(
         elevation, pressure, tmean, tmax, tmin, rhmax, rhmin, rh, ea
     )
     rn = calc_rad_net(
@@ -475,7 +475,7 @@ def pm(
         \\frac{log(\\frac{(zh - d)}{zoh})}{(0.41^2)u_2}
 
     """
-    pressure, gamma, dlt, lambd, ea, es = lambda_gamma_dlt_ea_es(
+    pressure, gamma, dlt, lambd, ea, es = _lambda_gamma_dlt_ea_es(
         elevation, pressure, tmean, tmax, tmin, rhmax, rhmin, rh, ea
     )
 
@@ -618,7 +618,7 @@ def pm_fao56(
     if tmean is None:
         tmean = (tmax + tmin) / 2
 
-    pressure, gamma, dlt, lambd, ea, es = lambda_gamma_dlt_ea_es(
+    pressure, gamma, dlt, lambd, ea, es = _lambda_gamma_dlt_ea_es(
         elevation, pressure, tmean, tmax, tmin, rhmax, rhmin, rh, ea
     )
     gamma1 = gamma * (1 + 0.34 * wind)
@@ -874,7 +874,7 @@ def kimberly_penman(
             (0.605 + 0.345 * exp(-(\\frac{J_D-243}{80})^2))
 
     """
-    pressure, gamma, dlt, lambd, ea, es = lambda_gamma_dlt_ea_es(
+    pressure, gamma, dlt, lambd, ea, es = _lambda_gamma_dlt_ea_es(
         elevation, pressure, tmean, tmax, tmin, rhmax, rhmin, rh, ea
     )
 
@@ -1048,7 +1048,7 @@ def thom_oliver(
     .. math:: w=2.6(1+0.53u_2)
 
     """
-    pressure, gamma, dlt, lambd, ea, es = lambda_gamma_dlt_ea_es(
+    pressure, gamma, dlt, lambd, ea, es = _lambda_gamma_dlt_ea_es(
         elevation, pressure, tmean, tmax, tmin, rhmax, rhmin, rh, ea
     )
     res_a = calc_res_aero(wind, ra_method=ra_method, croph=croph)
@@ -1207,7 +1207,7 @@ def calculate_all(
     return pe_df
 
 
-def lambda_gamma_dlt_ea_es(
+def _lambda_gamma_dlt_ea_es(
     velevation, vpressure, vtmean, vtmax, vtmin, vrhmax, vrhmin, vrh, vea
 ):
     """Just ot avoid duplicated rows."""
