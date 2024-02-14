@@ -2,14 +2,16 @@
 
 """
 
-from numpy import sqrt, log, ones
+from numpy import sqrt, log
 
 from .combination import calc_lambda
 
 from .meteo_utils import extraterrestrial_r, calc_press, calc_psy, calc_vpc
 
-from pyet.utils import *
+from .utils import get_index, check_rad, clip_zeros, pet_out, check_rh
 
+from xarray import DataArray
+from pandas import Series
 
 def turc(tmean, rs, rh, k=0.31, clip_zero=True):
     """Potential evapotranspiration calculated according to

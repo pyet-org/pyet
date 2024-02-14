@@ -3,12 +3,12 @@
 """
 
 from numpy import exp, pi, asarray, newaxis
-from pandas import date_range, Series
+from pandas import date_range
 from xarray import DataArray
 
 from .meteo_utils import daylight_hours, calc_ea, calc_es, calc_e0
 
-from pyet.utils import get_index, check_lat, clip_zeros, check_rh, pet_out, vectorize
+from pyet.utils import get_index, check_lat, clip_zeros, check_rh, pet_out
 
 
 def blaney_criddle(
