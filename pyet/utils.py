@@ -9,11 +9,13 @@ def show_versions():
     from pandas import __version__ as pd_version
     from numpy import __version__ as np_version
     from sys import version as os_version
+    from xarray import __version__ as xr_version
 
     msg = (
         f"Python version: {os_version}\n"
         f"Numpy version: {np_version}\n"
         f"Pandas version: {pd_version}\n"
+        f"xarray version: {xr_version}\n"
         f"Pyet version: {ps_version}"
     )
     return print(msg)
@@ -21,19 +23,22 @@ def show_versions():
 
 def deg_to_rad(lat):
     """Method to convert latitude in degrees to radians.
-    lat: float/xarray.DataArray
-        the site latitude [deg]
+
+    Parameters
+    ----------
+    lat: float or xarray.DataArray
+        The site latitude [deg].
 
     Returns
     -------
-    float/pandas.Series/xarray.DataArray containing the calculated
-            latitude in radians [rad].
+    float or pandas.Series or xarray.DataArray containing the calculated latitude in
+    radians [rad].
     """
     return lat * numpy.pi / 180
 
 
 def check_rad(rad):
-    """Method to check if radiation was provided in MJ/m2d."""
+    """Method to check if radiation was probably provided in MJ/m2d."""
     if rad is not None:
         if numpy.nanmax(rad) < 100:
             return rad
@@ -79,31 +84,23 @@ def check_lat(lat, shape=None):
 
 
 def clip_zeros(s, clip_zero):
-    """Method to replace negative values with 0 for Pandas.Series and
-    xarray.DataArray.
+    """Method to replace negative values with 0 for Pandas.Series and xarray.DataArray.
 
     """
     if clip_zero:
         s = s.where((s >= 0) | s.isnull(), 0)
-        return s
-    else:
-        return s
+    return s
 
 
 def pet_out(tmean, pet, name):
     """Method to create pandas.Series or xarray.DataArray from numpy.ndarray"""
-    if isinstance(tmean, Series):
-        return pet.rename(
-            name
-        )  # Series(data=pet.flatten(), index=tmean.index, name=name)
-    elif isinstance(tmean, DataArray):
-        return pet.rename(
-            name
-        )  # ataArray(pet, coords=tmean.coords, dims=tmean.dims, name=name)
+    if isinstance(tmean, (Series, DataArray)):
+        return pet.rename(name)
     else:
-        print("Input is neither pandas.Series not xarray.DataArray!")
+        raise TypeError("Input must be either pandas.Series or xarray.DataArray!")
 
 
+@staticmethod
 def get_index(df):
     """Method to return the index of the input data."""
     try:

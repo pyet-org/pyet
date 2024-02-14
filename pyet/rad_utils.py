@@ -1,4 +1,4 @@
-"""The rad_utils module contains utility functions for radiation data
+"""The rad_utils module contains utility functions for radiation data.
 
 """
 
@@ -45,52 +45,51 @@ def calc_rad_net(
     Parameters
     ----------
     tmean: pandas.Series/xarray.DataArray
-        average day temperature [°C]
-    rn: float/pandas.Series/xarray.DataArray, optional
-        net radiation [MJ m-2 d-1]
-    rs: float/pandas.Series/xarray.DataArray, optional
-        incoming solar radiation [MJ m-2 d-1]
+        average day temperature [°C].
+    rn: float or pandas.Series or xarray.DataArray, optional
+        net radiation [MJ m-2 d-1].
+    rs: float or pandas.Series or xarray.DataArray, optional
+        incoming solar radiation [MJ m-2 d-1].
     lat: float/xarray.DataArray, optional
-        the site latitude [rad]
-    n: float/pandas.Series/xarray.DataArray, optional
-        actual duration of sunshine [hour]
-    nn: float/pandas.Series/xarray.DataArray, optional
-        maximum possible duration of sunshine or daylight hours [hour]
-    tmax: float/pandas.Series/xarray.DataArray, optional
-        maximum day temperature [°C]
-    tmin: float/pandas.Series/xarray.DataArray, optional
-        minimum day temperature [°C]
-    rhmax: float/pandas.Series/xarray.DataArray, optional
-        maximum daily relative humidity [%]
-    rhmin: float/pandas.Series/xarray.DataArray, optional
-        mainimum daily relative humidity [%]
-    rh: float/pandas.Series/xarray.DataArray, optional
-        mean daily relative humidity [%]
+        the site latitude [rad].
+    n: float or pandas.Series or xarray.DataArray, optional
+        actual duration of sunshine [hour].
+    nn: float or pandas.Series or xarray.DataArray, optional
+        maximum possible duration of sunshine or daylight hours [hour].
+    tmax: float or pandas.Series or xarray.DataArray, optional
+        maximum day temperature [°C].
+    tmin: float or pandas.Series or xarray.DataArray, optional
+        minimum day temperature [°C].
+    rhmax: float or pandas.Series or xarray.DataArray, optional
+        maximum daily relative humidity [%].
+    rhmin: float or pandas.Series or xarray.DataArray, optional
+        mainimum daily relative humidity [%].
+    rh: float or pandas.Series or xarray.DataArray, optional
+        mean daily relative humidity [%].
     elevation: float/xarray.DataArray, optional
-        the site elevation [m]
-    rso: float/pandas.Series/xarray.DataArray, optional
-        clear-sky solar radiation [MJ m-2 day-1]
+        the site elevation [m].
+    rso: float or pandas.Series or xarray.DataArray, optional
+        clear-sky solar radiation [MJ m-2 day-1].
     a: float, optional
-        empirical coefficient for Net Long-Wave radiation [-]
+        empirical coefficient for Net Long-Wave radiation [-].
     b: float, optional
-        empirical coefficient for Net Long-Wave radiation [-]
-    ea: float/pandas.Series/xarray.DataArray, optional
-        actual vapor pressure [kPa]
+        empirical coefficient for Net Long-Wave radiation [-].
+    ea: float or pandas.Series or xarray.DataArray, optional
+        actual vapor pressure [kPa].
     albedo: float, optional
         surface albedo [-]
     as1: float, optional
-        regression constant,  expressing the fraction of extraterrestrial
-        reaching the earth on overcast days (n = 0) [-]
+        regression constant,  expressing the fraction of extraterrestrial reaching the
+        earth on overcast days (n = 0) [-]
     bs1: float, optional
         empirical coefficient for extraterrestrial radiation [-]
     kab: float, optional
-        coefficient derived from as1, bs1 for estimating clear-sky radiation
-        [degrees].
+        coefficient derived from as1, bs1 for estimating clear-sky radiation [degrees].
 
     Returns
     -------
-    float/pandas.Series/xarray.DataArray, optional containing the calculated
-        net shortwave radiation
+    float or pandas.Series or xarray.DataArray, optional containing the calculated net
+    shortwave radiation.
 
     Notes
     -----
@@ -147,42 +146,42 @@ def calc_rad_long(
 
     Parameters
     ----------
-    rs: float/pandas.Series/xarray.DataArray, optional
-        incoming solar radiation [MJ m-2 d-1]
-    tmean: float/pandas.Series/xarray.DataArray, optional
-        average day temperature [°C]
-    tmax: float/pandas.Series/xarray.DataArray, optional
-        maximum day temperature [°C]
-    tmin: float/pandas.Series/xarray.DataArray, optional
-        minimum day temperature [°C]
-    rhmax: float/pandas.Series/xarray.DataArray, optional
-        maximum daily relative humidity [%]
-    rhmin: float/pandas.Series/xarray.DataArray, optional
-        mainimum daily relative humidity [%]
-    rh: float/pandas.Series/xarray.DataArray, optional
-        mean daily relative humidity [%]
+    rs: float or pandas.Series or xarray.DataArray, optional
+        incoming solar radiation [MJ m-2 d-1].
+    tmean: float or pandas.Series or xarray.DataArray, optional
+        average day temperature [°C].
+    tmax: float or pandas.Series or xarray.DataArray, optional
+        maximum day temperature [°C].
+    tmin: float or pandas.Series or xarray.DataArray, optional
+        minimum day temperature [°C].
+    rhmax: float or pandas.Series or xarray.DataArray, optional
+        maximum daily relative humidity [%].
+    rhmin: float or pandas.Series or xarray.DataArray, optional
+        mainimum daily relative humidity [%].
+    rh: float or pandas.Series or xarray.DataArray, optional
+        mean daily relative humidity [%].
     elevation: float/xarray.DataArray, optional
-        the site elevation [m]
+        the site elevation [m].
     lat: float/xarray.DataArray, optional
-        the site latitude [rad]
-    rso: float/pandas.Series/xarray.DataArray, optional
-        clear-sky solar radiation [MJ m-2 day-1]
+        the site latitude [rad].
+    rso: float or pandas.Series or xarray.DataArray, optional
+        clear-sky solar radiation [MJ m-2 day-1].
     a: float, optional
-        empirical coefficient for Net Long-Wave radiation [-]
+        empirical coefficient for Net Long-Wave radiation [-].
     b: float, optional
-        empirical coefficient for Net Long-Wave radiation [-]
-    ea: float/pandas.Series/xarray.DataArray, optional
-        actual vapor pressure [kPa]
+        empirical coefficient for Net Long-Wave radiation [-].
+    ea: float or pandas.Series or xarray.DataArray, optional
+        actual vapor pressure [kPa].
     kab: float, optional
         coefficient that can be derived from the as and bs coefficients of the
         Angstrom formula, where Kab = as + bs, and where Kab represents the
         fraction of extraterrestrial radiation reaching the earth on clear-sky
-        days [-]
+        days [-].
 
     Returns
     -------
-    float/pandas.Series/xarray.DataArray, optional containing the calculated
-        net longwave radiation
+    float or pandas.Series or xarray.DataArray, optional containing the calculated net
+    longwave radiation.
 
     Notes
     -----
@@ -217,26 +216,26 @@ def calc_rad_short(rs=None, lat=None, albedo=0.23, n=None, nn=None, as1=0.25, bs
 
     Parameters
     ----------
-    rs: float/pandas.Series/xarray.DataArray, optional
-        incoming solar radiation [MJ m-2 d-1]
+    rs: float or pandas.Series or xarray.DataArray, optional
+        incoming solar radiation [MJ m-2 d-1].
     lat: float, optional
-        the site latitude [rad]
-    albedo: float/pandas.Series/xarray.DataArray, optional
-        surface albedo [-]
+        the site latitude [rad].
+    albedo: float or pandas.Series or xarray.DataArray, optional
+        surface albedo [-].
     n: pandas.Series/xarray.DataArray, optional
-        actual duration of sunshine [hour]
+        actual duration of sunshine [hour].
     as1: float, optional
-        regression constant,  expressing the fraction of extraterrestrial
-        reaching the earth on overcast days (n = 0) [-]
+        regression constant,  expressing the fraction of extraterrestrial reaching the
+        earth on overcast days (n = 0) [-].
     bs1: float, optional
-        empirical coefficient for extraterrestrial radiation [-]
-    nn: float/pandas.Series/xarray.DataArray, optional
-        maximum possible duration of sunshine or daylight hours [hour]
+        empirical coefficient for extraterrestrial radiation [-].
+    nn: float or pandas.Series or xarray.DataArray, optional
+        maximum possible duration of sunshine or daylight hours [hour].
 
     Returns
     -------
-    float/pandas.Series/xarray.DataArray, optional containing the calculated
-        net shortwave radiation
+    float or pandas.Series or xarray.DataArray, optional containing the calculated
+    net shortwave radiation.
 
     Notes
     -----
@@ -256,20 +255,20 @@ def calc_rad_sol_in(n, lat, as1=0.25, bs1=0.5, nn=None):
     Parameters
     ----------
     n: pandas.Series or xarray.DataArray
-        actual duration of sunshine [hour]
+        actual duration of sunshine [hour].
     lat: float, optional
-        the site latitude [rad]
+        the site latitude [rad].
     as1: float, optional
-        regression constant,  expressing the fraction of extraterrestrial
-        reaching the earth on overcast days (n = 0) [-]
+        regression constant,  expressing the fraction of extraterrestrial reaching the
+        earth on overcast days (n = 0) [-].
     bs1: float, optional
-        empirical coefficient for extraterrestrial radiation [-]
+        empirical coefficient for extraterrestrial radiation [-].
     nn: pandas.Series/float, optional
-        maximum possible duration of sunshine or daylight hours [hour]
+        maximum possible duration of sunshine or daylight hours [hour].
 
     Returns
     -------
-    pandas.Series containing the calculated net shortwave radiation
+    pandas.Series containing the calculated net shortwave radiation.
 
     Notes
     -----
@@ -289,19 +288,19 @@ def calc_rso(ra, elevation, kab=None):
     Parameters
     ----------
     ra: pandas.Series/xarray.DataArray, optional
-        Extraterrestrial daily radiation [MJ m-2 d-1]
+        Extraterrestrial daily radiation [MJ m-2 d-1].
     elevation: float/xarray.DataArray, optional
-        the site elevation [m]
+        the site elevation [m].
     kab: float, optional
         coefficient that can be derived from the as and bs coefficients of the
         Angstrom formula, where Kab = as + bs, and where Kab represents the
         fraction of extraterrestrial radiation reaching the earth on clear-sky
-        days [-]
+        days [-].
 
     Returns
     -------
-    pandas.Series/xarray.DataArray, optional containing the calculated
-        Clear-sky solar radiation
+    pandas.Series/xarray.DataArray, optional containing the calculated Clear-sky solar
+    radiation.
 
     Notes
     -----

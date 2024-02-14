@@ -1,4 +1,4 @@
-"""The temperature module contains functions of temperature PET methods
+"""The temperature module contains functions of temperature PET methods.
 
 """
 
@@ -30,37 +30,37 @@ def blaney_criddle(
 
     Parameters
     ----------
-    tmean: pandas.Series/xarray.DataArray
-        average day temperature [°C]
-    lat: float/xarray.DataArray, optional
-        the site latitude [rad]
+    tmean: pandas.Series or xarray.DataArray
+        average day temperature [°C].
+    lat: float or xarray.DataArray, optional
+        the site latitude [rad].
     a: float, optional
-        calibration coefficient for method 0 [-]
+        calibration coefficient for method 0 [-].
     b: float, optional
-        calibration coefficient for method 0 [-]
+        calibration coefficient for method 0 [-].
     k: float, optional
-        calibration coefficient for method 1 [-]
-    wind: float/pandas.Series/xarray.DataArray, optional
-        mean day wind speed [m/s]
-    rhmin: float/pandas.Series/xarray.DataArray, optional
-        mainimum daily relative humidity [%]
-    n: float/pandas.Series/xarray.DataArray, optional
-        actual duration of sunshine [hour]
-    nn: float/pandas.Series/xarray.DataArray, optional
-        maximum possible duration of sunshine or daylight hours [hour]
-    py: float/pandas.Series/xarray.DataArray, optional
+        calibration coefficient for method 1 [-].
+    wind: float or pandas.Series or xarray.DataArray, optional
+        mean day wind speed [m/s].
+    rhmin: float or pandas.Series or xarray.DataArray, optional
+        mainimum daily relative humidity [%].
+    n: float or pandas.Series or xarray.DataArray, optional
+        actual duration of sunshine [hour].
+    nn: float or pandas.Series or xarray.DataArray, optional
+        maximum possible duration of sunshine or daylight hours [hour].
+    py: float or pandas.Series or xarray.DataArray, optional
         percentage of actual day-light hours for the day compared to the
-        number of day-light hour during the entire year [-]
+        number of day-light hour during the entire year [-].
     method: float, optional
         0 => Blaney Criddle after :cite:t:`schrodter_hinweise_1985`
         1 => Blaney Criddle after :cite:t:`xu_evaluation_2001`
-        2 => FAO-24 Blaney Criddle after :cite:t:`mcmahon_estimating_2013`
+        2 => FAO-24 Blaney Criddle after :cite:t:`mcmahon_estimating_2013`.
     clip_zero: bool, optional
         if True, replace all negative values with 0.
 
     Returns
     -------
-    float/pandas.Series/xarray.DataArray containing the calculated
+    float or pandas.Series or xarray.DataArray containing the calculated
             Potential evapotranspiration [mm d-1].
 
     Examples
@@ -139,19 +139,19 @@ def haude(tmean, rh, k=1, clip_zero=True):
 
     Parameters
     ----------
-    tmean: pandas.Series/xarray.DataArray
-        temperature at 2pm or maximum dailty temperature [°C]
-    rh: float/pandas.Series/xarray.DataArray
-        average relative humidity at 2pm [%]
+    tmean: pandas.Series or xarray.DataArray
+        temperature at 2pm or maximum dailty temperature [°C].
+    rh: float or pandas.Series or xarray.DataArray
+        average relative humidity at 2pm [%].
     k: float, optional
-        calibration coefficient [-]
+        calibration coefficient [-].
     clip_zero: bool, optional
         if True, replace all negative values with 0.
 
     Returns
     -------
-    float/pandas.Series/xarray.DataArray containing the calculated
-            Potential evapotranspiration [mm d-1].
+    float or pandas.Series or xarray.DataArray containing the calculated potential
+    evapotranspiration [mm d-1].
 
     Examples
     --------
@@ -159,8 +159,7 @@ def haude(tmean, rh, k=1, clip_zero=True):
 
     Notes
     -----
-    Following :cite:t:`haude_determination_1955` and
-    :cite:t:`schiff_berechnung_1975`.
+    Following :cite:t:`haude_determination_1955` and :cite:t:`schiff_berechnung_1975`.
 
     .. math:: PET = k * f * (e_s-e_a)
 
@@ -197,22 +196,22 @@ def hamon(
 
     Parameters
     ----------
-    tmean: pandas.Series/xarray.DataArray
-        average day temperature [°C]
-    lat: float/xarray.DataArray
-        the site latitude [rad]
+    tmean: pandas.Series or xarray.DataArray
+        average day temperature [°C].
+    lat: float or xarray.DataArray
+        the site latitude [rad].
     k: float, optional
-        calibration coefficient if method = 0 [-]
+        calibration coefficient if method = 0 [-].
     c: float, optional
         c is a constant for calculation in mm per day if method = 1.
     cc: float, optional
         calibration coefficient if method = 2 [-].
-    n: float/pandas.Series/xarray.DataArray, optional
-        actual duration of sunshine [hour]
-    tmax: float/pandas.Series/xarray.DataArray
-        maximum day temperature [°C]
-    tmin: float/pandas.Series/xarray.DataArray
-        minimum day temperature [°C]
+    n: float or pandas.Series or xarray.DataArray, optional
+        actual duration of sunshine [hour].
+    tmax: float or pandas.Series or xarray.DataArray
+        maximum day temperature [°C].
+    tmin: float or pandas.Series or xarray.DataArray
+        minimum day temperature [°C].
 
     method: float, optional
         0 => Hamon after :cite:t:`oudin_which_2005`
@@ -224,8 +223,8 @@ def hamon(
 
     Returns
     -------
-    float/pandas.Series/xarray.DataArray containing the calculated
-            Potential evapotranspiration [mm d-1].
+    float or pandas.Series or xarray.DataArray containing the calculated potential
+    evapotranspiration [mm d-1].
 
     Examples
     --------
@@ -292,27 +291,27 @@ def romanenko(
 
     Parameters
     ----------
-    tmean: float/pandas.Series/xarray.DataArray
-        average day temperature [°C]
-    rh: float/pandas.Series/xarray.DataArray
-        mean daily relative humidity [%]
+    tmean: float or pandas.Series or xarray.DataArray
+        average day temperature [°C].
+    rh: float or pandas.Series or xarray.DataArray
+        mean daily relative humidity [%].
     k: float, optional
-        calibration coefficient [-]
-    tmax: float/pandas.Series/xarray.DataArray
-        maximum day temperature [°C]
-    tmin: float/pandas.Series/xarray.DataArray
-        minimum day temperature [°C]
+        calibration coefficient [-].
+    tmax: float or pandas.Series or xarray.DataArray
+        maximum day temperature [°C].
+    tmin: float or pandas.Series or xarray.DataArray
+        minimum day temperature [°C].
     rhmax: pandas.Series, optional
-        maximum daily relative humidity [%]
+        maximum daily relative humidity [%].
     rhmin: pandas.Series, optional
-        mainimum daily relative humidity [%]
+        mainimum daily relative humidity [%].
     clip_zero: bool, optional
         if True, replace all negative values with 0.
 
     Returns
     -------
-    float/pandas.Series/xarray.DataArray containing the calculated
-            Potential evapotranspiration [mm d-1].
+    float or pandas.Series or xarray.DataArray containing the calculated potential
+    evapotranspiration [mm d-1].
 
     Examples
     --------
@@ -346,24 +345,24 @@ def linacre(tmean, elevation, lat, tdew=None, tmax=None, tmin=None, clip_zero=Tr
     Parameters
     ----------
     tmean: pandas.Series or array_like
-        average day temperature [°C]
+        average day temperature [°C].
     elevation: array_like
-        the site elevation [m]
+        the site elevation [m].
     lat: array_like, optional
-        the site latitude [°]
+        the site latitude [°].
     tdew: pandas.Series or array_like, optional
-        mean dew-point temperature [°C]
+        mean dew-point temperature [°C].
     tmax: pandas.Series or array_like, optional
-        maximum day temperature [°C]
+        maximum day temperature [°C].
     tmin: pandas.Series or array_like, optional
-        minimum day temperature [°C]
+        minimum day temperature [°C].
     clip_zero: bool, optional
         if True, replace all negative values with 0.
 
     Returns
     -------
-    pandas.Series or array_like containing the calculated
-            Potential evapotranspiration [mm d-1].
+    pandas.Series or array_like containing the calculated potential
+    evapotranspiration [mm d-1].
 
     Examples
     --------

@@ -20,13 +20,13 @@ def turc(tmean, rs, rh, k=0.31, clip_zero=True):
     Parameters
     ----------
     tmean: pandas.Series or xarray.DataArray
-        average day temperature [°C]
+        average day temperature [°C].
     rs: pandas.Series or xarray.DataArray
-        incoming solar radiation [MJ m-2 d-1]
+        incoming solar radiation [MJ m-2 d-1].
     rh: pandas.Series or xarray.DataArray
-        mean daily relative humidity [%]
+        mean daily relative humidity [%].
     k: float, optional
-        calibration coefficient [-]
+        calibration coefficient [-].
     clip_zero: bool, optional
         if True, replace all negative values with 0.
 
@@ -64,25 +64,25 @@ def jensen_haise(tmean, rs=None, cr=0.025, tx=-3, lat=None, method=0, clip_zero=
     Parameters
     ----------
     tmean: pandas.Series orxarray.DataArray
-        average day temperature [°C]
+        average day temperature [°C].
     rs: pandas.Series or xarray.DataArray, optional
-        incoming solar radiation [MJ m-2 d-1]
+        incoming solar radiation [MJ m-2 d-1].
     cr: float, optional
-        temperature coefficient [-]
+        temperature coefficient [-].
     tx: float, optional
-        intercept of the temperature axis [°C]
+        intercept of the temperature axis [°C].
     lat: float/xarray.DataArray
-        the site latitude [rad]
+        the site latitude [rad].
     method: float, optional
         0 => after :cite:t:`jensen_evaporation_2016`
-        1 => after :cite:t:`oudin_which_2005`
+        1 => after :cite:t:`oudin_which_2005`.
     clip_zero: bool, optional
         if True, replace all negative values with 0.
 
     Returns
     -------
-    pandas.Series or xarray.DataArray containing the calculated
-            Potential evapotranspiration [mm d-1].
+    pandas.Series or xarray.DataArray containing the calculated potential
+    evapotranspiration [mm d-1].
 
     Examples
     --------
@@ -123,18 +123,18 @@ def mcguinness_bordne(tmean, lat, k=0.0147, clip_zero=True):
     Parameters
     ----------
     tmean: pandas.Series or xarray.DataArray
-        average day temperature [°C]
+        average day temperature [°C].
     lat: float/xarray.DataArray, optional
-        the site latitude [rad]
+        the site latitude [rad].
     k: float, optional
-        calibration coefficient [-]
+        calibration coefficient [-].
     clip_zero: bool, optional
         if True, replace all negative values with 0.
 
     Returns
     -------
-    pandas.Series or xarray.DataArray containing the calculated
-            Potential evapotranspiration [mm d-1].
+    pandas.Series or xarray.DataArray containing the calculated potential
+    evapotranspiration [mm d-1].
 
     Examples
     --------
@@ -164,25 +164,25 @@ def hargreaves(tmean, tmax, tmin, lat, k=0.0135, method=0, clip_zero=True):
     Parameters
     ----------
     tmean: pandas.Series or xarray.DataArray
-        average day temperature [°C]
+        average day temperature [°C].
     tmax: pandas.Series or xarray.DataArray
-        maximum day temperature [°C]
+        maximum day temperature [°C].
     tmin: pandas.Series or xarray.DataArray
-        minimum day temperature [°C]
+        minimum day temperature [°C].
     lat: float/xarray.DataArray
-        the site latitude [rad]
+        the site latitude [rad].
     k: float, optional
-        calirbation coefficient [-]
+        calirbation coefficient [-].
     method: float, optional
         0 => after :cite:t:`jensen_evaporation_2016`
-        1 => after :cite:t:`mcmahon_estimating_2013`
+        1 => after :cite:t:`mcmahon_estimating_2013`.
     clip_zero: bool, optional
         if True, replace all negative values with 0.
 
     Returns
     -------
-    pandas.Series or xarray.DataArray containing the calculated
-            Potential evapotranspiration [mm d-1].
+    pandas.Series or xarray.DataArray containing the calculated potential
+    evapotranspiration [mm d-1].
 
     Examples
     --------
@@ -232,26 +232,26 @@ def fao_24(
     Parameters
     ----------
     tmean: pandas.Series or xarray.DataArray
-        average day temperature [°C]
+        average day temperature [°C].
     wind: pandas.Series xarray.DataArray
-        mean day wind speed [m/s]
+        mean day wind speed [m/s].
     rs: pandas.Series xarray.DataArray
-        incoming solar radiation [MJ m-2 d-1]
+        incoming solar radiation [MJ m-2 d-1].
     rh: pandas.Series or xarray.DataArray
-        mean daily relative humidity [%]
+        mean daily relative humidity [%].
     pressure: pandas.Series or xarray.DataArray, optional
-        atmospheric pressure [kPa]
+        atmospheric pressure [kPa].
     elevation: float/xarray.DataArray, optional
-        the site elevation [m]
+        the site elevation [m].
     albedo: float/xarray.DataArray, optional
-        surface albedo [-]
+        surface albedo [-].
     clip_zero: bool, optional
         if True, replace all negative values with 0.
 
     Returns
     -------
-    pandas.Series or xarray.DataArray containing the calculated
-            Potential evapotranspiration [mm d-1].
+    pandas.Series or xarray.DataArray containing the calculated potential
+    evapotranspiration [mm d-1].
 
     Examples
     --------
@@ -288,18 +288,18 @@ def abtew(tmean, rs, k=0.53, clip_zero=True):
     Parameters
     ----------
     tmean: pandas.Series or xarray.DataArray
-        average day temperature [°C]
+        average day temperature [°C].
     rs: pandas.Series or xarray.DataArray
-        incoming solar radiation [MJ m-2 d-1]
+        incoming solar radiation [MJ m-2 d-1].
     k: float, optional
-        calibration coefficient [-]
+        calibration coefficient [-].
     clip_zero: bool, optional
         if True, replace all negative values with 0.
 
     Returns
     -------
-    pandas.Series or xarray.DataArray containing the calculated
-            Potential evapotranspiration [mm d-1].
+    pandas.Series or xarray.DataArray containing the calculated potential
+    evapotranspiration [mm d-1].
 
     Examples
     --------
@@ -325,22 +325,22 @@ def makkink(tmean, rs, pressure=None, elevation=None, k=0.65, clip_zero=True):
     Parameters
     ----------
     tmean: pandas.Series or xarray.DataArray
-        average day temperature [°C]
+        average day temperature [°C].
     rs: pandas.Series or xarray.DataArray
-        incoming solar radiation [MJ m-2 d-1]
+        incoming solar radiation [MJ m-2 d-1].
     pressure: pandas.Series or xarray.DataArray, optional
-        atmospheric pressure [kPa]
+        atmospheric pressure [kPa].
     elevation: float/xarray.DataArray, optional
-        the site elevation [m]
+        the site elevation [m].
     k: float, optional
-        calirbation coefficient [-]
+        calirbation coefficient [-].
     clip_zero: bool, optional
         if True, replace all negative values with 0.
 
     Returns
     -------
-    pandas.Series or xarray.DataArray containing the calculated
-            Potential evapotranspiration [mm d-1].
+    pandas.Series or xarray.DataArray containing the calculated potential
+    evapotranspiration [mm d-1].
 
     Examples
     --------
@@ -362,22 +362,22 @@ def makkink(tmean, rs, pressure=None, elevation=None, k=0.65, clip_zero=True):
 
 
 def makkink_knmi(tmean, rs, clip_zero=True):
-    """Potential evapotranspiration calculated according to The Royal
-    Netherlands Meteorological Institute (KNMI)
+    """Potential evapotranspiration calculated according to The Royal Netherlands
+    Meteorological Institute (KNMI)
 
     Parameters
     ----------
     tmean : pandas.Series or xarray.DataArray
-        average day temperature [°C]
+        average day temperature [°C].
     rs : pandas.Series or xarray.DataArray
-        incoming solar radiation [MJ m-2 d-1]
+        incoming solar radiation [MJ m-2 d-1].
     clip_zero: bool, optional
         if True, replace all negative values with 0.
 
     Returns
     -------
-    pandas.Series or xarray.DataArray containing the calculated
-            Potential evapotranspiration [mm d-1].
+    pandas.Series or xarray.DataArray containing the calculated potential
+    evapotranspiration [mm d-1].
 
     Examples
     --------
@@ -413,26 +413,25 @@ def makkink_knmi(tmean, rs, clip_zero=True):
 
 
 def oudin(tmean, lat, k1=100, k2=5, clip_zero=True):
-    """Potential evapotranspiration calculated according to
-     :cite:t:`oudin_which_2005`.
+    """Potential evapotranspiration calculated according to :cite:t:`oudin_which_2005`.
 
     Parameters
     ----------
     tmean: pandas.Series or xarray.DataArray
-        average day temperature [°C]
+        average day temperature [°C].
     lat: float or xarray.DataArray
-        the site latitude [rad]
+        the site latitude [rad].
     k1: float, optional
-        calibration coefficient [-]
+        calibration coefficient [-].
     k2: float, optional
-        calibration coefficient [-]
+        calibration coefficient [-].
     clip_zero: bool, optional
         if True, replace all negative values with 0.
 
     Returns
     -------
-    pandas.Series or xarray.DataArray containing the calculated
-            Potential evapotranspiration [mm d-1].
+    pandas.Series or xarray.DataArray containing the calculated potential
+    evapotranspiration [mm d-1].
     clip_zero: bool, optional
         if True, replace all negative values with 0.
 
