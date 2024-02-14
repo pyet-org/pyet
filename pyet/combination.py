@@ -1,13 +1,39 @@
 """The combination module contains functions of combination PE methods
 
 """
+from numpy import exp, newaxis
 import pandas
 
-from .meteo_utils import *
-from .rad_utils import *
-from .temperature import *
-from .radiation import *
-from .utils import *
+from temperature import blaney_criddle, romanenko, linacre, haude, hamon
+from radiation import (
+    jensen_haise,
+    turc,
+    mcguinness_bordne,
+    hargreaves,
+    fao_24,
+    abtew,
+    makkink,
+    oudin,
+)
+from .meteo_utils import lambda_gamma_dlt_ea_es, pet_out
+from .rad_utils import calc_rad_net
+
+from .utils import (
+    calc_press,
+    calc_psy,
+    calc_vpc,
+    calc_lambda,
+    calc_ea,
+    check_rh,
+    calc_es,
+    calc_rho,
+    calc_res_surf,
+    calc_res_aero,
+    clip_zeros,
+    calc_rad_net,
+    day_of_year,
+    get_index,
+)
 
 # Specific heat of air [MJ kg-1 °C-1]
 CP = 1.013 * 10**-3
@@ -51,64 +77,63 @@ def penman(
     Parameters
     ----------
     tmean: pandas.Series or xarray.DataArray
-        average day temperature [°C]
+        average day temperature [°C].
     wind: float or pandas.Series or xarray.DataArray
-        mean day wind speed [m/s]
+        mean day wind speed [m/s].
     rs: float or pandas.Series or xarray.DataArray, optional
-        incoming solar radiation [MJ m-2 d-1]
+        incoming solar radiation [MJ m-2 d-1].
     rn: float or pandas.Series or xarray.DataArray, optional
-        net radiation [MJ m-2 d-1]
+        net radiation [MJ m-2 d-1].
     g: float or pandas.Series or xarray.DataArray, optional
-        soil heat flux [MJ m-2 d-1]
+        soil heat flux [MJ m-2 d-1].
     tmax: float or pandas.Series or xarray.DataArray, optional
-        maximum day temperature [°C]
+        maximum day temperature [°C].
     tmin: float or pandas.Series or xarray.DataArray, optional
-        minimum day temperature [°C]
+        minimum day temperature [°C].
     rhmax: float or pandas.Series or xarray.DataArray, optional
-        maximum daily relative humidity [%]
+        maximum daily relative humidity [%].
     rhmin: float or pandas.Series or xarray.DataArray, optional
-        mainimum daily relative humidity [%]
+        mainimum daily relative humidity [%].
     rh: float or pandas.Series or xarray.DataArray, optional
-        mean daily relative humidity [%]
+        mean daily relative humidity [%].
     pressure: float or pandas.Series or xarray.DataArray, optional
-        atmospheric pressure [kPa]
+        atmospheric pressure [kPa].
     elevation: float or xarray.DataArray, optional
-        the site elevation [m]
+        the site elevation [m].
     lat: float or xarray.DataArray, optional
-        the site latitude [rad]
+        the site latitude [rad].
     n: float or pandas.Series or xarray.DataArray, optional
-        actual duration of sunshine [hour]
+        actual duration of sunshine [hour].
     nn: float or pandas.Series or xarray.DataArray, optional
-        maximum possible duration of sunshine or daylight hours [hour]
+        maximum possible duration of sunshine or daylight hours [hour].
     rso: float or pandas.Series or xarray.DataArray, optional
-        clear-sky solar radiation [MJ m-2 day-1]
+        clear-sky solar radiation [MJ m-2 day-1].
     aw: float, optional
-        wind coefficient [-]
+        wind coefficient [-].
     bw: float, optional
-        wind coefficient [-]
+        wind coefficient [-].
     a: float, optional
-        empirical coefficient for Net Long-Wave radiation [-]
+        empirical coefficient for Net Long-Wave radiation [-].
     b: float, optional
-        empirical coefficient for Net Long-Wave radiation [-]
+        empirical coefficient for Net Long-Wave radiation [-].
     ea: float or pandas.Series or xarray.DataArray, optional
-        actual vapor pressure [kPa]
+        actual vapor pressure [kPa].
     albedo: float, optional
-        surface albedo [-]
+        surface albedo [-].
     kab: float, optional
-        coefficient derived from as1, bs1 for estimating clear-sky radiation
-        [degrees].
+        coefficient derived from as1, bs1 for estimating clear-sky radiation [degrees].
     as1: float, optional
-        regression constant,  expressing the fraction of extraterrestrial
-        reaching the earth on overcast days (n = 0) [-]
+        regression constant,  expressing the fraction of extraterrestrial reaching the
+        earth on overcast days (n = 0) [-].
     bs1: float, optional
-        empirical coefficient for extraterrestrial radiation [-]
+        empirical coefficient for extraterrestrial radiation [-].
     clip_zero: bool, optional
         if True, replace all negative values with 0.
 
     Returns
     -------
-    pandas.Series or xarray.DataArray containing the calculated
-            Potential evapotranspiration [mm d-1].
+    pandas.Series or xarray.DataArray containing the calculated potential
+    evapotranspiration [mm d-1].
 
     Examples
     --------
@@ -192,69 +217,67 @@ def pm_asce(
     Parameters
     ----------
     tmean: pandas.Series or xarray.DataArray
-        average day temperature [°C]
+        average day temperature [°C].
     wind: float or pandas.Series or xarray.DataArray
-        mean day wind speed [m/s]
+        mean day wind speed [m/s].
     rs: float or pandas.Series or xarray.DataArray, optional
-        incoming solar radiation [MJ m-2 d-1]
+        incoming solar radiation [MJ m-2 d-1].
     rn: float or pandas.Series or xarray.DataArray, optional
-        net radiation [MJ m-2 d-1]
+        net radiation [MJ m-2 d-1].
     g: float or pandas.Series or xarray.DataArray, optional
-        soil heat flux [MJ m-2 d-1]
+        soil heat flux [MJ m-2 d-1].
     tmax: float or pandas.Series or xarray.DataArray, optional
-        maximum day temperature [°C]
+        maximum day temperature [°C].
     tmin: float or pandas.Series or xarray.DataArray, optional
-        minimum day temperature [°C]
+        minimum day temperature [°C].
     rhmax: float or pandas.Series or xarray.DataArray, optional
-        maximum daily relative humidity [%]
+        maximum daily relative humidity [%].
     rhmin: float or pandas.Series or xarray.DataArray, optional
-        mainimum daily relative humidity [%]
+        mainimum daily relative humidity [%].
     rh: float or pandas.Series or xarray.DataArray, optional
-        mean daily relative humidity [%]
+        mean daily relative humidity [%].
     pressure: float or xarray.DataArray, optional
-        atmospheric pressure [kPa]
+        atmospheric pressure [kPa].
     elevation: float or xarray.DataArray, optional
-        the site elevation [m]
+        the site elevation [m].
     lat: float or xarray.DataArray, optional
-        the site latitude [rad]
+        the site latitude [rad].
     n: float or pandas.Series or xarray.DataArray, optional
-        actual duration of sunshine [hour]
+        actual duration of sunshine [hour].
     nn: float or pandas.Series or xarray.DataArray, optional
-        maximum possible duration of sunshine or daylight hours [hour]
+        maximum possible duration of sunshine or daylight hours [hour].
     rso: float or pandas.Series or xarray.DataArray, optional
-        clear-sky solar radiation [MJ m-2 day-1]
+        clear-sky solar radiation [MJ m-2 day-1].
     a: float, optional
-        empirical coefficient for Net Long-Wave radiation [-]
+        empirical coefficient for Net Long-Wave radiation [-].
     b: float, optional
-        empirical coefficient for Net Long-Wave radiation [-]
+        empirical coefficient for Net Long-Wave radiation [-].
     cn: float, optional
-        numerator constant [K mm s3 Mg-1 d-1]
+        numerator constant [K mm s3 Mg-1 d-1].
     cd: float, optional
-        denominator constant [s m-1]
+        denominator constant [s m-1].
     ea: pandas.Series or float, optional
-        actual vapor pressure [kPa]
+        actual vapor pressure [kPa].
     albedo: float, optional
-        surface albedo [-]
+        surface albedo [-].
     kab: float, optional
-        coefficient derived from as1, bs1 for estimating clear-sky radiation
-        [degrees].
+        coefficient derived from as1, bs1 for estimating clear-sky radiation [degrees].
     as1: float, optional
-        regression constant,  expressing the fraction of extraterrestrial
-        reaching the earth on overcast days (n = 0) [-]
+        regression constant,  expressing the fraction of extraterrestrial reaching the
+        earth on overcast days (n = 0) [-].
     bs1: float, optional
-        empirical coefficient for extraterrestrial radiation [-]
+        empirical coefficient for extraterrestrial radiation [-].
     clip_zero: bool, optional
         if True, replace all negative values with 0.
     etype: str, optional
-        "os" => ASCE-PM method is applied for a reference surfaces
-        representing clipped grass (a short, smooth crop)
-        "rs" => ASCE-PM method is applied for a reference surfaces
-        representing alfalfa (a taller, rougher agricultural crop),)
+        "os" => ASCE-PM method is applied for a reference surfaces representing
+        clipped grass (a short, smooth crop). "rs" => ASCE-PM method is applied for a
+        reference surfaces representing alfalfa (a taller, rougher agricultural crop),).
 
     Returns
     -------
-    pandas.Series or xarray.DataArray containing the calculated
-            Potential evapotranspiration [mm d-1].
+    pandas.Series or xarray.DataArray containing the calculated potential
+    evapotranspiration [mm d-1].
 
     Examples
     --------
@@ -262,8 +285,7 @@ def pm_asce(
 
     Notes
     -----
-    Following :cite:t:`monteith_evaporation_1965` and
-    :cite:t:`walter_asces_2000`
+    Following :cite:t:`monteith_evaporation_1965` and :cite:t:`walter_asces_2000`
 
     .. math:: PET = \\frac{\\Delta (R_{n}-G)+ \\rho_a c_p K_{min}
         \\frac{e_s-e_a}{r_a}}{\\lambda(\\Delta +\\gamma(1+\\frac{r_s}{r_a}))}
@@ -348,85 +370,84 @@ def pm(
     Parameters
     ----------
     tmean: float or xarray.DataArray
-        average day temperature [°C]
+        average day temperature [°C].
     wind: float or pandas.Series or xarray.DataArray
-        mean day wind speed [m/s]
+        mean day wind speed [m/s].
     rs: float or pandas.Series or xarray.DataArray, optional
-        incoming solar radiation [MJ m-2 d-1]
+        incoming solar radiation [MJ m-2 d-1].
     rn: float or pandas.Series or xarray.DataArray, optional
-        net radiation [MJ m-2 d-1]
+        net radiation [MJ m-2 d-1].
     g: float or pandas.Series or xarray.DataArray, optional
-        soil heat flux [MJ m-2 d-1]
+        soil heat flux [MJ m-2 d-1].
     tmax: float or pandas.Series or xarray.DataArray, optional
-        maximum day temperature [°C]
+        maximum day temperature [°C].
     tmin: float or pandas.Series or xarray.DataArray, optional
-        minimum day temperature [°C]
+        minimum day temperature [°C].
     rhmax: float or pandas.Series or xarray.DataArray, optional
-        maximum daily relative humidity [%]
+        maximum daily relative humidity [%].
     rhmin: float or pandas.Series or xarray.DataArray, optional
-        mainimum daily relative humidity [%]
+        mainimum daily relative humidity [%].
     rh: float or pandas.Series or xarray.DataArray, optional
-        mean daily relative humidity [%]
+        mean daily relative humidity [%].
     pressure: float or xarray.DataArray, optional
-        atmospheric pressure [kPa]
+        atmospheric pressure [kPa].
     elevation: float or xarray.DataArray, optional
-        the site elevation [m]
+        the site elevation [m].
     lat: float or xarray.DataArray, optional
-        the site latitude [rad]
+        the site latitude [rad].
     n: float or pandas.Series or xarray.DataArray, optional
-        actual duration of sunshine [hour]
+        actual duration of sunshine [hour].
     nn: float or pandas.Series or xarray.DataArray, optional
-        maximum possible duration of sunshine or daylight hours [hour]
+        maximum possible duration of sunshine or daylight hours [hour].
     rso: float or pandas.Series or xarray.DataArray, optional
-        clear-sky solar radiation [MJ m-2 day-1]
+        clear-sky solar radiation [MJ m-2 day-1].
     ea: float or pandas.Series or xarray.DataArray, optional
-        actual vapor pressure [kPa]
+        actual vapor pressure [kPa].
     a: float, optional
-        empirical coefficient for Net Long-Wave radiation [-]
+        empirical coefficient for Net Long-Wave radiation [-].
     b: float, optional
-        empirical coefficient for Net Long-Wave radiation [-]
+        empirical coefficient for Net Long-Wave radiation [-].
     lai: float or pandas.Series or xarray.DataArray, optional
-        leaf area index [-]
+        leaf area index [-].
     croph: float or pandas.Series or xarray.DataArray, optional
-        crop height [m]
+        crop height [m].
     r_l: pandas.Series or float, optional
-        bulk stomatal resistance [s m-1]
+        bulk stomatal resistance [s m-1].
     r_s: pandas.Series or float, optional
-        bulk surface resistance [s m-1]
+        bulk surface resistance [s m-1].
     ra_method: float, optional
         0 => ra = 208/wind
         1 => ra is calculated based on equation 36 in FAO (1990), ANNEX V.
     a_s: float, optional
         Fraction of one-sided leaf area covered by stomata (1 if stomata are 1
-        on one side only, 2 if they are on both sides)
+        on one side only, 2 if they are on both sides).
     a_sh: float, optional
-        Fraction of projected area exchanging sensible heat with the air (2)
+        Fraction of projected area exchanging sensible heat with the air (2).
     lai_eff: float, optional
         0 => LAI_eff = 0.5 * LAI
         1 => LAI_eff = lai / (0.3 * lai + 1.2)
         2 => LAI_eff = 0.5 * LAI; (LAI>4=4)
         3 => see :cite:t:`zhang_comparison_2008`.
     srs: float or pandas.Series or xarray.DataArray, optional
-        Relative sensitivity of rl to Δ[CO2]
+        Relative sensitivity of rl to Δ[CO2].
     co2: float or pandas.Series or xarray.DataArray, optional
-        CO2 concentration [ppm]
+        CO2 concentration [ppm].
     albedo: float, optional
-        surface albedo [-]
+        surface albedo [-].
     kab: float, optional
-        coefficient derived from as1, bs1 for estimating clear-sky radiation
-        [degrees].
+        coefficient derived from as1, bs1 for estimating clear-sky radiation [degrees].
     as1: float, optional
-        regression constant,  expressing the fraction of extraterrestrial
-        reaching the earth on overcast days (n = 0) [-]
+        regression constant,  expressing the fraction of extraterrestrial reaching the
+        earth on overcast days (n = 0) [-].
     bs1: float, optional
-        empirical coefficient for extraterrestrial radiation [-]
+        empirical coefficient for extraterrestrial radiation [-].
     clip_zero: bool, optional
         if True, replace all negative values with 0.
 
     Returns
     -------
-    pandas.Series or xarray.DataArray containing the calculated
-            Potential evapotranspiration [mm d-1].
+    pandas.Series or xarray.DataArray containing the calculated potential
+    evapotranspiration [mm d-1].
 
     Examples
     --------
@@ -534,60 +555,59 @@ def pm_fao56(
     Parameters
     ----------
     tmean: pandas.Series or xarray.DataArray
-        average day temperature [°C]
+        average day temperature [°C].
     wind: float or pandas.Series or xarray.DataArray
-        mean day wind speed [m/s]
+        mean day wind speed [m/s].
     rs: float or pandas.Series or xarray.DataArray, optional
-        incoming solar radiation [MJ m-2 d-1]
+        incoming solar radiation [MJ m-2 d-1].
     rn: float or pandas.Series or xarray.DataArray, optional
-        net radiation [MJ m-2 d-1]
+        net radiation [MJ m-2 d-1].
     g: float or pandas.Series or xarray.DataArray, optional
-        soil heat flux [MJ m-2 d-1]
+        soil heat flux [MJ m-2 d-1].
     tmax: float or pandas.Series or xarray.DataArray, optional
-        maximum day temperature [°C]
+        maximum day temperature [°C].
     tmin: float or pandas.Series or xarray.DataArray, optional
-        minimum day temperature [°C]
+        minimum day temperature [°C].
     rhmax: float or pandas.Series or xarray.DataArray, optional
-        maximum daily relative humidity [%]
+        maximum daily relative humidity [%].
     rhmin: float or pandas.Series or xarray.DataArray, optional
-        mainimum daily relative humidity [%]
+        mainimum daily relative humidity [%].
     rh: float or pandas.Series or xarray.DataArray optional
-        mean daily relative humidity [%]
+        mean daily relative humidity [%].
     pressure: float or pandas.Series or xarray.DataArray, optional
-        atmospheric pressure [kPa]
+        atmospheric pressure [kPa].
     elevation: float or xarray.DataArray, optional
-        the site elevation [m]
+        the site elevation [m].
     lat: float or xarray.DataArray, optional
-        the site latitude [rad]
+        the site latitude [rad].
     n: float or pandas.Series or xarray.DataArray, optional
-        actual duration of sunshine [hour]
+        actual duration of sunshine [hour].
     nn: float or pandas.Series or xarray.DataArray, optional
-        maximum possible duration of sunshine or daylight hours [hour]
+        maximum possible duration of sunshine or daylight hours [hour].
     rso: float or pandas.Series or xarray.DataArray, optional
-        clear-sky solar radiation [MJ m-2 day-1]
+        clear-sky solar radiation [MJ m-2 day-1].
     a: float, optional
-        empirical coefficient for Net Long-Wave radiation [-]
+        empirical coefficient for Net Long-Wave radiation [-].
     b: float, optional
-        empirical coefficient for Net Long-Wave radiation [-]
+        empirical coefficient for Net Long-Wave radiation [-].
     ea: float or pandas.Series or xarray.DataArray, optional
-        actual vapor pressure [kPa]
+        actual vapor pressure [kPa].
     albedo: float, optional
-        surface albedo [-]
+        surface albedo [-].
     kab: float, optional
-        coefficient derived from as1, bs1 for estimating clear-sky radiation
-        [degrees].
+        coefficient derived from as1, bs1 for estimating clear-sky radiation [degrees].
     as1: float, optional
-        regression constant,  expressing the fraction of extraterrestrial
-        reaching the earth on overcast days (n = 0) [-]
+        regression constant,  expressing the fraction of extraterrestrial reaching the
+        earth on overcast days (n = 0) [-].
     bs1: float, optional
-        empirical coefficient for extraterrestrial radiation [-]
+        empirical coefficient for extraterrestrial radiation [-].
     clip_zero: bool, optional
         if True, replace all negative values with 0.
 
     Returns
     -------
-    pandas.Series or xarray.DataArray containing the calculated
-            Potential evapotranspiration [mm d-1].
+    pandas.Series or xarray.DataArray containing the calculated potential
+    evapotranspiration [mm d-1].
 
     Examples
     --------
@@ -668,58 +688,57 @@ def priestley_taylor(
     Parameters
     ----------
     tmean: pandas.Series or xarray.DataArray
-        average day temperature [°C]
+        average day temperature [°C].
     rs: float or pandas.Series or xarray.DataArray, optional
-        incoming solar radiation [MJ m-2 d-1]
+        incoming solar radiation [MJ m-2 d-1].
     rn: float or pandas.Series or xarray.DataArray, optional
-        net radiation [MJ m-2 d-1]
+        net radiation [MJ m-2 d-1].
     g: float or pandas.Series or xarray.DataArray, optional
-        soil heat flux [MJ m-2 d-1]
+        soil heat flux [MJ m-2 d-1].
     tmax: float or pandas.Series or xarray.DataArray, optional
-        maximum day temperature [°C]
+        maximum day temperature [°C].
     tmin: float or pandas.Series or xarray.DataArray, optional
-        minimum day temperature [°C]
+        minimum day temperature [°C].
     rhmax: float or pandas.Series or xarray.DataArray, optional
-        maximum daily relative humidity [%]
+        maximum daily relative humidity [%].
     rhmin: float or pandas.Series or xarray.DataArray, optional
-        mainimum daily relative humidity [%]
+        mainimum daily relative humidity [%].
     rh: float or pandas.Series or xarray.DataArray, optional
-        mean daily relative humidity [%]
+        mean daily relative humidity [%].
     pressure: float or pandas.Series or xarray.DataArray, optional
-        atmospheric pressure [kPa]
+        atmospheric pressure [kPa].
     elevation: float or xarray.DataArray, optional
-        the site elevation [m]
+        the site elevation [m].
     lat: float or xarray.DataArray, optional
-        the site latitude [rad]
+        the site latitude [rad].
     n: float or pandas.Series or xarray.DataArray, optional
-        actual duration of sunshine [hour]
+        actual duration of sunshine [hour].
     nn: float or pandas.Series or xarray.DataArray, optional
-        maximum possible duration of sunshine or daylight hours [hour]
+        maximum possible duration of sunshine or daylight hours [hour].
     rso: float or pandas.Series or xarray.DataArray, optional
-        clear-sky solar radiation [MJ m-2 day-1]
+        clear-sky solar radiation [MJ m-2 day-1].
     a: float, optional
-        empirical coefficient for Net Long-Wave radiation [-]
+        empirical coefficient for Net Long-Wave radiation [-].
     b: float, optional
-        empirical coefficient for Net Long-Wave radiation [-]
+        empirical coefficient for Net Long-Wave radiation [-].
     alpha: float, optional
-        calibration coeffiecient [-]
+        calibration coefficient [-].
     albedo: float, optional
-        surface albedo [-]
+        surface albedo [-].
     kab: float, optional
-        coefficient derived from as1, bs1 for estimating clear-sky radiation
-        [degrees].
+        coefficient derived from as1, bs1 for estimating clear-sky radiation [degrees].
     as1: float, optional
-        regression constant,  expressing the fraction of extraterrestrial
-        reaching the earth on overcast days (n = 0) [-]
+        regression constant,  expressing the fraction of extraterrestrial reaching the
+        earth on overcast days (n = 0) [-].
     bs1: float, optional
-        empirical coefficient for extraterrestrial radiation [-]
+        empirical coefficient for extraterrestrial radiation [-].
     clip_zero: bool, optional
         if True, replace all negative values with 0.
 
     Returns
     -------
-    pandas.Series or xarray.DataArray containing the calculated
-            Potential evapotranspiration [mm d-1].
+    pandas.Series or xarray.DataArray containing the calculated pootential
+    evapotranspiration [mm d-1].
     Examples
     --------
     >>> pt = priestley_taylor(tmean, rn=rn, rh=rh)
@@ -790,66 +809,64 @@ def kimberly_penman(
     bs1=0.5,
     clip_zero=True,
 ):
-    """Potential evapotranspiration calculated according to
-    :cite:t:`wright_new_1982`.
+    """Potential evapotranspiration calculated according to :cite:t:`wright_new_1982`.
 
     Parameters
     ----------
     tmean: pandas.Series or xarray.DataArray
-        average day temperature [°C]
+        average day temperature [°C].
     wind: pandas.Series or xarray.DataArray
-        mean day wind speed [m/s]
+        mean day wind speed [m/s].
     rs: pandas.Series or xarray.DataArray, optional
-        incoming solar radiation [MJ m-2 d-1]
+        incoming solar radiation [MJ m-2 d-1].
     rn: pandas.Series or xarray.DataArray, optional
-        net radiation [MJ m-2 d-1]
+        net radiation [MJ m-2 d-1].
     g: pandas.Series or int/xarray.DataArray, optional
-        soil heat flux [MJ m-2 d-1]
+        soil heat flux [MJ m-2 d-1].
     tmax: pandas.Series or xarray.DataArray, optional
-        maximum day temperature [°C]
+        maximum day temperature [°C].
     tmin: pandas.Series or xarray.DataArray, optional
-        minimum day temperature [°C]
+        minimum day temperature [°C].
     rhmax: pandas.Series or xarray.DataArray, optional
-        maximum daily relative humidity [%]
+        maximum daily relative humidity [%].
     rhmin: pandas.Series or xarray.DataArray, optional
-        mainimum daily relative humidity [%]
+        mainimum daily relative humidity [%].
     rh: pandas.Series or xarray.DataArray, optional
-        mean daily relative humidity [%]
+        mean daily relative humidity [%].
     pressure: float or xarray.DataArray, optional
-        atmospheric pressure [kPa]
+        atmospheric pressure [kPa].
     elevation: float or xarray.DataArray, optional
-        the site elevation [m]
+        the site elevation [m].
     lat: float or xarray.DataArray, optional
-        the site latitude [rad]
+        the site latitude [rad].
     n: pandas.Series or float, optional
-        actual duration of sunshine [hour]
+        actual duration of sunshine [hour].
     nn: pandas.Series or float, optional
-        maximum possible duration of sunshine or daylight hours [hour]
+        maximum possible duration of sunshine or daylight hours [hour].
     rso: pandas.Series or float, optional
-        clear-sky solar radiation [MJ m-2 day-1]
-    a: float, optional
-        empirical coefficient for Net Long-Wave radiation [-]
+        clear-sky solar radiation [MJ m-2 day-1].
+    a: float, optional.=
+        empirical coefficient for Net Long-Wave radiation [-].
     b: float, optional
-        empirical coefficient for Net Long-Wave radiation [-]
+        empirical coefficient for Net Long-Wave radiation [-].
     ea: float or pandas.Series or xarray.DataArray, optional
-        actual vapor pressure [kPa]
+        actual vapor pressure [kPa].
     albedo: float, optional
-        surface albedo [-]
+        surface albedo [-].
     kab: float, optional
-        coefficient derived from as1, bs1 for estimating clear-sky radiation
-        [degrees].
+        coefficient derived from as1, bs1 for estimating clear-sky radiation [degrees].
     as1: float, optional
-        regression constant,  expressing the fraction of extraterrestrial
-        reaching the earth on overcast days (n = 0) [-]
+        regression constant,  expressing the fraction of extraterrestrial reaching the
+        earth on overcast days (n = 0) [-].
     bs1: float, optional
-        empirical coefficient for extraterrestrial radiation [-]
+        empirical coefficient for extraterrestrial radiation [-].
     clip_zero: bool, optional
-        if True, replace all negative values with 0.
+        if True, replace all negative values with 0..
 
     Returns
     -------
-    pandas.Series or xarray.DataArray containing the calculated
-            Potential evapotranspiration [mm d-1].
+    pandas.Series or xarray.DataArray containing the calculated potential
+    evapotranspiration [mm d-1].
 
     Notes
     -----
@@ -942,59 +959,58 @@ def thom_oliver(
     bs1=0.5,
     clip_zero=True,
 ):
-    """Potential evapotranspiration calculated according to
-    :cite:t:`thom_penmans_1977`.
+    """Potential evapotranspiration calculated according to :cite:t:`thom_penmans_1977`.
 
     Parameters
     ----------
     tmean: pandas.Series
-        average day temperature [°C]
+        average day temperature [°C].
     wind: pandas.Series
-        mean day wind speed [m/s]
+        mean day wind speed [m/s].
     rs: pandas.Series, optional
-        incoming solar radiation [MJ m-2 d-1]
+        incoming solar radiation [MJ m-2 d-1].
     rn: pandas.Series, optional
-        net radiation [MJ m-2 d-1]
+        net radiation [MJ m-2 d-1].
     g: pandas.Series or int, optional
-        soil heat flux [MJ m-2 d-1]
+        soil heat flux [MJ m-2 d-1].
     tmax: pandas.Series, optional
-        maximum day temperature [°C]
+        maximum day temperature [°C].
     tmin: pandas.Series, optional
-        minimum day temperature [°C]
+        minimum day temperature [°C].
     rhmax: pandas.Series, optional
-        maximum daily relative humidity [%]
+        maximum daily relative humidity [%].
     rhmin: pandas.Series, optional
-        mainimum daily relative humidity [%]
+        mainimum daily relative humidity [%].
     rh: pandas.Series, optional
-        mean daily relative humidity [%]
+        mean daily relative humidity [%].
     pressure: float, optional
-        atmospheric pressure [kPa]
+        atmospheric pressure [kPa].
     elevation: float, optional
-        the site elevation [m]
+        the site elevation [m].
     lat: float, optional
-        the site latitude [rad]
+        the site latitude [rad].
     n: pandas.Series or float, optional
-        actual duration of sunshine [hour]
+        actual duration of sunshine [hour].
     nn: pandas.Series or float, optional
-        maximum possible duration of sunshine or daylight hours [hour]
+        maximum possible duration of sunshine or daylight hours [hour].
     rso: pandas.Series or float, optional
-        clear-sky solar radiation [MJ m-2 day-1]
+        clear-sky solar radiation [MJ m-2 day-1].
     aw: float, optional
-        wind coefficient [-]
+        wind coefficient [-].
     bw: float, optional
-        wind coefficient [-]
+        wind coefficient [-].
     a: float, optional
-        empirical coefficient for Net Long-Wave radiation [-]
+        empirical coefficient for Net Long-Wave radiation [-].
     b: float, optional
-        empirical coefficient for Net Long-Wave radiation [-]
+        empirical coefficient for Net Long-Wave radiation [-].
     lai: pandas.Series or float, optional
-        leaf area index [-]
+        leaf area index [-].
     croph: pandas.Series or float, optional
-        crop height [m]
+        crop height [m].
     r_l: pandas.Series or float, optional
-        bulk stomatal resistance [s m-1]
+        bulk stomatal resistance [s m-1].
     r_s: pandas.Series or float, optional
-        bulk surface resistance [s m-1]
+        bulk surface resistance [s m-1].
     ra_method: float, optional
         1 => ra = 208/wind
         2 => ra is calculated based on equation 36 in FAO (1990), ANNEX V.
@@ -1004,28 +1020,27 @@ def thom_oliver(
         2 => LAI_eff = 0.5 * LAI; (LAI>4=4)
         3 => see :cite:t:`zhang_comparison_2008`.
     srs: float, optional
-        Relative sensitivity of rl to Δ[CO2]
+        Relative sensitivity of rl to Δ[CO2].
     co2: float
-        CO2 concentration [ppm]
+        CO2 concentration [ppm].
     ea: float or pandas.Series or xarray.DataArray, optional
-        actual vapor pressure [kPa]
+        actual vapor pressure [kPa].
     albedo: float, optional
-        surface albedo [-]
+        surface albedo [-].
     kab: float, optional
-        coefficient derived from as1, bs1 for estimating clear-sky radiation
-        [degrees].
+        coefficient derived from as1, bs1 for estimating clear-sky radiation [degrees].
     as1: float, optional
-        regression constant,  expressing the fraction of extraterrestrial
-        reaching the earth on overcast days (n = 0) [-]
+        regression constant,  expressing the fraction of extraterrestrial reaching the
+        earth on overcast days (n = 0) [-].
     bs1: float, optional
-        empirical coefficient for extraterrestrial radiation [-]
+        empirical coefficient for extraterrestrial radiation [-].
     clip_zero: bool, optional
         if True, replace all negative values with 0.
 
     Returns
     -------
-    pandas.Series or xarray.DataArray containing the calculated
-            Potential evapotranspiration [mm d-1].
+    pandas.Series or xarray.DataArray containing the calculated potential
+    evapotranspiration [mm d-1].
 
     Notes
     -----
@@ -1084,37 +1099,37 @@ def calculate_all(
 ):
     """Potential evapotranspiration estimated based on all available methods.
 
-     Parameters
-     ----------
-     tmean: pandas.Series or xarray.DataArray
-         average day temperature [°C]
-     wind: float or pandas.Series or xarray.DataArray
-         mean day wind speed [m/s]
-     rs: float or pandas.Series or xarray.DataArray
-         incoming solar radiation [MJ m-2 d-1]
-     elevation: float or xarray.DataArray
-         the site elevation [m]
-     lat: float or xarray.DataArray
-         the site latitude [rad]
-     tmax: float or pandas.Series or xarray.DataArray
-         maximum day temperature [°C]
-     tmin: float or pandas.Series or xarray.DataArray
-         minimum day temperature [°C]
-     rh: float or pandas.Series or xarray.DataArray
-         mean daily relative humidity [%]
-     rhmax: pandas.Series, optional
-        maximum daily relative humidity [%]
-     rhmin: pandas.Series, optional
-        mainimum daily relative humidity [%]
+    Parameters
+    ----------
+    tmean: pandas.Series or xarray.DataArray
+        average day temperature [°C].
+    wind: float or pandas.Series or xarray.DataArray
+        mean day wind speed [m/s].
+    rs: float or pandas.Series or xarray.DataArray
+        incoming solar radiation [MJ m-2 d-1].
+    elevation: float or xarray.DataArray
+        the site elevation [m].
+    lat: float or xarray.DataArray
+        the site latitude [rad].
+    tmax: float or pandas.Series or xarray.DataArray
+        maximum day temperature [°C].
+    tmin: float or pandas.Series or xarray.DataArray
+        minimum day temperature [°C].
+    rh: float or pandas.Series or xarray.DataArray
+        mean daily relative humidity [%].
+    rhmax: pandas.Series, optional
+       maximum daily relative humidity [%].
+    rhmin: pandas.Series, optional
+       minimum daily relative humidity [%].
 
-     Returns
-     -------
-     pandas.DataFrame containing the calculated Potential evapotranspiration
+    Returns
+    -------
+    pandas.DataFrame containing the calculated Potential evapotranspiration
 
-     Examples
-     --------
-     >>> pe_all = calculate_all(tmean, wind, rs, elevation, lat, tmax=tmax,
-                                tmin=tmin, rh=rh)
+    Examples
+    --------
+    >>> pe_all = calculate_all(tmean, wind, rs, elevation, lat, tmax=tmax,
+                               tmin=tmin, rh=rh)
     """
     pe_df = pandas.DataFrame()
     pe_df["Penman"] = penman(

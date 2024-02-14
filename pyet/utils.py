@@ -84,9 +84,7 @@ def check_lat(lat, shape=None):
 
 
 def clip_zeros(s, clip_zero):
-    """Method to replace negative values with 0 for Pandas.Series and xarray.DataArray.
-
-    """
+    """Method to replace negative values with 0 for Pandas.Series and xarray.DataArray."""
     if clip_zero:
         s = s.where((s >= 0) | s.isnull(), 0)
     return s
@@ -100,7 +98,6 @@ def pet_out(tmean, pet, name):
         raise TypeError("Input must be either pandas.Series or xarray.DataArray!")
 
 
-@staticmethod
 def get_index(df):
     """Method to return the index of the input data."""
     try:

@@ -13,6 +13,7 @@ from .utils import get_index, check_rad, clip_zeros, pet_out, check_rh
 from xarray import DataArray
 from pandas import Series
 
+
 def turc(tmean, rs, rh, k=0.31, clip_zero=True):
     """Potential evapotranspiration calculated according to
     :cite:t:`turc_estimation_1961`.
