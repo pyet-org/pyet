@@ -8,7 +8,7 @@ description = "pyet - Estimation of Potential Evaporation"
 readme = "README.md"
 authors = [
     {name = "Matevz Vremec", email = "matevz.vremec@uni-graz.at"},
-    {name = "Raoul Collenteur", email = "raoul.collenteur@uni-graz.at"}
+    {name = "Raoul Collenteur", email = "raoul.collenteur@eawag.ch"}
 ]
 license = { file = "LICENSE" }
 requires-python = ">=3.9"
