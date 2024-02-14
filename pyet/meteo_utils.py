@@ -1,4 +1,4 @@
-"""The meteo_utils module contains utility functions for meteorological data
+"""The meteo_utils module contains utility functions for meteorological data.
 
 """
 
@@ -18,7 +18,6 @@ from numpy import (
 )
 from pandas import Series, to_numeric
 from xarray import DataArray
-from .utils import check_lat
 
 # Specific heat of air [MJ kg-1 °C-1]
 CP = 1.013 * 10**-3
@@ -64,7 +63,7 @@ def calc_vpc(tmean):
     Parameters
     ----------
     tmean: array_like
-        average day temperature [°C]
+        average day temperature [°C].
 
     Returns
     -------
@@ -90,7 +89,7 @@ def calc_lambda(tmean):
     Parameters
     ----------
     tmean: array_like
-        average day temperature [°C]
+        average day temperature [°C].
 
     Returns
     -------
@@ -115,13 +114,13 @@ def calc_press(elevation, pressure=None):
     Parameters
     ----------
     elevation: array_like
-        the site elevation [m]
+        the site elevation [m].
     pressure: array_like, optional
         atmospheric pressure [kPa].
+
     Returns
     -------
-    array_like containing the calculated atmospheric
-        pressure [kPa].
+    array_like containing the calculated atmospheric pressure [kPa].
 
     Examples
     --------
@@ -141,22 +140,21 @@ def calc_press(elevation, pressure=None):
 
 
 def calc_rho(pressure, tmean, ea):
-    """Atmospheric air density calculated according to
-    :cite:t:`allen_crop_1998`.
+    """Atmospheric air density calculated according to :cite:t:`allen_crop_1998`.
 
     Parameters
     ----------
     pressure: array_like
-        atmospheric pressure [kPa]
+        atmospheric pressure [kPa].
     tmean: array_like
-        average day temperature [°C]
+        average day temperature [°C].
     ea: array_like
-        actual vapour pressure [kPa]
+        actual vapour pressure [kPa].
 
     Returns
     -------
-    float/pandas.Series/xarray.DataArray containing the calculated mean
-        air density [kg/m3]
+    float or pandas.Series or xarray.DataArray containing the calculated mean air
+    density [kg/m3]
 
     Examples
     --------
@@ -180,12 +178,12 @@ def calc_e0(tmean):
     Parameters
     ----------
     tmean: array_like
-        average day temperature [°C]
+        average day temperature [°C].
 
     Returns
     -------
-    array_like containing the calculated saturation vapor pressure at the
-        air temperature tmean [kPa].
+    array_like containing the calculated saturation vapor pressure at the air
+    temperature tmean [kPa].
 
     Examples
     --------
@@ -205,16 +203,16 @@ def calc_es(tmean=None, tmax=None, tmin=None):
     Parameters
     ----------
     tmean: array_like, optional
-        average day temperature [°C]
+        average day temperature [°C].
     tmax: array_like, optional
-        maximum day temperature [°C]
+        maximum day temperature [°C].
     tmin: array_like, optional
-        minimum day temperature [°C]
+        minimum day temperature [°C].
 
     Returns
     -------
-    float/pandas.Series/xarray.DataArray containing the calculated
-        saturation vapor pressure [kPa].
+    float or pandas.Series or xarray.DataArray containing the calculated saturation
+    vapor pressure [kPa].
 
     Examples
     --------
@@ -239,24 +237,24 @@ def calc_ea(tmean=None, tmax=None, tmin=None, rhmax=None, rhmin=None, rh=None, e
     Parameters
     ----------
     tmean: array_like, optional
-        average day temperature [°C]
+        average day temperature [°C].
     tmax: array_like, optional
-        maximum day temperature [°C]
+        maximum day temperature [°C].
     tmin: array_like, optional
-        minimum day temperature [°C]
+        minimum day temperature [°C].
     rhmax: array_like, optional
-        maximum daily relative humidity [%]
+        maximum daily relative humidity [%].
     rhmin: array_like, optional
-        mainimum daily relative humidity [%]
+        mainimum daily relative humidity [%].
     rh: array_like, optional
-        mean daily relative humidity [%]
+        mean daily relative humidity [%].
     ea: array_like, optional
-        actual vapor pressure [kPa]
+        actual vapor pressure [kPa].
 
     Returns
     -------
-    float/pandas.Series/xarray.DataArray containing the calculated actual
-        vapor pressure [kPa].
+    float or pandas.Series or xarray.DataArray containing the calculated actual vapor
+    pressure [kPa].
 
     Examples
     --------
@@ -282,7 +280,7 @@ def calc_ea(tmean=None, tmax=None, tmin=None, rhmax=None, rhmin=None, rh=None, e
 
 
 def day_of_year(tindex):
-    """Day of the year (1-365) based on pandas.Index
+    """Day of the year (1-365) based on pandas.Index.
 
     Parameters
     ----------
@@ -302,7 +300,8 @@ def solar_declination(j):
     Parameters
     ----------
     j: array_like
-        day of the year (1-365)
+        day of the year (1-365).
+
     Returns
     -------
     array_like of solar declination [rad].
@@ -321,13 +320,13 @@ def sunset_angle(sol_dec, lat):
     Parameters
     ----------
     sol_dec: array_like
-        solar declination [rad]
+        solar declination [rad].
     lat: array_like
-        the site latitude [rad]
+        the site latitude [rad].
 
     Returns
     -------
-    array_like containing the calculated sunset hour angle - daily [rad]
+    array_like containing the calculated sunset hour angle - daily [rad].
 
     Notes
     -----
@@ -348,12 +347,11 @@ def daylight_hours(tindex, lat):
     ----------
     tindex: pandas.DatetimeIndex
     lat: array_like
-        the site latitude [rad]
+        the site latitude [rad].
 
     Returns
     -------
-    pandas.Series or xarray.DataArray containing the calculated
-    daylight hours [hour]
+    pandas.Series or xarray.DataArray containing the calculated daylight hours [hour].
 
     Notes
     -----
@@ -372,33 +370,13 @@ def daylight_hours(tindex, lat):
     return dl
 
 
-def _wrap(x, x_min, x_max):
-    """Wrap floating point values into range - github.com/WSWUP/RefET.
-
-    Parameters
-    ----------
-    x : ndarray
-        Values to wrap.
-    x_min : float
-        Minimum value in output range.
-    x_max : float
-        Maximum value in output range.
-
-    Returns
-    -------
-    ndarray
-
-    """
-    return mod((x - x_min), (x_max - x_min)) + x_min
-
-
 def relative_distance(j):
     """Inverse relative distance between earth and sun from day of the year.
 
     Parameters
     ----------
     j: array_like
-        day of the year (1-365)
+        day of the year (1-365).
 
     Returns
     -------
@@ -420,12 +398,11 @@ def extraterrestrial_r(tindex, lat):
     ----------
     tindex: pandas.DatetimeIndex
     lat: array_like
-        the site latitude [rad]
+        the site latitude [rad].
 
     Returns
     -------
-    array_like containing the calculated extraterrestrial
-        radiation [MJ m-2 d-1]
+    array_like containing the calculated extraterrestrial radiation [MJ m-2 d-1]
 
     Notes
     -----
@@ -455,28 +432,27 @@ def calc_res_surf(
 
     Parameters
     ----------
-    lai: float/pandas.Series/xarray.DataArray, optional
-        leaf area index [-]
-    r_s: float/pandas.Series/xarray.DataArray, optional
-        surface resistance [s m-1]
-    r_l: float/pandas.Series/xarray.DataArray, optional
-        bulk stomatal resistance [s m-1]
+    lai: float or pandas.Series or xarray.DataArray, optional
+        leaf area index [-].
+    r_s: float or pandas.Series or xarray.DataArray, optional
+        surface resistance [s m-1].
+    r_l: float or pandas.Series or xarray.DataArray, optional
+        bulk stomatal resistance [s m-1].
     lai_eff: float, optional
         1 => LAI_eff = 0.5 * LAI
         2 => LAI_eff = lai / (0.3 * lai + 1.2)
         3 => LAI_eff = 0.5 * LAI; (LAI>4=4)
         4 => see :cite:t:`zhang_comparison_2008`.
-    srs: float/pandas.Series/xarray.DataArray, optional
-        Relative sensitivity of rl to Δ[CO2] :cite:t:`yang_hydrologic_2019`
-    co2: float/pandas.Series/xarray.DataArray
-        CO2 concentration [ppm]
-    croph: float/pandas.Series/xarray.DataArray, optional
-        crop height [m]
+    srs: float or pandas.Series or xarray.DataArray, optional
+        Relative sensitivity of rl to Δ[CO2] :cite:t:`yang_hydrologic_2019`.
+    co2: float or pandas.Series or xarray.DataArray
+        CO2 concentration [ppm].
+    croph: float or pandas.Series or xarray.DataArray, optional crop height [m].
 
     Returns
     -------
-    float/pandas.Series/xarray.DataArray containing the calculated surface
-        resistance [s / m]
+    float or pandas.Series or xarray.DataArray containing the calculated surface
+    resistance [s / m]
 
     """
     if r_s:
@@ -495,7 +471,7 @@ def calc_laieff(lai=None, lai_eff=0):
     Parameters
     ----------
     lai: pandas.Series/float, optional
-        leaf area index [-]
+        leaf area index [-].
     lai_eff: float, optional
         0 => LAI_eff = 0.5 * LAI
         1 => LAI_eff = lai / (0.3 * lai + 1.2)
@@ -504,7 +480,7 @@ def calc_laieff(lai=None, lai_eff=0):
 
     Returns
     -------
-    pandas.Series containing the calculated effective leaf area index
+    pandas.Series containing the calculated effective leaf area index.
 
     """
     if lai_eff == 0:
@@ -527,21 +503,21 @@ def calc_res_aero(wind, croph=0.12, zw=2, zh=2, ra_method=0):
 
     Parameters
     ----------
-    wind: float/pandas.Series/xarray.DataArray
-        mean day wind speed [m/s]
-    croph: float/pandas.Series/xarray.DataArray, optional
-        crop height [m]
+    wind: float or pandas.Series or xarray.DataArray
+        mean day wind speed [m/s].
+    croph: float or pandas.Series or xarray.DataArray, optional
+        crop height [m].
     zw: float, optional
-        height of wind measurement [m]
+        height of wind measurement [m].
     zh: float, optional
-         height of humidity and or air temperature measurement [m]
+         height of humidity and or air temperature measurement [m].
     ra_method: float, optional
         0 => ra = 208/wind
         1 => ra is calculated based on equation 36 in FAO (1990), ANNEX V.
 
     Returns
     -------
-    pandas.Series containing the calculated aerodynamic resistance
+    pandas.Series containing the calculated aerodynamic resistance.
 
     """
     if ra_method == 0:
