@@ -6,6 +6,9 @@ evaporation.
 .. toctree::
     :maxdepth: 2
     :numbered:
+    :glob:
+
+    *
 
 .. tip::
     The latest versions of the Jupyter Notebooks can be found in the
