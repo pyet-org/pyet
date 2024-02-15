@@ -4,7 +4,7 @@ Below you can find examples of how *pyet* models are used for estimating (potent
 evaporation.
 
 .. toctree::
-    :maxdepth: 2
+    :maxdepth: 1
     :numbered:
     :glob:
 
