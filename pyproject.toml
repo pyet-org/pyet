@@ -55,11 +55,10 @@ rtd = [
     "sphinx-autodoc-typehints",
     "Ipython",
     "ipykernel",
-    "nbsphinx",
-    "nbsphinx_link",
     "pydata-sphinx-theme",
     "sphinx-gallery",
     "sphinx>=3.1",
     "sphinxcontrib-bibtex",
     "matplotlib",
+    "myst-nb",
 ]
