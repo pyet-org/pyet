@@ -1,6 +1,7 @@
 """The combination module contains functions of combination PE methods
 
 """
+
 import pandas
 
 from numpy import exp, newaxis
