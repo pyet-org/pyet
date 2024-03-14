@@ -63,7 +63,7 @@ rtd = [
     "myst-nb",
     "seaborn",
     "netcdf4",
-    "sciki-learn>=1.4.0",
+    "scikit-learn",
     "scipy",
     "spotpy"
 ]
