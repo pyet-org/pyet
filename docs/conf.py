@@ -12,7 +12,11 @@
 #
 import os
 import sys
+from datetime import date
+
 import requests
+
+year = date.today().strftime("%Y")
 
 sys.path.insert(0, os.path.abspath('.'))
 
@@ -39,7 +43,7 @@ with open("publications.bib", mode="w") as file:
 # -- Project information -----------------------------------------------------
 
 project = 'pyet'
-copyright = '2021, M. Vremec, R.A. Collenteur'
+copyright = '{}, M. Vremec, R.A. Collenteur'.format(year)
 author = 'M. Vremec, R.A. Collenteur'
 
 # The full version, including alpha/beta/rc tags
@@ -62,9 +66,8 @@ extensions = [
     'sphinx.ext.viewcode',
     'IPython.sphinxext.ipython_console_highlighting',  # lowercase didn't work
     'sphinx.ext.autosectionlabel',
-    'nbsphinx',
-    'nbsphinx_link',
-    'sphinxcontrib.bibtex'
+    'sphinxcontrib.bibtex',
+    'myst_nb',
 ]
 
 # Create custom bracket style with round brackets
@@ -140,3 +143,8 @@ intersphinx_mapping = {
     "python": ("https://docs.python.org/3/", None),
     "xarray": ("https://docs.xarray.dev/en/stable/", None),
 }
+
+# -- myst_nb options ------------------------------------------------------------------
+
+nb_execution_allow_errors = True  # Allow errors in notebooks, to see the error online
+nb_execution_mode = "auto"

@@ -1,0 +1,64 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+
+[project]
+name = "pyet"
+dynamic = ["version"]
+description = "pyet - Estimation of Potential Evaporation"
+readme = "README.md"
+authors = [
+    {name = "Matevz Vremec", email = "matevz.vremec@uni-graz.at"},
+    {name = "Raoul Collenteur", email = "raoul.collenteur@eawag.ch"}
+]
+license = { file = "LICENSE" }
+requires-python = ">=3.9"
+dependencies = [
+    "numpy >= 1.16",
+    "xarray >= 0.18.0",
+    "pandas >= 1.2",
+]
+classifiers = [
+    'Development Status :: 5 - Production/Stable',
+    'Intended Audience :: Science/Research',
+    'Intended Audience :: Other Audience',
+    'License :: OSI Approved :: MIT License',
+    'Programming Language :: Python :: 3 :: Only',
+    'Programming Language :: Python :: 3.9',
+    'Programming Language :: Python :: 3.10',
+    'Programming Language :: Python :: 3.11',
+    'Programming Language :: Python :: 3.12',
+    'Topic :: Scientific/Engineering :: Hydrology',
+]
+
+[project.urls]
+Source = "https://github.com/phydrus/pyet"
+Tracker = "https://github.com/phydrus/pyet/issues"
+Help = "https://github.com/phydrus/pyet/discussions"
+homepage = "https://github.com/phydrus/pyet"
+repository = "https://github.com/phydrus/pyet"
+documentation = "https://github.com/phydrus/pyet/discussions"
+
+[tool.setuptools.dynamic]
+version = { attr = "pyet.version.__version__" }
+
+[tool.black]
+line-length = 88
+
+[tool.isort]
+profile = "black"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[project.optional-dependencies]
+rtd = [
+    "sphinx-autodoc-typehints",
+    "Ipython",
+    "ipykernel",
+    "pydata-sphinx-theme",
+    "sphinx-gallery",
+    "sphinx>=3.1",
+    "sphinxcontrib-bibtex",
+    "matplotlib",
+    "myst-nb",
+]

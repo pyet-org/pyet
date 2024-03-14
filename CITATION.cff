@@ -7,13 +7,15 @@ authors:
 - family-names: "Collenteur"
   given-names: "Matevz"
   orcid: "https://orcid.org/0000-0001-7843-1538"
-title: "PyEt-a Python package to estimate potential and reference evapotranspiration"
-version: 1.1.0
-doi: https://doi.org/10.5194/egusphere-egu21-15008
-date-released: 2021
+- family-names: "Birk"
+  given-names: "Steffen"
+  orcid: "https://orcid.org/0000-0001-7474-3884"
+title: "Technical note: Improved handling of potential evapotranspiration in hydrological studies with PyEt"
+doi: https://doi.org/10.5194/hess-2022-417
+date-released: 2023
 url: "https://github.com/phydrus/pyet"
 preferred-citation:
-    type: inproceedings
+    type: journal
     authors:
     - family-names: "Vremec"
       given-names: "Matevz"
@@ -21,7 +23,10 @@ preferred-citation:
     - family-names: "Collenteur"
       given-names: "Matevz"
       orcid: "https://orcid.org/0000-0001-7843-1538"
-    doi: "10.5194/egusphere-egu21-15008"
-    journal: "EGU General Assembly Conference Abstracts"
-    year: "2021"
-    title: "PyEt-a Python package to estimate potential and reference evapotranspiration"
+    - family-names: "Birk"
+      given-names: "Steffen"
+      orcid: "https://orcid.org/0000-0001-7474-3884"
+    doi: "https://doi.org/10.5194/hess-2022-417"
+    journal: "Hydrol. Earth Syst. Sci. Discuss. [preprint]"
+    year: "2023"
+    title: "Technical note: Improved handling of potential evapotranspiration in hydrological studies with PyEt"
