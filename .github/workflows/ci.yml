@@ -39,3 +39,8 @@ jobs:
         with:
           project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
           coverage-reports: coverage.xml
+      
+      - name: Install documentation dependencies
+        if: ${{ always() }}
+        run: |
+          if [ -f docs/requirements.txt ]; then pip install -r docs/requirements.txt; fi

@@ -1,0 +1,13 @@
+numpy>=1.16
+xarray>=0.18.0
+pandas>=1.2
+flake8
+pytest
+matplotlib
+netcdf4
+scipy
+seaborn
+scikit-learn
+pylab
+mpl_toolkits
+spotpy

@@ -42,29 +42,29 @@ $^a$ $T_{max}$ and $T_{min}$ can also be provided. $^b$ $RH_{max}$ and $RH_{min}
 
 Examples of using *pyet* can be found in the example folder:
 
-*   [Example 1](docs/examples/01_example_zamg.ipynb): Estimating PET using pandas.Series
+*   [Example 1](<https://pyet.readthedocs.io/en/dev/examples/01_example_zamg.html#>): Estimating PET using pandas.Series
 
-*   [Example 2](docs/examples/02_example_zamg_netcdf.ipynb): Estimating PET using xarray.DataArray
+*   [Example 2](<https://pyet.readthedocs.io/en/dev/examples/02_example_zamg_netcdf.html>): Estimating PET using xarray.DataArray
 
-*   [Example 3](docs/examples/03_example_knmi.ipynb): Benchmarking Makkink
+*   [Example 3](<https://pyet.readthedocs.io/en/dev/examples/03_example_knmi.html>): Benchmarking Makkink
   against [KNMI data](https://www.knmi.nl/over-het-knmi/about)
 
-*   [Example 4](docs/examples/04_example_coagmet.ipynb): Benchmarking FAO56
+*   [Example 4](<https://pyet.readthedocs.io/en/dev/examples/04_example_coagmet.html>): Benchmarking FAO56
   against [CoAgMET data](https://coagmet.colostate.edu/)
 
-*   [Example 5](docs/examples/05_example_calibration.ipynb): Calibrating the Romanenko and Abtew method against the PM-FAO56
+*   [Example 5](<https://pyet.readthedocs.io/en/dev/examples/05_example_calibration.html>): Calibrating the Romanenko and Abtew method against the PM-FAO56
 
-*   [Example 6](docs/examples/06_worked_examples_McMahon_etal_2013.ipynb): Worked examples for estimating meteorological
+*   [Example 6](<https://pyet.readthedocs.io/en/dev/examples/06_worked_examples_McMahon_etal_2013.html>): Worked examples for estimating meteorological
   variables and potential evapotranspiration after McMahon et al., 2013
 
-*   [Example 7](docs/examples/07_example_climate_change.ipynb): Example for estimating potential evapotranspiration under
+*   [Example 7](<https://pyet.readthedocs.io/en/dev/examples/07_example_climate_change.html>): Example for estimating potential evapotranspiration under
   warming and elevated $CO_2$ concentrations following Yang et al., (2019)
 
-*   [Example 8](docs/examples/08_crop_coefficient.ipynb): Determining the crop coefficient function with Python
+*   [Example 8](<https://pyet.readthedocs.io/en/dev/examples/08_crop_coefficient.html>): Determining the crop coefficient function with Python
 
-*   [Example 9](docs/examples/09_CMIP6_data.ipynb): Estimating PET using CMIP data
+*   [Example 9](<https://pyet.readthedocs.io/en/dev/examples/09_CMIP6_data.html>): Estimating PET using CMIP data
 
-*   [Example 10](docs/examples/10_example_paper.ipynb): Notebook supporting PyEt manuscript
+*   [Example 10](<https://pyet.readthedocs.io/en/dev/examples/10_example_paper.html>): Notebook supporting PyEt manuscript
 
 Documentation is hosted on [ReadTheDocs](https://pyet.readthedocs.io).
 
