@@ -9,7 +9,7 @@ from .meteo_utils import extraterrestrial_r, calc_press, calc_psy, calc_vpc, cal
 from .utils import get_index, check_rad, clip_zeros, pet_out, check_rh
 
 
-def turc(tmean, rs, rh, k=0.31, clip_zero=True):
+def turc(tmean, rs, rh, k=0.013, clip_zero=True):
     """Potential evapotranspiration calculated according to
     :cite:t:`turc_estimation_1961`.
 
@@ -37,18 +37,18 @@ def turc(tmean, rs, rh, k=0.31, clip_zero=True):
 
     Notes
     -----
-    Based on equation 2 and 3 in :cite:t:`xu_evaluation_2000`.
+    Based on equation S9.10 and S9.11 in :cite:t:`mcmahon_estimating_2013`.
 
-    .. math:: PET=k(\\frac{T_{mean}}{T_{mean}+15})(\\frac{R_s}{4.184}+50)4.184;
+    .. math:: PET=k(\\frac{T_{mean}}{T_{mean}+15})(23.88R_s+50)0.013;
         for RH>50
 
     .. math:: PET=k(1+\\frac{50-RH}{70})(\\frac{T_{mean}}{T_{mean}+15})
-        (\\frac{R_s}{4.184}+50)4.184; for RH<50
+        (23.88R_s+50)0.013; for RH<50
 
     """
     c = tmean / tmean
     c = c.where(check_rh(rh) >= 50, 1 + (50 - rh) / 70)
-    pet = k * c * tmean / (tmean + 15) * (check_rad(rs) + 2.094)
+    pet = k * c * tmean / (tmean + 15) * (check_rad(rs) * 23.88 + 50)
     pet = clip_zeros(pet, clip_zero)
     return pet_out(tmean, pet, "Turc")
 

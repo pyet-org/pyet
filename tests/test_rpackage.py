@@ -740,7 +740,7 @@ class Testr(unittest.TestCase):
         # There is a mistake in the R-Package
         # The R-Package does not consider RH < 50
         # if pyet.turc also does nonsider this, the result is the same
-        r_turc = [4.2, 4.0, 4.2, 4.0, 4.3, 6.1, 5.4, 5.5, 6.2, 4.1]
+        r_turc = [4.2, 4.0, 4.2, 4.0, 4.3, 6.1, 5.4, 5.6, 6.2, 4.1]
         self.assertEqual(r_turc, pyet_turc, 1)
 
         expected_t = tile(asarray(r_turc)[:, newaxis, newaxis], (1, 3, 3))
