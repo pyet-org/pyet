@@ -8,6 +8,4 @@ netcdf4
 scipy
 seaborn
 scikit-learn
-pylab
-mpl_toolkits
 spotpy

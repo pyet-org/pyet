@@ -43,4 +43,4 @@ jobs:
       - name: Install documentation dependencies
         if: ${{ always() }}
         run: |
-          if [ -f docs/requirements.txt ]; then pip install -r docs/requirements.txt; fi
+          if [ -f docs/requirements.txt ]; then pip install -v -r docs/requirements.txt; fi
