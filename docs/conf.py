@@ -162,3 +162,8 @@ nb_execution_mode = "auto"
 myst_enable_extensions = [
     "dollarmath",
 ]
+
+# -- Numpydoc settings ----------------------------------------------------------------
+
+numpydoc_class_members_toctree = True
+numpydoc_show_class_members = False

@@ -61,6 +61,8 @@ rtd = [
     "sphinxcontrib-bibtex",
     "matplotlib",
     "myst-nb",
+    "numpydoc",
+    "sphinx-design",
     "seaborn",
     "netcdf4",
     "scikit-learn",
