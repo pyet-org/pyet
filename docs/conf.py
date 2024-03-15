@@ -66,7 +66,6 @@ extensions = [
     "myst_nb",
     "numpydoc",
     "sphinx_design",
-    "recommonmark",
 ]
 
 # Create custom bracket style with round brackets
