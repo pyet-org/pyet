@@ -64,6 +64,8 @@ extensions = [
     "sphinx.ext.autosectionlabel",
     "sphinxcontrib.bibtex",
     "myst_nb",
+    "numpydoc",
+    "sphinx_design",
 ]
 
 # Create custom bracket style with round brackets
@@ -118,15 +120,27 @@ exclude_patterns = ["_build", "**.ipynb_checkpoints"]
 # a list of builtin themes.
 
 html_theme = "pydata_sphinx_theme"
-html_theme_options = {
-    "github_url": "https://github.com/phydrus/pyet",
-    "use_edit_page_button": False,
-}
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ["_static"]
 html_logo = "_static/logo.png"
+html_use_smartypants = True
+html_show_sourcelink = True
+
+html_theme_options = {
+    "github_url": "https://github.com/pyet-org/pyet",
+    "use_edit_page_button": True,
+    "header_links_before_dropdown": 6,
+    "icon_links": [
+        {
+            "name": "GitHub",  # Label for this link
+            "url": "https://github.com/pyet-org/pyet",  # required
+            "icon": "fab fa-github-square",
+            "type": "fontawesome",  # Default is fontawesome
+        }
+    ],
+}
 
 autosummary_generate = True
 numpydoc_show_class_members = False
