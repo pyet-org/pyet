@@ -454,6 +454,7 @@ def oudin(tmean, lat, k1=100, k2=5, clip_zero=True):
     temp = (tmean + k2) / lambd / k1
     temp.index = to_datetime(temp.index)
     pet = ra * temp
-    pet = pet.where((tmean + k2) >= 0, 0)
+    # pet = pet.where((tmean + k2) >= 0, 0)
+    # the above line of code is not working properly and setting all the values in pet 0.0
     pet = clip_zeros(pet, clip_zero)
     return pet_out(tmean, pet, "Oudin")
