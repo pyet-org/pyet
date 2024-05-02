@@ -151,7 +151,9 @@ def mcguinness_bordne(tmean, lat, k=0.0147, clip_zero=True):
     ra = extraterrestrial_r(index, lat)
     if isinstance(tmean, DataArray) and isinstance(ra, Series):
         ra = ra.values[:, None, None]
-    pet = k * ra * (tmean + 5) / lambd
+    temp = (tmean + 5) / lambd
+    temp.index = to_datetime(temp.index)
+    pet = k * ra * temp
     pet = clip_zeros(pet, clip_zero)
     return pet_out(tmean, pet, "Mcguinness_Bordne")
 
@@ -448,8 +450,10 @@ def oudin(tmean, lat, k1=100, k2=5, clip_zero=True):
     """
     lambd = calc_lambda(tmean)
     index = get_index(tmean)
-    ra = extraterrestrial_r(index, lat)
-    pet = ra * (tmean + k2) / lambd / k1
+    ra = extraterrestrial_r(index, lat)    
+    temp = (tmean + k2) / lambd / k1
+    temp.index = to_datetime(temp.index)
+    pet = ra * temp
     pet = pet.where((tmean + k2) >= 0, 0)
     pet = clip_zeros(pet, clip_zero)
     return pet_out(tmean, pet, "Oudin")
