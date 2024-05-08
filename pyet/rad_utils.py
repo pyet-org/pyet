@@ -279,7 +279,7 @@ def calc_rad_sol_in(n, lat, as1=0.25, bs1=0.5, nn=None):
     ra = extraterrestrial_r(tindex, lat)
     if nn is None:
         nn = daylight_hours(tindex, lat)
-    return (as1 + bs1 * n / nn) * ra
+    return (as1 + bs1 * n.values / nn) * ra
 
 
 def calc_rso(ra, elevation, kab=None):
