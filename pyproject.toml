@@ -8,14 +8,14 @@ description = "pyet - Estimation of Potential Evaporation"
 readme = "README.md"
 authors = [
     {name = "Matevz Vremec", email = "matevz.vremec@uni-graz.at"},
-    {name = "Raoul Collenteur", email = "raoul.collenteur@eawag.ch"}
+    {name = "Raoul Collenteur", email = "raoulcollenteur@gmail.com"}
 ]
 license = { file = "LICENSE" }
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 dependencies = [
     "numpy >= 1.16",
     "xarray >= 0.18.0",
-    "pandas >= 1.2",
+    "pandas >= 2.1",
 ]
 classifiers = [
     'Development Status :: 5 - Production/Stable',
@@ -23,10 +23,10 @@ classifiers = [
     'Intended Audience :: Other Audience',
     'License :: OSI Approved :: MIT License',
     'Programming Language :: Python :: 3 :: Only',
-    'Programming Language :: Python :: 3.9',
     'Programming Language :: Python :: 3.10',
     'Programming Language :: Python :: 3.11',
     'Programming Language :: Python :: 3.12',
+    'Programming Language :: Python :: 3.13',
     'Topic :: Scientific/Engineering :: Hydrology',
 ]
 

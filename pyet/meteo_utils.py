@@ -2,10 +2,9 @@
 
 """
 
-from numpy import cos, exp, isnan, log, pi, sin, tan
+from numpy import arccos, clip, cos, exp, isnan, log, nanmax, pi, sin, tan, where
 from pandas import Series, to_numeric
 from xarray import DataArray
-from numpy import arccos, clip, nanmax, where
 
 # Specific heat of air [MJ kg-1 °C-1]
 CP = 1.013 * 10**-3
