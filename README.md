@@ -73,8 +73,6 @@ line of python code:
 
 `>>> pyet.pm_fao56(tmean, wind, rn=rn, tmax=tmax, tmin=tmin, rh=rh, elevation=elevation)`
 
-We support Python >= 3.8.
-
 ## Benchmarking
 
 Most of the methods implemented in *pyet* are benchmarked against literature values from the [FAO Irrigation and
@@ -114,19 +112,18 @@ To install in developer mode, use the following syntax:
 
 If you use *pyet* in one of your studies, please cite the *pyet* EGU abstract:
 
-* Vremec, M., Collenteur, R. A., and Birk, S.: Technical note: Improved handling of potential evapotranspiration in
-hydrological studies with PyEt, Hydrol. Earth Syst. Sci. Discuss. [preprint], https://doi.org/10.5194/hess-2022-417,
-in review, 2023.
+* Vremec, M., Collenteur, R. A., and Birk, S.: PyEt v1.3.1: a Python package for the estimation of potential evapotranspiration, Geosci. Model Dev., 17, 7083–7103, https://doi.org/10.5194/gmd-17-7083-2024, 2024.
 
 ```Reference
-@Article{hess-2022-417,
-  AUTHOR = {Vremec, M. and Collenteur, R. A. and Birk, S.},
-  TITLE = {Technical note: Improved handling of potential evapotranspiration in hydrological studies with \textit{PyEt}},
-  JOURNAL = {Hydrology and Earth System Sciences Discussions},
-  VOLUME = {2023},
-  YEAR = {2023},
-  PAGES = {1--23},
-  URL = {https://hess.copernicus.org/preprints/hess-2022-417/},
-  DOI = {10.5194/hess-2022-417}
+@Article{gmd-17-7083-2024,
+AUTHOR = {Vremec, M. and Collenteur, R. A. and Birk, S.},
+TITLE = {\textit{PyEt} v1.3.1: a Python package for the estimation of potential evapotranspiration},
+JOURNAL = {Geoscientific Model Development},
+VOLUME = {17},
+YEAR = {2024},
+NUMBER = {18},
+PAGES = {7083--7103},
+URL = {https://gmd.copernicus.org/articles/17/7083/2024/},
+DOI = {10.5194/gmd-17-7083-2024}
 }
 ```
