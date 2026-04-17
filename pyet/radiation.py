@@ -104,7 +104,7 @@ def jensen_haise(tmean, rs=None, cr=0.025, tx=-3, lat=None, method=0, clip_zero=
         if lat is None:
             raise Exception("If you choose method == 1, provide lat!")
         index = get_index(tmean)
-        ra = extraterrestrial_r(index, lat, tmean)
+        ra = extraterrestrial_r(index, lat)
         pet = ra * (tmean + 5) / 68 / lambd
     else:
         raise Exception("Method can be either 0 or 1.")
