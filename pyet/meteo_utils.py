@@ -1,6 +1,4 @@
-"""The meteo_utils module contains utility functions for meteorological data.
-
-"""
+"""The meteo_utils module contains utility functions for meteorological data."""
 
 from numpy import arccos, clip, cos, exp, isnan, log, nanmax, pi, sin, tan, where
 from pandas import Series, to_numeric
@@ -263,7 +261,11 @@ def calc_ea(tmean=None, tmax=None, tmin=None, rhmax=None, rhmin=None, rh=None, e
             es = calc_es(tmax=tmax, tmin=tmin)
         else:
             es = calc_e0(tmean)
-        return rh / 100 * es
+        if rh is None and tmin is not None:
+            ea = calc_e0(tmin)  # assuming Tdew close to Tmin, Allen 1998
+        else:
+            ea = rh / 100 * es
+        return ea
 
 
 def day_of_year(tindex):
