@@ -15,7 +15,7 @@ requires-python = ">=3.10"
 dependencies = [
     "numpy >= 1.16",
     "xarray >= 0.18.0",
-    "pandas >= 2.1",
+    "pandas >= 2.1,<3.0",
 ]
 classifiers = [
     'Development Status :: 5 - Production/Stable',
@@ -57,7 +57,7 @@ rtd = [
     "ipykernel",
     "pydata-sphinx-theme",
     "sphinx-gallery",
-    "sphinx>=3.1",
+    "sphinx>=4.0",
     "sphinxcontrib-bibtex",
     "matplotlib",
     "myst-nb",
