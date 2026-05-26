@@ -215,7 +215,7 @@ class TestFAO56(unittest.TestCase):
 
     def test_daylight_hours(self):
         # Based on Example 9, p. 47 FAO.
-        dayhours = et.daylight_hours(DatetimeIndex(["2015-09-03"]), -0.35)
+        dayhours = et.daylight_hours(DatetimeIndex(["2015-09-03"]), -0.35)[0]
         self.assertAlmostEqual(float(dayhours), 11.7, 1)
 
     def test_calc_rad_long(self):

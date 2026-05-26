@@ -104,7 +104,7 @@ def jensen_haise(tmean, rs=None, cr=0.025, tx=-3, lat=None, method=0, clip_zero=
         if lat is None:
             raise Exception("If you choose method == 1, provide lat!")
         index = get_index(tmean)
-        ra = extraterrestrial_r(index, lat, tmean)
+        ra = extraterrestrial_r(index, lat)
         pet = ra * (tmean + 5) / 68 / lambd
     else:
         raise Exception("Method can be either 0 or 1.")
@@ -168,7 +168,7 @@ def hargreaves(tmean, tmax, tmin, lat, k=0.0135, method=0, clip_zero=True):
     lat: float/xarray.DataArray
         the site latitude [rad].
     k: float, optional
-        calirbation coefficient [-].
+        calibration coefficient [-].
     method: float, optional
         0 => after :cite:t:`jensen_evaporation_2016`
         1 => after :cite:t:`mcmahon_estimating_2013`.
@@ -208,10 +208,10 @@ def hargreaves(tmean, tmax, tmin, lat, k=0.0135, method=0, clip_zero=True):
         ra = ra.values[:, None, None]
     else:
         ra = ra.values
-    chs = 0.00185 * (tmax - tmin) ** 2 - 0.0433 * (tmax - tmin) + 0.4023
     if method == 0:
         pet = k / 0.0135 * 0.0023 * (tmean + 17.8) * sqrt(tmax - tmin) * ra / lambd
     elif method == 1:
+        chs = 0.00185 * (tmax - tmin) ** 2 - 0.0433 * (tmax - tmin) + 0.4023
         pet = k * chs * sqrt(tmax - tmin) * ra / lambd * (tmean + 17.8)
     else:
         raise Exception("Method can be either 0 or 1.")
@@ -329,7 +329,7 @@ def makkink(tmean, rs, pressure=None, elevation=None, k=0.65, clip_zero=True):
     elevation: float/xarray.DataArray, optional
         the site elevation [m].
     k: float, optional
-        calirbation coefficient [-].
+        calibration coefficient [-].
     clip_zero: bool, optional
         if True, replace all negative values with 0.
 

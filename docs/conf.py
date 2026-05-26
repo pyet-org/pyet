@@ -42,9 +42,6 @@ project = "pyet"
 copyright = "{}, M. Vremec, R.A. Collenteur".format(year)
 author = "M. Vremec, R.A. Collenteur"
 
-# The full version, including alpha/beta/rc tags
-release = "2020"
-
 # -- General configuration ---------------------------------------------------
 
 # Add any Sphinx extension module names here, as strings. They can be
@@ -106,8 +103,8 @@ templates_path = ["_templates"]
 
 source_suffix = ".rst"
 
-# The master toctree document.
-master_doc = "index"
+# The root toctree document.
+root_doc = "index"
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
@@ -125,18 +122,24 @@ html_theme = "pydata_sphinx_theme"
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ["_static"]
 html_logo = "_static/logo.png"
-html_use_smartypants = True
 html_show_sourcelink = True
+
+html_context = {
+    "github_user": "pyet-org",
+    "github_repo": "pyet",
+    "github_version": "master",
+    "doc_path": "docs",
+}
 
 html_theme_options = {
     "use_edit_page_button": True,
     "header_links_before_dropdown": 6,
     "icon_links": [
         {
-            "name": "GitHub",  # Label for this link
-            "url": "https://github.com/pyet-org/pyet",  # required
-            "icon": "fab fa-github-square",
-            "type": "fontawesome",  # Default is fontawesome
+            "name": "GitHub",
+            "url": "https://github.com/pyet-org/pyet",
+            "icon": "fa-brands fa-square-github",
+            "type": "fontawesome",
         }
     ],
 }
@@ -156,6 +159,7 @@ intersphinx_mapping = {
 
 nb_execution_allow_errors = True  # Allow errors in notebooks, to see the error online
 nb_execution_mode = "auto"
+nb_execution_timeout = 300  # seconds
 
 # Enable specific MyST extensions, such as "dollarmath" for math rendering
 myst_enable_extensions = [

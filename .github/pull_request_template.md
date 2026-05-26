@@ -1,7 +1,7 @@
 # Short Description
 Add a short description describing the pull request (PR) here.
 
-# Checklist before PR can be merged:
+## Checklist before PR can be merged:
 - [ ] closes issue #xxxx
 - [ ] is documented
 - [ ] Format code with [Black formatting](https://black.readthedocs.io)
@@ -9,3 +9,5 @@ Add a short description describing the pull request (PR) here.
 - [ ] tests added / passed
 - [ ] Example Notebook (for new features)
 - [ ] Remove output for all notebooks with changes
+
+## Make sure to choose the "dev-branch" to merge your PR into.
