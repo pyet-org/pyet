@@ -92,7 +92,7 @@ def jensen_haise(tmean, rs=None, cr=0.025, tx=-3, lat=None, method=0, clip_zero=
 
     Method = 1: Based on :cite:t:`oudin_which_2005`.
 
-    .. math:: PET = \\frac{R_a(T_{mean}+5)}{68\\lambda}
+    .. math:: PET = \\frac{R_a T_{mean}}{40\\lambda}
 
     """
     lambd = calc_lambda(tmean)
@@ -105,7 +105,7 @@ def jensen_haise(tmean, rs=None, cr=0.025, tx=-3, lat=None, method=0, clip_zero=
             raise Exception("If you choose method == 1, provide lat!")
         index = get_index(tmean)
         ra = extraterrestrial_r(index, lat)
-        pet = ra * (tmean + 5) / 68 / lambd
+        pet = ra * tmean / 40 / lambd
     else:
         raise Exception("Method can be either 0 or 1.")
     pet = clip_zeros(pet, clip_zero)

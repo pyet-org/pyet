@@ -435,3 +435,16 @@ class Testalternative(unittest.TestCase):
             ],
         )
         testing.assert_allclose(calculated_haude1.round(1), expected_haude1.round(1))
+
+    def test_jensen_haise_oudin(self):
+        # Jensen-Haise after Oudin et al. (2005): PET = Ra * T / (40 * lambda)
+        index = date_range("2020-07-01", periods=3)
+        tmean = Series([-2.0, 10.0, 30.0], index=index)
+        lat = 0.9
+        ra = et.extraterrestrial_r(index, lat)
+        lambd = et.calc_lambda(tmean)
+        jh = et.jensen_haise(tmean, lat=lat, method=1)
+        expected = (ra * tmean / 40 / lambd).clip(lower=0)
+        self.assertEqual(float(jh.iloc[0]), 0.0)
+        for i in range(3):
+            self.assertAlmostEqual(float(jh.iloc[i]), float(expected.iloc[i]), 6)
