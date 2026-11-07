@@ -61,7 +61,7 @@ class Testalternative(unittest.TestCase):
         lambda_corr = lambda1 / lambda0
         n = -0.12  # correction for different formula in McMahon_2013
         mak = (et.makkink(tmean, rs, elevation=elevation, k=0.61) * lambda_corr) + n
-        self.assertAlmostEqual(float(mak), 2.3928, 2)
+        self.assertAlmostEqual(mak.item(), 2.3928, 2)
 
         tmean_xr = DataArray(
             full((2, 3, 3), 11.5),
@@ -264,7 +264,7 @@ class Testalternative(unittest.TestCase):
         lambda_corr = lambda1 / lambda0
         lat = -23.7951 * pi / 180
         har = et.hargreaves(tmean, tmax, tmin, lat, method=1)
-        self.assertAlmostEqual(float(har.iloc[0] * lambda_corr), 4.1129, 2)
+        self.assertAlmostEqual((har * lambda_corr).item(), 4.1129, 2)
 
         tmean_xr = DataArray(
             full((2, 3, 3), 11.5),
@@ -323,7 +323,7 @@ class Testalternative(unittest.TestCase):
         lambda1 = et.calc_lambda(tmean)  # Lambda in pyet
         lambda_corr = lambda1 / lambda0
         pt = et.priestley_taylor(tmean, rn=rn, elevation=elevation, alpha=1.26)
-        self.assertAlmostEqual(float(pt.iloc[0] * lambda_corr), 2.6083, 2)
+        self.assertAlmostEqual((pt * lambda_corr).item(), 2.6083, 2)
 
         tmean_xr = DataArray(
             full((2, 3, 3), 11.5),

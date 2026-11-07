@@ -13,20 +13,20 @@ class Testr(unittest.TestCase):
 
     tmax = pd.Series(
         [28.8, 27.4, 29.0, 26.3, 32.7, 35.7, 33.8, 33.8, 35.6, 27.5],
-        index=pd.date_range("2001-03-01", "2001-03-10", freq="d"),
+        index=pd.date_range("2001-03-01", "2001-03-10", freq="D"),
     )
     tmin = pd.Series(
         [15.1, 14.0, 16.3, 16.2, 17.8, 26.7, 20.6, 22.3, 22.7, 17.1],
-        index=pd.date_range("2001-03-01", "2001-03-10", freq="d"),
+        index=pd.date_range("2001-03-01", "2001-03-10", freq="D"),
     )
     tmean = (tmax + tmin) / 2
     rhmax = pd.Series(
         [68, 77, 69, 70, 73, 36, 51, 46, 34, 67],
-        index=pd.date_range("2001-03-01", "2001-03-10", freq="d"),
+        index=pd.date_range("2001-03-01", "2001-03-10", freq="D"),
     )
     rhmin = pd.Series(
         [30, 25, 30, 34, 29, 20, 18, 18, 10, 30],
-        index=pd.date_range("2001-03-01", "2001-03-10", freq="d"),
+        index=pd.date_range("2001-03-01", "2001-03-10", freq="D"),
     )
     rh = (rhmax + rhmin) / 2
     rs = pd.Series(
@@ -42,7 +42,7 @@ class Testr(unittest.TestCase):
             19.65004162,
             19.54523386,
         ],
-        index=pd.date_range("2001-03-01", "2001-03-10", freq="d"),
+        index=pd.date_range("2001-03-01", "2001-03-10", freq="D"),
     )
     uz = pd.Series(
         [
@@ -57,11 +57,11 @@ class Testr(unittest.TestCase):
             3.99305556,
             4.31597222,
         ],
-        index=pd.date_range("2001-03-01", "2001-03-10", freq="d"),
+        index=pd.date_range("2001-03-01", "2001-03-10", freq="D"),
     )
     n = pd.Series(
         [8.6, 8.6, 8.6, 8.6, 8.6, 8.6, 8.6, 8.6, 8.6, 8.6],
-        index=pd.date_range("2001-03-01", "2001-03-10", freq="d"),
+        index=pd.date_range("2001-03-01", "2001-03-10", freq="D"),
     )
     lambda0 = 2.45  # Lambda in Danlu R Evapotranspiration package
     lambda1 = et.calc_lambda(tmean)  # Lambda in pyet
