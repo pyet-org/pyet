@@ -211,7 +211,7 @@ class TestFAO56(unittest.TestCase):
     def test_extraterrestrial_r(self):
         # Based on Example 8, p. 47 FAO.
         extrar = et.extraterrestrial_r(DatetimeIndex(["2015-09-03"]), -0.35)
-        self.assertAlmostEqual(float(extrar), 32.2, 1)
+        self.assertAlmostEqual(extrar.item(), 32.2, 1)
 
     def test_daylight_hours(self):
         # Based on Example 9, p. 47 FAO.
@@ -226,7 +226,7 @@ class TestFAO56(unittest.TestCase):
         ea = Series([2.1], index=DatetimeIndex(["2015-05-15"]))
         rso = Series([18.8], index=DatetimeIndex(["2015-05-15"]))
         rnl = et.calc_rad_long(rs, tmax=tmax, tmin=tmin, ea=ea, rso=rso)
-        self.assertAlmostEqual(float(rnl), 3.5, 1)
+        self.assertAlmostEqual(rnl.item(), 3.5, 1)
 
     def test_calc_rad_sol_in(self):
         # Based on example 10, p 50 TestFAO56
